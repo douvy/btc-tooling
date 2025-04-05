@@ -106,18 +106,18 @@
                 <div class="flex items-center space-x-6">
                     <!-- Bitcoin Price Display - Restored original font sizes -->
                     <div class="flex items-center">
-                        <span class="text-2xl lg:text-5xl font-bold text-primary flex items-center font-fuji-bold">82,878.20</span>
+                        <span class="text-2xl lg:text-5xl font-bold text-white flex items-center font-fuji-bold">83,023.20</span>
                         <span class="ml-3 text-xl text-success flex items-center self-center font-fuji-bold">
                             <i class="fa-solid fa-arrow-up mr-2"></i>
-                            <span class="mr-1.5">$13,754.56</span>
-                            <span>(1.25%)</span>
+                            <span class="mr-1.5">$665.52</span>
+                            <span>(0.79%)</span>
                         </span>
                     </div>
                     
                     <!-- Timeframe selector -->
                     <div class="flex items-center font-fuji-bold">
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1H</button>
-                        <button class="px-4 py-2 text-sm font-medium bg-[#001e3c] text-[#FF9900] uppercase">1D</button>
+                        <button class="px-4 py-2 text-sm font-medium bg-[#131722] text-primary uppercase rounded-sm">1D</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1W</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1M</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1Y</button>
@@ -139,7 +139,7 @@
                     
                     <!-- Price display (simplified) -->
                     <div class="flex items-center">
-                        <span class="text-2xl font-bold text-primary flex items-center font-fuji-bold">82,878.20</span>
+                        <span class="text-2xl font-bold text-primary flex items-center font-fuji-bold">83,023.20</span>
                         <span class="ml-2 text-success flex items-center self-center font-fuji-bold">
                             <i class="fa-solid fa-arrow-up ml-1 mr-0.5"></i>
                             <span>(1.25%)</span>
@@ -195,273 +195,181 @@
             </div>
         </header>
 
-        <!-- Main content container with divider -->
+        <!-- Main content container -->
         <div class="flex-1 flex flex-col">
-            <!-- Main body container with left content and right panel -->
-            <div class="flex flex-1 overflow-auto">
-                <!-- Left content area -->
-                <div class="flex-1 border-r border-divider overflow-y-auto">
-                    <div class="p-6">
-                        
-                        
-                        <!-- Price Chart -->
-                        <div class="rounded-xl p-0 mb-6 h-[400px]">
-                            <h2 class="text-xl font-fuji-bold mb-4">BTC/USD</h2>
-                            <div class="w-full h-[320px] relative">
-                                <!-- Chart would be rendered here with a chart library -->
-                                <div class="w-full h-full bg-[#1a1a1a] rounded-lg overflow-hidden relative">
-                                    <!-- Simulated chart path -->
-                                    <svg viewBox="0 0 800 300" class="w-full h-full absolute inset-0">
-                                        <!-- Grid lines -->
-                                        <line x1="0" y1="75" x2="800" y2="75" stroke="#333" stroke-width="1" />
-                                        <line x1="0" y1="150" x2="800" y2="150" stroke="#333" stroke-width="1" />
-                                        <line x1="0" y1="225" x2="800" y2="225" stroke="#333" stroke-width="1" />
-                                        
-                                        <line x1="100" y1="0" x2="100" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="200" y1="0" x2="200" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="300" y1="0" x2="300" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="400" y1="0" x2="400" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="500" y1="0" x2="500" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="600" y1="0" x2="600" y2="300" stroke="#333" stroke-width="1" />
-                                        <line x1="700" y1="0" x2="700" y2="300" stroke="#333" stroke-width="1" />
-                                        
-                                        <!-- Chart line -->
-                                        <path d="M0,220 C50,200 100,180 150,190 C200,200 250,100 300,120 C350,140 400,100 450,80 C500,60 550,100 600,120 C650,140 700,130 800,50" stroke="#FF6600" stroke-width="3" fill="none" />
-                                        
-                                        <!-- Volume bars -->
-                                        <rect x="50" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="100" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="150" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="200" y="250" width="10" height="30" fill="#F44336" opacity="0.5" />
-                                        <rect x="250" y="255" width="10" height="25" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="300" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="350" y="245" width="10" height="35" fill="#F44336" opacity="0.5" />
-                                        <rect x="400" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="450" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="500" y="255" width="10" height="25" fill="#F44336" opacity="0.5" />
-                                        <rect x="550" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="600" y="250" width="10" height="30" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="650" y="260" width="10" height="20" fill="#F44336" opacity="0.5" />
-                                        <rect x="700" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
-                                        <rect x="750" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
-                                    </svg>
+            <!-- Main content area - Restructured for proper responsive behavior -->
+            <div class="flex flex-col lg:flex-row overflow-auto">
+                <!-- Main content (left on desktop) -->
+                <div class="flex-1 overflow-y-auto">
+                    <!-- Price Chart -->
+                    <div class="rounded-xl p-8 pt-6 mb-6 h-[400px]">
+                        <h2 class="text-xl font-fuji-bold mb-4">BTC/USD</h2>
+                        <div class="w-full h-[320px] relative">
+                            <!-- Chart would be rendered here with a chart library -->
+                            <div class="w-full h-full rounded-lg overflow-hidden relative">
+                                <!-- Simulated chart path -->
+                                <svg viewBox="0 0 800 300" class="w-full h-full absolute inset-0">
+                                    <!-- Grid lines -->
+                                    <line x1="0" y1="75" x2="800" y2="75" stroke="#333" stroke-width="1" />
+                                    <line x1="0" y1="150" x2="800" y2="150" stroke="#333" stroke-width="1" />
+                                    <line x1="0" y1="225" x2="800" y2="225" stroke="#333" stroke-width="1" />
                                     
-                                    <!-- Price labels -->
-                                    <div class="absolute top-2 right-2 bg-[#1d1d1d] bg-opacity-70 px-3 py-1 rounded text-sm">
-                                        <span class="text-primary font-bold">$82,878.80</span>
-                                    </div>
+                                    <line x1="100" y1="0" x2="100" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="200" y1="0" x2="200" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="300" y1="0" x2="300" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="400" y1="0" x2="400" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="500" y1="0" x2="500" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="600" y1="0" x2="600" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="700" y1="0" x2="700" y2="300" stroke="#333" stroke-width="1" />
+                                    
+                                    <!-- Chart line -->
+                                    <path d="M0,220 C50,200 100,180 150,190 C200,200 250,100 300,120 C350,140 400,100 450,80 C500,60 550,100 600,120 C650,140 700,130 800,50" stroke="#FF6600" stroke-width="3" fill="none" />
+                                    
+                                    <!-- Volume bars -->
+                                    <rect x="50" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="100" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="150" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="200" y="250" width="10" height="30" fill="#F44336" opacity="0.5" />
+                                    <rect x="250" y="255" width="10" height="25" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="300" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="350" y="245" width="10" height="35" fill="#F44336" opacity="0.5" />
+                                    <rect x="400" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="450" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="500" y="255" width="10" height="25" fill="#F44336" opacity="0.5" />
+                                    <rect x="550" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="600" y="250" width="10" height="30" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="650" y="260" width="10" height="20" fill="#F44336" opacity="0.5" />
+                                    <rect x="700" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="750" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                </svg>
+                                
+                                <!-- Price labels -->
+                                <div class="absolute top-2 right-2 bg-[#1d1d1d] bg-opacity-70 px-3 py-1 rounded text-sm">
+                                    <span class="text-white font-bold">$83,023.20</span>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Grid for Orderbook and Halving Countdown (order swapped) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Orderbook -->
-                            <div class="rounded-xl p-6">
-                                <h2 class="text-xl font-bold mb-4">Order Book</h2>
-                                <div class="space-y-2">
-                                    <!-- Headers -->
-                                    <div class="grid grid-cols-3 text-sm text-gray-400 mb-2">
-                                        <div>Price (USD)</div>
-                                        <div class="text-center">Amount (BTC)</div>
-                                        <div class="text-right">Total</div>
-                                    </div>
-                                    
-                                    <!-- Asks (Sell Orders) -->
-                                    <div class="space-y-1">
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-error">97,546.80</div>
-                                            <div class="text-center">0.342</div>
-                                            <div class="text-right">33,363.00</div>
-                                            <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 80%"></div>
-                                        </div>
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-error">97,520.50</div>
-                                            <div class="text-center">0.628</div>
-                                            <div class="text-right">61,242.87</div>
-                                            <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 60%"></div>
-                                        </div>
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-error">97,500.00</div>
-                                            <div class="text-center">1.245</div>
-                                            <div class="text-right">121,387.50</div>
-                                            <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 40%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Spread -->
-                                    <div class="py-2 px-4 bg-[#2a2a2a] text-center text-sm rounded">
-                                        Spread: $52.10 (0.05%)
-                                    </div>
-                                    
-                                    <!-- Bids (Buy Orders) -->
-                                    <div class="space-y-1">
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-success">97,447.90</div>
-                                            <div class="text-center">0.876</div>
-                                            <div class="text-right">85,362.36</div>
-                                            <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 50%"></div>
-                                        </div>
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-success">97,420.30</div>
-                                            <div class="text-center">1.245</div>
-                                            <div class="text-right">121,288.27</div>
-                                            <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 70%"></div>
-                                        </div>
-                                        <div class="grid grid-cols-3 text-sm relative">
-                                            <div class="text-success">97,400.00</div>
-                                            <div class="text-center">2.458</div>
-                                            <div class="text-right">239,409.20</div>
-                                            <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 90%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Halving Countdown -->
-                            <div class="rounded-xl p-6">
-                                <h2 class="text-xl font-bold mb-4">Halving Countdown</h2>
-                                <div class="flex flex-col sm:flex-row items-center justify-between">
-                                    <!-- Countdown Circle -->
-                                    <div class="relative w-40 h-40 mb-6 sm:mb-0">
-                                        <svg class="w-full h-full" viewBox="0 0 100 100">
-                                            <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="8"/>
-                                            <circle cx="50" cy="50" r="45" fill="none" stroke="#FF6600" stroke-width="8" stroke-dasharray="285" stroke-dashoffset="95"/>
-                                            <text x="50" y="45" text-anchor="middle" font-size="12" fill="white">Next Halving</text>
-                                            <text x="50" y="55" text-anchor="middle" font-size="16" font-weight="bold" fill="white">233 Days</text>
-                                            <text x="50" y="65" text-anchor="middle" font-size="10" fill="#888">April 2025</text>
-                                        </svg>
-                                    </div>
-                                    
-                                    <!-- Halving Stats -->
-                                    <div class="space-y-4">
-                                        <div>
-                                            <h3 class="text-gray-400 mb-1">Blocks Remaining</h3>
-                                            <p class="text-2xl font-bold">33,521</p>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-gray-400 mb-1">Current Reward</h3>
-                                            <p class="text-xl font-bold text-primary">6.25 BTC</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Mobile Bitcoin X Feed (shows at bottom on mobile) -->
-            <div class="border-t border-divider p-6 lg:hidden">
-                <h2 class="text-xl font-bold mb-4">Bitcoin X Feed</h2>
-                <div class="space-y-4">
-                    <!-- Tweet 1 -->
-                    <div class="border-b border-divider pb-4">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/bitcoin-logo.png" alt="Bitcoin Magazine" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Bitcoin Magazine</p>
-                                <p class="text-gray-400 text-sm">@BitcoinMagazine</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">Bitcoin hashrate hits new all-time high as mining difficulty adjusts upward for the fifth consecutive time this year.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>10:30 AM · Apr 4, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>546 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>128 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>2,149 <i class="fa-regular fa-heart ml-1"></i></span>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Tweet 2 -->
-                    <div class="border-b border-divider pb-4">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-accent-blue flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/documentingbtc.png" alt="Documenting Bitcoin" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Documenting Bitcoin</p>
-                                <p class="text-gray-400 text-sm">@DocumentingBTC</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">BREAKING: Major institutional investor announces $500M Bitcoin position, citing inflation concerns and upcoming halving event.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>9:15 AM · Apr 5, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>892 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>246 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>4,367 <i class="fa-regular fa-heart ml-1"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tweet 3 -->
-                    <div class="pb-2">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-[#0078d7] flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/mempool.png" alt="Mempool Space" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Mempool Space</p>
-                                <p class="text-gray-400 text-sm">@mempool</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">Mempool just cleared after weekend congestion. Average transaction fees down 35% in the last 24 hours.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>8:45 AM · Apr 5, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>324 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>87 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>1,145 <i class="fa-regular fa-heart ml-1"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                        
-                        <!-- Footer -->
-                        <footer class="mt-8 py-6 border-t border-divider">
-                            <div class="flex flex-col md:flex-row justify-between items-center">
-                                <div class="mb-4 md:mb-0">
-                                    <div class="flex items-center">
-                                        <img src="assets/img/logo.png" alt="BTC Tooling" class="w-8 h-8 mr-3">
-                                        <span class="text-xl font-bold">BTC Tooling</span>
+                    <!-- Grid for Orderbook and Halving Countdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-20 mb-6 p-8 pt-0">
+                        <!-- Orderbook -->
+                        <div class="rounded-xl">
+                            <h2 class="text-xl font-bold mb-4">Order Book</h2>
+                            <div class="space-y-2">
+                                <!-- Headers -->
+                                <div class="grid grid-cols-3 text-sm text-gray-400 mb-2">
+                                    <div>Price (USD)</div>
+                                    <div class="text-center">Amount (BTC)</div>
+                                    <div class="text-right">Total</div>
+                                </div>
+                                
+                                <!-- Asks (Sell Orders) -->
+                                <div class="space-y-1">
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-error">97,546.80</div>
+                                        <div class="text-center">0.342</div>
+                                        <div class="text-right">33,363.00</div>
+                                        <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 80%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-error">97,520.50</div>
+                                        <div class="text-center">0.628</div>
+                                        <div class="text-right">61,242.87</div>
+                                        <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 60%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-error">97,500.00</div>
+                                        <div class="text-center">1.245</div>
+                                        <div class="text-right">121,387.50</div>
+                                        <div class="absolute left-0 right-0 h-full bg-error bg-opacity-10" style="width: 40%"></div>
                                     </div>
                                 </div>
                                 
-                                <div class="flex space-x-6">
-                                    <p class="text-gray-400 text-sm mt-2">Real-time Bitcoin data and analytics</p>
+                                <!-- Spread -->
+                                <div class="py-2 px-4 bg-[#2a2a2a] text-center text-sm rounded">
+                                    Spread: $52.10 (0.05%)
+                                </div>
+                                
+                                <!-- Bids (Buy Orders) -->
+                                <div class="space-y-1">
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-success">97,447.90</div>
+                                        <div class="text-center">0.876</div>
+                                        <div class="text-right">85,362.36</div>
+                                        <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 50%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-success">97,420.30</div>
+                                        <div class="text-center">1.245</div>
+                                        <div class="text-right">121,288.27</div>
+                                        <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 70%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-3 text-sm relative">
+                                        <div class="text-success">97,400.00</div>
+                                        <div class="text-center">2.458</div>
+                                        <div class="text-right">239,409.20</div>
+                                        <div class="absolute left-0 right-0 h-full bg-success bg-opacity-10" style="width: 90%"></div>
+                                    </div>
                                 </div>
                             </div>
-                    
-                        </footer>
+                        </div>
+                        
+                        <!-- Halving Countdown -->
+                        <div class="rounded-xl">
+                            <h2 class="text-xl font-bold mb-4">Halving Countdown</h2>
+                            <div class="flex flex-col sm:flex-row items-center justify-between">
+                                <!-- Countdown Circle -->
+                                <div class="relative w-40 h-40 mb-6 sm:mb-0">
+                                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="8"/>
+                                        <circle cx="50" cy="50" r="45" fill="none" stroke="#FF6600" stroke-width="8" stroke-dasharray="285" stroke-dashoffset="95"/>
+                                        <text x="50" y="45" text-anchor="middle" font-size="12" fill="white">Next Halving</text>
+                                        <text x="50" y="55" text-anchor="middle" font-size="16" font-weight="bold" fill="white">233 Days</text>
+                                        <text x="50" y="65" text-anchor="middle" font-size="10" fill="#888">April 2025</text>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Halving Stats -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <h3 class="text-gray-400 mb-1">Blocks Remaining</h3>
+                                        <p class="text-2xl font-bold">33,521</p>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-gray-400 mb-1">Current Reward</h3>
+                                        <p class="text-xl font-bold text-primary">6.25 BTC</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+        
                 </div>
                 
-                <!-- Right Panel with Twitter Feed (narrower) -->
-                <div class="w-[300px] hidden lg:block">
-                    <div class="h-full overflow-y-auto p-6">
-                        <h2 class="text-xl font-bold mb-4">Bitcoin X Feed</h2>
+                <!-- Right Panel - Desktop Only BTC X Insights (with border) -->
+                <div class="w-[300px] block border-l border-divider">
+                    <div class="h-full overflow-y-auto p-8 pt-6">
+                        <h2 class="text-xl font-bold mb-4">BTC X Insights</h2>
                         <div class="space-y-4">
                             <!-- Tweet 1 -->
                             <div class="border-b border-divider pb-4">
                                 <div class="flex items-start mb-2">
                                     <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                                        <img src="assets/img/bitcoin-logo.png" alt="Bitcoin Magazine" class="w-full h-full object-cover">
+                                        <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold">Bitcoin Magazine</p>
-                                        <p class="text-gray-400 text-sm">@BitcoinMagazine</p>
+                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
+                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
                                     </div>
                                 </div>
-                                <p class="text-sm mb-2">Bitcoin hashrate hits new all-time high as mining difficulty adjusts upward for the fifth consecutive time this year.</p>
-                                <div class="flex items-center text-gray-400 text-xs">
-                                    <span>10:30 AM · Apr 4, 2025</span>
+                                <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                <div class="flex items-center text-gray-400 text-sm font-gotham-light">
+                                    <span>4:28 PM · Apr 4, 2025</span>
                                     <div class="flex ml-auto space-x-4">
-                                        <span>546 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>128 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>2,149 <i class="fa-regular fa-heart ml-1"></i></span>
+                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
+                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -469,43 +377,43 @@
                             <!-- Tweet 2 -->
                             <div class="border-b border-divider pb-4">
                                 <div class="flex items-start mb-2">
-                                    <div class="w-10 h-10 rounded-full bg-accent-blue flex-shrink-0 mr-3 overflow-hidden">
-                                        <img src="assets/img/documentingbtc.png" alt="Documenting Bitcoin" class="w-full h-full object-cover">
+                                    <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                        <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold">Documenting Bitcoin</p>
-                                        <p class="text-gray-400 text-sm">@DocumentingBTC</p>
+                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
+                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
                                     </div>
                                 </div>
-                                <p class="text-sm mb-2">BREAKING: Major institutional investor announces $500M Bitcoin position, citing inflation concerns and upcoming halving event.</p>
-                                <div class="flex items-center text-gray-400 text-xs">
-                                    <span>9:15 AM · Apr 5, 2025</span>
+                                <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                <div class="flex items-center text-gray-400 text-sm font-gotham-light">
+                                    <span>4:28 PM · Apr 4, 2025</span>
                                     <div class="flex ml-auto space-x-4">
-                                        <span>892 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>246 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>4,367 <i class="fa-regular fa-heart ml-1"></i></span>
+                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
+                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Tweet 3 -->
-                            <div class="pb-2">
+                            <div class="border-b border-divider pb-4">
                                 <div class="flex items-start mb-2">
-                                    <div class="w-10 h-10 rounded-full bg-[#0078d7] flex-shrink-0 mr-3 overflow-hidden">
-                                        <img src="assets/img/mempool.png" alt="Mempool Space" class="w-full h-full object-cover">
+                                    <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                        <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold">Mempool Space</p>
-                                        <p class="text-gray-400 text-sm">@mempool</p>
+                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
+                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
                                     </div>
                                 </div>
-                                <p class="text-sm mb-2">Mempool just cleared after weekend congestion. Average transaction fees down 35% in the last 24 hours.</p>
-                                <div class="flex items-center text-gray-400 text-xs">
-                                    <span>8:45 AM · Apr 5, 2025</span>
+                                <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                <div class="flex items-center text-gray-400 text-sm font-gotham-light">
+                                    <span>4:28 PM · Apr 4, 2025</span>
                                     <div class="flex ml-auto space-x-4">
-                                        <span>324 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>87 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>1,145 <i class="fa-regular fa-heart ml-1"></i></span>
+                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
+                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -513,6 +421,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Footer -->
+            <footer class="mt-0 p-8 pt-4 pb-4 border-t border-divider">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <div class="flex items-center">
+                            <img src="assets/img/logo.png" alt="BTC Tooling" class="w-8 h-8 mr-3">
+                            <span class="text-xl font-bold">BTC Tooling</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <p class="text-gray-400 text-sm mt-2">Real-time Bitcoin data and analytics</p>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
     
