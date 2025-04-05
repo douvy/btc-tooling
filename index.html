@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Bitcoin Tooling</title>
+    <title>BTC Tooling</title>
     <meta content="Live Bitcoin Price, Charts, Orderbook, Halving Countdown" name="description">
     <!-- Favicon -->
     <link rel="icon" href="assets/img/favicon.png">
@@ -37,7 +37,6 @@
                         'primary': '#FF6600',
                         'primary-light': '#FF5C40',
                         'primary-dark': '#D82800',
-                        'primary-ghost': '#33353c',
                         
                         // Secondary accent colors
                         'secondary': '#ED8936',
@@ -58,23 +57,7 @@
                         
                         // Crypto-specific colors
                         'btc': '#FF6600',
-                        'eth': '#627EEA',
-                        'sol': '#9945FF',
-                        'usdc': '#2775CA',
-                        'yield': '#10B981',
                     },
-                    fontFamily: {
-                        'archivo': ['Archivo', 'sans-serif']
-                    },
-                    boxShadow: {
-                        'glow': '0 0 15px rgba(255, 51, 0, 0.3)',
-                    },
-                    animation: {
-                        'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    screens: {
-                        '3xl': '2000px',
-                    }
                 }
             }
         }
@@ -96,7 +79,7 @@
                     <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                         <img src="assets/img/logo.png" alt="BTC Tooling" class="w-full object-cover">
                     </div>
-                    <h1 class="text-2xl font-fuji-bold">BTC Tooling</h1>
+                    <h1 class="text-2xl font-fuji-bold"></h1>
                 </div>
                 
                 <!-- Spacer -->
@@ -117,7 +100,7 @@
                     <!-- Timeframe selector -->
                     <div class="flex items-center font-fuji-bold">
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1H</button>
-                        <button class="px-4 py-2 text-sm font-medium bg-[#131722] text-primary uppercase rounded-sm">1D</button>
+                        <button class="px-4 py-2 text-sm font-medium bg-[#1c2232] text-primary uppercase rounded-sm">1D</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1W</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1M</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1Y</button>
@@ -347,7 +330,7 @@
         
                 </div>
                 
-                <!-- Right Panel - Desktop Only BTC X Insights (with border) -->
+                <!-- Right Panel - BTC X Insights -->
                 <div class="w-[300px] block border-l border-divider">
                     <div class="h-full overflow-y-auto p-8 pt-6">
                         <h2 class="text-xl font-bold mb-4">BTC X Insights</h2>
@@ -356,20 +339,23 @@
                             <div class="border-b border-divider pb-4">
                                 <div class="flex items-start mb-2">
                                     <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                                        <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
+                                        <img src="assets/img/ansem.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
-                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
+                                        <p class="font-fuji-bold text-base">Ansem
+                                            <span class="text-[#8a919e] text-base font-gotham-light">@blknoiz06</span>
+                                        </p>
+                                        <p class="text-[#8a919e] text-sm font-gotham-light">1:59 PM · APR 5, 2025</p>
                                     </div>
                                 </div>
-                                <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                <p class="text-base mb-2">i really dont think you can conjure up a better scenario for when it makes a ton of sense to have a portion of your long term savings in bitcoin.</p>
                                 <div class="flex items-center text-gray-400 text-sm font-gotham-light">
-                                    <span>4:28 PM · Apr 4, 2025</span>
-                                    <div class="flex ml-auto space-x-4">
-                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
+                                    
+                                    <div class="flex space-x-4">
+                                        <span><i class="fa-regular fa-comment mr-1"></i> 177</span>
+                                        <span><i class="fa-regular fa-retweet mr-1"></i> 141</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 2.5k</span>
+                                        <span><i class="fa-regular fa-chart-simple mr-1"></i> 34K</span>
                                     </div>
                                 </div>
                             </div>
@@ -378,20 +364,23 @@
                             <div class="border-b border-divider pb-4">
                                 <div class="flex items-start mb-2">
                                     <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                                        <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
+                                        <img src="assets/img/fapital.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
-                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
+                                        <p class="font-fuji-bold text-base">Fapital
+                                            <span class="text-[#8a919e] text-base font-gotham-light">@Fapital3</span>
+                                        </p>
+                                        <p class="text-[#8a919e] text-base font-gotham-light">12:10 PM · APR 4, 2025</p>
                                     </div>
                                 </div>
-                                <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                <p class="text-base mb-2">bitcoin is decoupling from old people assets</p>
                                 <div class="flex items-center text-gray-400 text-sm font-gotham-light">
-                                    <span>4:28 PM · Apr 4, 2025</span>
-                                    <div class="flex ml-auto space-x-4">
-                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
+                                    
+                                    <div class="flex space-x-4">
+                                        <span><i class="fa-regular fa-comment mr-1"></i> 33</span>
+                                        <span><i class="fa-regular fa-retweet mr-1"></i> 68</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 698</span>
+                                        <span><i class="fa-regular fa-chart-simple mr-1"></i> 24K</span>
                                     </div>
                                 </div>
                             </div>
@@ -403,17 +392,20 @@
                                         <img src="assets/img/nikita.jpg" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-fuji-bold text-base">Nikita Bier</p>
-                                        <p class="text-[#8a919e] text-base font-gotham-light">@nikitabier</p>
+                                        <p class="font-fuji-bold text-base">Nikita Bier
+                                            <span class="text-[#8a919e] text-base font-gotham-light">@nikitabier</span>
+                                        </p>
+                                        <p class="text-[#8a919e] text-base font-gotham-light">4:28 PM · APR 4, 2025</p>
                                     </div>
                                 </div>
                                 <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
                                 <div class="flex items-center text-gray-400 text-sm font-gotham-light">
-                                    <span>4:28 PM · Apr 4, 2025</span>
-                                    <div class="flex ml-auto space-x-4">
-                                        <span>177 <i class="fa-regular fa-comment ml-1"></i></span>
-                                        <span>141 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                        <span>2.5k <i class="fa-regular fa-heart ml-1"></i></span>
+                                    
+                                    <div class="flex space-x-4">
+                                        <span><i class="fa-regular fa-comment mr-1"></i> 177</span>
+                                        <span><i class="fa-regular fa-retweet mr-1"></i> 141</span>
+                                        <span><i class="fa-regular fa-heart mr-1"></i> 2.5k</span>
+                                        <span><i class="fa-regular fa-chart-simple mr-1"></i> 229K</span>
                                     </div>
                                 </div>
                             </div>
@@ -440,7 +432,7 @@
         </div>
     </div>
     
-    <!-- JavaScript -->
+    <!-- JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Time frame selector functionality
