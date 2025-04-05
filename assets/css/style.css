@@ -54,12 +54,12 @@ f
 }
 
 .font-gotham-bold {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'GothamCondensed-Bold', sans-serif;
   font-weight: 700;
 }
 
 .font-gotham-medium {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'GothamCondensed-Medium', sans-serif;
   font-weight: 700;
 }
 
@@ -70,6 +70,7 @@ f
 /* Global styles */
 body {
   font-family: 'Archivo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'GothamCondensed-Medium', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #ffffff;
   background-color: #0a0b0d;
   font-size: 14px;

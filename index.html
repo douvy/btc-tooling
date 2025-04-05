@@ -85,7 +85,7 @@
     
 </head>
 
-<body class="bg-main-dark text-white font-archivo">
+<body class="bg-main-dark text-white font-gotham-medium leading-tight">
     <div class="flex min-h-screen flex-col">
         <!-- Header - Full width with price aligned right -->
         <header class="w-full border-b border-divider main-dark sticky top-0 z-20 backdrop-blur-md bg-main-dark bg-opacity-90">
@@ -96,7 +96,7 @@
                     <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                         <img src="assets/img/logo.png" alt="BTC Tooling" class="w-full object-cover">
                     </div>
-                    <h1 class="text-2xl font-bold">BTC Tooling</h1>
+                    <h1 class="text-2xl font-fuji-bold">BTC Tooling</h1>
                 </div>
                 
                 <!-- Spacer -->
@@ -106,8 +106,8 @@
                 <div class="flex items-center space-x-6">
                     <!-- Bitcoin Price Display - Restored original font sizes -->
                     <div class="flex items-center">
-                        <span class="text-2xl lg:text-5xl font-bold text-primary flex items-center">97,345.20 USD</span>
-                        <span class="ml-3 text-xl text-success flex items-center self-center">
+                        <span class="text-2xl lg:text-5xl font-bold text-primary flex items-center font-fuji-bold">82,878.20</span>
+                        <span class="ml-3 text-xl text-success flex items-center self-center font-fuji-bold">
                             <i class="fa-solid fa-arrow-up mr-2"></i>
                             <span class="mr-1.5">$13,754.56</span>
                             <span class="tracking-widest">(1.25%)</span>
@@ -115,7 +115,7 @@
                     </div>
                     
                     <!-- Timeframe selector -->
-                    <div class="flex items-center">
+                    <div class="flex items-center font-fuji-bold">
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1H</button>
                         <button class="px-4 py-2 text-sm font-medium bg-[#001e3c] text-[#FF9900] uppercase">1D</button>
                         <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1W</button>
@@ -139,8 +139,8 @@
                     
                     <!-- Price display (simplified) -->
                     <div class="flex items-center">
-                        <span class="text-2xl font-bold text-primary flex items-center">97,345.20 USD</span>
-                        <span class="ml-2 text-success flex items-center self-center">
+                        <span class="text-2xl font-bold text-primary flex items-center font-fuji-bold">82,878.20</span>
+                        <span class="ml-2 text-success flex items-center self-center font-fuji-bold">
                             <i class="fa-solid fa-arrow-up ml-1 mr-0.5"></i>
                             <span>(1.25%)</span>
                         </span>
@@ -148,7 +148,7 @@
                 </div>
                 
                 <!-- Timeframe selector on second row (only for medium screens) -->
-                <div class="flex justify-center pb-3">
+                <div class="flex justify-center pb-3 font-fuji-bold">
                     <div class="flex items-center">
                         <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase">1H</button>
                         <button class="px-3 py-1.5 text-sm font-medium bg-[#001e3c] text-[#FF9900] uppercase">1D</button>
@@ -168,12 +168,12 @@
                         <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                             <img src="assets/img/logo.png" alt="BTC Tooling" class="w-full object-cover">
                         </div>
-                        <h1 class="text-xl font-bold">BTC</h1>
+                        <h1 class="text-xl font-bold">BTC Tooling</h1>
                     </div>
                     
                     <!-- Price info (very condensed for mobile) -->
-                    <div class="flex items-center">
-                        <span class="text-2xl font-bold text-primary flex items-center">97,345.20</span>
+                    <div class="flex items-center font-fuji-bold">
+                        <span class="text-2xl font-bold text-primary flex items-center">82,878.20</span>
                         <span class="ml-2 text-success flex items-center self-center">
                             <i class="fa-solid fa-arrow-up ml-1 mr-0.5"></i>
                             <span>(1.25%)</span>
@@ -182,7 +182,7 @@
                 </div>
                 
                 <!-- Bottom row with timeframe selector -->
-                <div class="flex justify-center pb-3">
+                <div class="flex justify-center pb-3 font-fuji-bold">
                     <div class="grid grid-cols-6 gap-0.5">
                         <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase">1H</button>
                         <button class="px-2 py-1 text-xs font-medium bg-[#001e3c] text-[#FF9900] uppercase">1D</button>
@@ -205,8 +205,8 @@
                         
                         
                         <!-- Price Chart -->
-                        <div class="bg-card-bg rounded-xl p-6 mb-6 h-[400px]">
-                            <h2 class="text-xl font-bold mb-4">BTC/USD Price Chart</h2>
+                        <div class="rounded-xl p-6 mb-6 h-[400px]">
+                            <h2 class="text-xl font-fuji-bold mb-4">BTC/USD</h2>
                             <div class="w-full h-[320px] relative">
                                 <!-- Chart would be rendered here with a chart library -->
                                 <div class="w-full h-full bg-[#1a1a1a] rounded-lg overflow-hidden relative">
@@ -257,7 +257,7 @@
                         <!-- Grid for Orderbook and Halving Countdown (order swapped) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Orderbook -->
-                            <div class="bg-card-bg rounded-xl p-6">
+                            <div class="rounded-xl p-6">
                                 <h2 class="text-xl font-bold mb-4">Order Book</h2>
                                 <div class="space-y-2">
                                     <!-- Headers -->
@@ -319,7 +319,7 @@
                             </div>
                             
                             <!-- Halving Countdown -->
-                            <div class="bg-card-bg rounded-xl p-6">
+                            <div class="rounded-xl p-6">
                                 <h2 class="text-xl font-bold mb-4">Halving Countdown</h2>
                                 <div class="flex flex-col sm:flex-row items-center justify-between">
                                     <!-- Countdown Circle -->
@@ -379,7 +379,7 @@
                                         <img src="assets/img/bitcoin-logo.png" alt="Bitcoin Magazine" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-bold">Bitcoin Magazine</p>
+                                        <p class="font-fuji-bold">Bitcoin Magazine</p>
                                         <p class="text-gray-400 text-sm">@BitcoinMagazine</p>
                                     </div>
                                 </div>
@@ -401,7 +401,7 @@
                                         <img src="assets/img/documentingbtc.png" alt="Documenting Bitcoin" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-bold">Documenting Bitcoin</p>
+                                        <p class="font-fuji-bold">Documenting Bitcoin</p>
                                         <p class="text-gray-400 text-sm">@DocumentingBTC</p>
                                     </div>
                                 </div>
@@ -423,7 +423,7 @@
                                         <img src="assets/img/mempool.png" alt="Mempool Space" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <p class="font-bold">Mempool Space</p>
+                                        <p class="font-fuji-bold">Mempool Space</p>
                                         <p class="text-gray-400 text-sm">@mempool</p>
                                     </div>
                                 </div>
