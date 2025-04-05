@@ -205,7 +205,7 @@
                         
                         
                         <!-- Price Chart -->
-                        <div class="rounded-xl p-6 mb-6 h-[400px]">
+                        <div class="rounded-xl p-0 mb-6 h-[400px]">
                             <h2 class="text-xl font-fuji-bold mb-4">BTC/USD</h2>
                             <div class="w-full h-[320px] relative">
                                 <!-- Chart would be rendered here with a chart library -->
@@ -347,6 +347,78 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Mobile Bitcoin X Feed (shows at bottom on mobile) -->
+            <div class="border-t border-divider p-6 lg:hidden">
+                <h2 class="text-xl font-bold mb-4">Bitcoin X Feed</h2>
+                <div class="space-y-4">
+                    <!-- Tweet 1 -->
+                    <div class="border-b border-divider pb-4">
+                        <div class="flex items-start mb-2">
+                            <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                <img src="assets/img/bitcoin-logo.png" alt="Bitcoin Magazine" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="font-bold">Bitcoin Magazine</p>
+                                <p class="text-gray-400 text-sm">@BitcoinMagazine</p>
+                            </div>
+                        </div>
+                        <p class="text-sm mb-2">Bitcoin hashrate hits new all-time high as mining difficulty adjusts upward for the fifth consecutive time this year.</p>
+                        <div class="flex items-center text-gray-400 text-xs">
+                            <span>10:30 AM · Apr 4, 2025</span>
+                            <div class="flex ml-auto space-x-4">
+                                <span>546 <i class="fa-regular fa-comment ml-1"></i></span>
+                                <span>128 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                <span>2,149 <i class="fa-regular fa-heart ml-1"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tweet 2 -->
+                    <div class="border-b border-divider pb-4">
+                        <div class="flex items-start mb-2">
+                            <div class="w-10 h-10 rounded-full bg-accent-blue flex-shrink-0 mr-3 overflow-hidden">
+                                <img src="assets/img/documentingbtc.png" alt="Documenting Bitcoin" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="font-bold">Documenting Bitcoin</p>
+                                <p class="text-gray-400 text-sm">@DocumentingBTC</p>
+                            </div>
+                        </div>
+                        <p class="text-sm mb-2">BREAKING: Major institutional investor announces $500M Bitcoin position, citing inflation concerns and upcoming halving event.</p>
+                        <div class="flex items-center text-gray-400 text-xs">
+                            <span>9:15 AM · Apr 5, 2025</span>
+                            <div class="flex ml-auto space-x-4">
+                                <span>892 <i class="fa-regular fa-comment ml-1"></i></span>
+                                <span>246 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                <span>4,367 <i class="fa-regular fa-heart ml-1"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tweet 3 -->
+                    <div class="pb-2">
+                        <div class="flex items-start mb-2">
+                            <div class="w-10 h-10 rounded-full bg-[#0078d7] flex-shrink-0 mr-3 overflow-hidden">
+                                <img src="assets/img/mempool.png" alt="Mempool Space" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="font-bold">Mempool Space</p>
+                                <p class="text-gray-400 text-sm">@mempool</p>
+                            </div>
+                        </div>
+                        <p class="text-sm mb-2">Mempool just cleared after weekend congestion. Average transaction fees down 35% in the last 24 hours.</p>
+                        <div class="flex items-center text-gray-400 text-xs">
+                            <span>8:45 AM · Apr 5, 2025</span>
+                            <div class="flex ml-auto space-x-4">
+                                <span>324 <i class="fa-regular fa-comment ml-1"></i></span>
+                                <span>87 <i class="fa-regular fa-retweet ml-1"></i></span>
+                                <span>1,145 <i class="fa-regular fa-heart ml-1"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
                         
                         <!-- Footer -->
                         <footer class="mt-8 py-6 border-t border-divider">
@@ -436,78 +508,6 @@
                                         <span>1,145 <i class="fa-regular fa-heart ml-1"></i></span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile Bitcoin X Feed (shows at bottom on mobile) -->
-            <div class="border-t border-divider p-6 lg:hidden">
-                <h2 class="text-xl font-bold mb-4">Bitcoin X Feed</h2>
-                <div class="space-y-4">
-                    <!-- Tweet 1 -->
-                    <div class="border-b border-divider pb-4">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/bitcoin-logo.png" alt="Bitcoin Magazine" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Bitcoin Magazine</p>
-                                <p class="text-gray-400 text-sm">@BitcoinMagazine</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">Bitcoin hashrate hits new all-time high as mining difficulty adjusts upward for the fifth consecutive time this year.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>10:30 AM · Apr 4, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>546 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>128 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>2,149 <i class="fa-regular fa-heart ml-1"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tweet 2 -->
-                    <div class="border-b border-divider pb-4">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-accent-blue flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/documentingbtc.png" alt="Documenting Bitcoin" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Documenting Bitcoin</p>
-                                <p class="text-gray-400 text-sm">@DocumentingBTC</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">BREAKING: Major institutional investor announces $500M Bitcoin position, citing inflation concerns and upcoming halving event.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>9:15 AM · Apr 5, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>892 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>246 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>4,367 <i class="fa-regular fa-heart ml-1"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tweet 3 -->
-                    <div class="pb-2">
-                        <div class="flex items-start mb-2">
-                            <div class="w-10 h-10 rounded-full bg-[#0078d7] flex-shrink-0 mr-3 overflow-hidden">
-                                <img src="assets/img/mempool.png" alt="Mempool Space" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <p class="font-bold">Mempool Space</p>
-                                <p class="text-gray-400 text-sm">@mempool</p>
-                            </div>
-                        </div>
-                        <p class="text-sm mb-2">Mempool just cleared after weekend congestion. Average transaction fees down 35% in the last 24 hours.</p>
-                        <div class="flex items-center text-gray-400 text-xs">
-                            <span>8:45 AM · Apr 5, 2025</span>
-                            <div class="flex ml-auto space-x-4">
-                                <span>324 <i class="fa-regular fa-comment ml-1"></i></span>
-                                <span>87 <i class="fa-regular fa-retweet ml-1"></i></span>
-                                <span>1,145 <i class="fa-regular fa-heart ml-1"></i></span>
                             </div>
                         </div>
                     </div>
