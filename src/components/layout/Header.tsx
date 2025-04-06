@@ -30,7 +30,6 @@ export default function Header({
             <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
               <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
             </div>
-            <h1 className="text-2xl font-fuji-bold">BTC Tooling</h1>
           </Link>
         </div>
         
