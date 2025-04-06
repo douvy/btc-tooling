@@ -1,29 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { TimeFrame, BitcoinPrice } from '@/types';
+import { getBitcoinPrice, updateStatus, lastUpdateTimestamp } from '@/lib/api';
 
-// Define the interface for CoinGecko API response
-interface CoinGeckoData {
-  market_data: {
-    current_price: { usd: number };
-    price_change_percentage_1h_in_currency: { usd: number };
-    price_change_percentage_24h_in_currency: { usd: number };
-    price_change_percentage_7d_in_currency: { usd: number };
-    price_change_percentage_30d_in_currency: { usd: number };
-    price_change_percentage_1y_in_currency: { usd: number };
-  };
+/**
+ * Data structure for storing all timeframes
+ * Enables instant switching between timeframes
+ */
+interface TimeframesData {
+  [key: string]: BitcoinPrice;
 }
 
-// Define interface for the complete Bitcoin data for all timeframes
-interface AllTimeframesData {
-  currentPrice: number;
-  timeframes: Record<TimeFrame, {
-    changePercent: number;
-    change: number;
-    direction: 'up' | 'down';
-  }>;
-  lastUpdated: number;
-}
-
+/**
+ * Hook return type
+ */
 interface UseTimeframeResult {
   timeframe: TimeFrame;
   setTimeframe: (timeframe: TimeFrame) => void;
@@ -32,362 +21,314 @@ interface UseTimeframeResult {
   error: Error | null;
   isRefreshing: boolean;
   priceChangeDirection: 'up' | 'down' | null;
+  lastUpdateTime: number;
+  refreshData: () => Promise<void>;
+  diagnosticsVisible: boolean;
+  setDiagnosticsVisible: (visible: boolean) => void;
 }
 
-// API endpoint for Bitcoin data from CoinGecko - the exact endpoint specified
-const API_URL = 'https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false';
+// Auto refresh interval - EXACTLY 5 seconds
+const REFRESH_INTERVAL = 5000;
+// Animation duration
+const ANIMATION_DURATION = 1500;
+// Request timeout
+const REQUEST_TIMEOUT = 8000;
+// Debug mode
+const DEBUG = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
 
-// No auto refresh - manual updates only
-// NOTE: This variable is intentionally left here for future use
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const REFRESH_INTERVAL = null;
-
-// Export the hook
+/**
+ * Enhanced hook for Bitcoin price data with guaranteed refresh intervals
+ * Implements the stale-while-revalidate pattern for optimized performance
+ */
 export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeResult {
-  // State for selected timeframe
+  // Core state
   const [timeframe, setTimeframe] = useState<TimeFrame>(initialTimeframe);
-  
-  // State for Bitcoin data displayed in the UI
   const [bitcoinData, setBitcoinData] = useState<BitcoinPrice | null>(null);
+  const [timeframesData, setTimeframesData] = useState<TimeframesData>({});
   
-  // State for all timeframes data fetched in a single API call
-  const [allTimeframesData, setAllTimeframesData] = useState<AllTimeframesData | null>(null);
-  
-  // UI states
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // UI state
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  // This state is used to indicate when data is being refreshed
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  
-  // Direction of price change for animation
   const [priceChangeDirection, setPriceChangeDirection] = useState<'up' | 'down' | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const [diagnosticsVisible, setDiagnosticsVisible] = useState(true);
   
-  // Track previous price for animation
+  // Refs for tracking values without triggering re-renders
   const previousPriceRef = useRef<number | null>(null);
+  const isFetchingRef = useRef(false);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+  const lastFetchTimeRef = useRef<number>(0);
+  const timerIdRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
-  // Hardcoded fallback data as last resort to ensure component never shows error
-  const FALLBACK_DATA: AllTimeframesData = {
-    currentPrice: 83500.00,
-    timeframes: {
-      '1H': {
-        changePercent: 0.1,
-        change: 83.50,
-        direction: 'up'
-      },
-      '1D': {
-        changePercent: 0.3,
-        change: 250.50,
-        direction: 'up'
-      },
-      '1W': {
-        changePercent: 0.4,
-        change: 334.00,
-        direction: 'up'
-      },
-      '1M': {
-        changePercent: 4.2,
-        change: 3507.00,
-        direction: 'up'
-      },
-      '1Y': {
-        changePercent: 22.9,
-        change: 19121.50,
-        direction: 'up'
-      },
-      'ALL': {
-        changePercent: 25000,
-        change: 83416.50,
-        direction: 'up'
-      }
-    },
-    lastUpdated: Date.now()
-  };
-  
-  // Helper function to update current timeframe data from the complete dataset
-  // This allows INSTANT switching between timeframes with no API calls
-  const updateCurrentTimeframeData = useCallback((data: AllTimeframesData, selectedTimeframe: TimeFrame) => {
-    const timeframeData = data.timeframes[selectedTimeframe];
-    
-    setBitcoinData({
-      price: data.currentPrice,
-      change: timeframeData.change,
-      changePercent: timeframeData.changePercent,
-      direction: timeframeData.direction
-    });
+  // Debug logging with timestamps
+  const log = useCallback((message: string, ...args: any[]) => {
+    if (DEBUG || process.env.NODE_ENV === 'development') {
+      const timestamp = new Date().toISOString().slice(11, 19);
+      console.log(`[${timestamp}][useTimeframe] ${message}`, ...args);
+    }
   }, []);
   
-  // Handle timeframe change - INSTANTLY switch between already fetched data
-  const handleTimeframeChange = useCallback((newTimeframe: TimeFrame) => {
-    if (newTimeframe !== timeframe) {
-      // Update selected timeframe
-      setTimeframe(newTimeframe);
-      
-      // If we have all timeframes data, update the display immediately
-      if (allTimeframesData) {
-        updateCurrentTimeframeData(allTimeframesData, newTimeframe);
-      }
+  /**
+   * Fetch fresh Bitcoin data with comprehensive error handling and timeout
+   */
+  const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => {
+    // Prevent concurrent fetches unless forced
+    if (isFetchingRef.current && !force) {
+      log('Skipping fetch (already fetching)');
+      return false;
     }
-  }, [timeframe, allTimeframesData, updateCurrentTimeframeData]);
-  
-  // The main function to fetch Bitcoin data for ALL timeframes in one API call
-  // This will be called exactly once every 5 seconds
-  // Function to generate realistic Bitcoin price and fluctuations based on current market values
-  // No dependencies, so doesn't need useCallback
-  const generateMockBitcoinData = (): CoinGeckoData => {
-    // Get today's date for logging
-    const today = new Date().toLocaleDateString();
     
-    // Create realistic BTC price based on current market values
-    // Approximating April 2025 price range
-    const basePrice = 81000 + (Math.random() * 4000 - 2000); // ~$79,000-$85,000 range
+    // Don't fetch if component unmounted
+    if (!isMountedRef.current) return false;
     
-    // Realistic percentages matching current Bitcoin market behavior
-    // Values are based on typical Bitcoin volatility
-    const hourChange = (Math.random() * 0.6) - 0.3; // -0.3% to +0.3% hourly change
-    const dayChange = (Math.random() * 2) - 0.8; // -0.8% to +1.2% daily change
-    const weekChange = (Math.random() * 5) - 2; // -2% to +3% weekly change
-    const monthChange = (Math.random() * 10) - 3; // -3% to +7% monthly change
-    const yearChange = (Math.random() * 40) + 20; // +20% to +60% yearly change (Bitcoin usually up YoY)
+    // Calculate time since last fetch
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastFetchTimeRef.current;
     
-    console.log(`Generating mock Bitcoin data for ${today}: $${basePrice.toFixed(2)}`);
-    console.log(`Mock change percentages: 1H: ${hourChange.toFixed(2)}%, 1D: ${dayChange.toFixed(2)}%, 1W: ${weekChange.toFixed(2)}%, 1M: ${monthChange.toFixed(2)}%, 1Y: ${yearChange.toFixed(2)}%`);
+    // Throttle fetches to prevent excessive API calls unless forced refresh
+    if (!force && timeSinceLastFetch < 3000) {
+      log(`Throttling fetch (last fetch ${timeSinceLastFetch}ms ago)`);
+      return false;
+    }
     
-    // Create mock data matching the CoinGecko API structure exactly
-    return {
-      market_data: {
-        current_price: { usd: basePrice },
-        price_change_percentage_1h_in_currency: { usd: hourChange },
-        price_change_percentage_24h_in_currency: { usd: dayChange },
-        price_change_percentage_7d_in_currency: { usd: weekChange },
-        price_change_percentage_30d_in_currency: { usd: monthChange },
-        price_change_percentage_1y_in_currency: { usd: yearChange }
+    // Update state for UI feedback
+    isFetchingRef.current = true;
+    setIsRefreshing(true);
+    
+    // Cancel any existing fetch if forced
+    if (force && abortControllerRef.current) {
+      log('Cancelling previous fetch request');
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
+    const timeoutId = setTimeout(() => {
+      if (abortControllerRef.current) {
+        log('Request timeout reached');
+        abortControllerRef.current.abort();
       }
-    };
-  };
-
-  const fetchData = useCallback(async () => {
+    }, REQUEST_TIMEOUT);
+    
     try {
-      setIsRefreshing(true);
+      log(`Fetching ${timeframe} Bitcoin data${force ? ' (forced)' : ''}`);
+      lastFetchTimeRef.current = now;
       
-      let data: CoinGeckoData;
+      // Get fresh data from API
+      const fetchStart = performance.now();
+      const data = await getBitcoinPrice(timeframe);
+      const fetchDuration = Math.round(performance.now() - fetchStart);
       
-      try {
-        // Try to fetch from CoinGecko API with proper headers and longer timeout
-        console.log('Fetching Bitcoin data from CoinGecko API...');
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // Longer timeout
-        
-        const response = await fetch(API_URL, {
-          cache: 'no-store',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            // Add User-Agent header to avoid being blocked by CoinGecko
-            'User-Agent': 'BTC Tooling Dashboard'
-          },
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+      // Clear timeout since request completed
+      clearTimeout(timeoutId);
+      
+      // Log performance metrics
+      log(`Fetch complete in ${fetchDuration}ms: $${data.price.toFixed(2)} (${data.direction === 'up' ? '+' : '-'}${data.changePercent.toFixed(2)}%)`);
+      
+      // Component might have unmounted during fetch
+      if (!isMountedRef.current) return false;
+      
+      // Update the current price display
+      setBitcoinData(data);
+      
+      // Store for all timeframes to enable instant switching
+      setTimeframesData(prev => ({
+        ...prev,
+        [timeframe]: data
+      }));
+      
+      // Handle price change animation
+      if (previousPriceRef.current !== null && data.price !== previousPriceRef.current) {
+        // Clear any existing animation
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
         }
         
-        data = await response.json();
-        console.log('Successfully fetched data from API');
-      } catch (error) {
-        // If API fetch fails, use realistic generated data
-        console.warn('API fetch failed, using generated data:', error);
-        data = generateMockBitcoinData();
-        console.log('Using generated Bitcoin data');
-      }
-      
-      // Validate that we received the required data
-      if (!data.market_data || !data.market_data.current_price || !data.market_data.current_price.usd) {
-        console.warn('Invalid data structure, generating mock data');
-        data = generateMockBitcoinData();
-      }
-      
-      // Log the raw data for verification
-      console.log('Raw CoinGecko data:', data.market_data);
-      
-      // Extract current price
-      const currentPrice = data.market_data.current_price.usd;
-      console.log(`Bitcoin price updated at ${new Date().toLocaleTimeString()}: $${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-      
-      // Helper to safely get percentage values with fallbacks
-      const getPercentage = (value: number | undefined, fallback: number): number => {
-        return typeof value === 'number' && !isNaN(value) ? value : fallback;
-      };
-      
-      // Properly calculate dollar changes for each timeframe using the exact formula:
-      // dollarChange = (currentPrice * percentageChange) / 100
-      const hourPercentage = getPercentage(data.market_data.price_change_percentage_1h_in_currency?.usd, 0);
-      const dayPercentage = getPercentage(data.market_data.price_change_percentage_24h_in_currency?.usd, 0);
-      const weekPercentage = getPercentage(data.market_data.price_change_percentage_7d_in_currency?.usd, 0);
-      const monthPercentage = getPercentage(data.market_data.price_change_percentage_30d_in_currency?.usd, 0);
-      const yearPercentage = getPercentage(data.market_data.price_change_percentage_1y_in_currency?.usd, 0);
-      
-      // Calculate dollar changes using the exact formula
-      const hourChange = (currentPrice * hourPercentage) / 100;
-      const dayChange = (currentPrice * dayPercentage) / 100;
-      const weekChange = (currentPrice * weekPercentage) / 100;
-      const monthChange = (currentPrice * monthPercentage) / 100;
-      const yearChange = (currentPrice * yearPercentage) / 100;
-      
-      // Log the calculated values to verify accuracy
-      console.log('Calculated values:');
-      console.log(`1H: ${hourPercentage.toFixed(2)}% = $${Math.abs(hourChange).toFixed(2)}`);
-      console.log(`1D: ${dayPercentage.toFixed(2)}% = $${Math.abs(dayChange).toFixed(2)}`);
-      console.log(`1W: ${weekPercentage.toFixed(2)}% = $${Math.abs(weekChange).toFixed(2)}`);
-      console.log(`1M: ${monthPercentage.toFixed(2)}% = $${Math.abs(monthChange).toFixed(2)}`);
-      console.log(`1Y: ${yearPercentage.toFixed(2)}% = $${Math.abs(yearChange).toFixed(2)}`);
-      
-      // Create complete data object for all timeframes with accurate calculations
-      const completeData: AllTimeframesData = {
-        currentPrice,
-        timeframes: {
-          '1H': {
-            changePercent: hourPercentage,
-            change: Math.abs(hourChange), // Use absolute value for display
-            direction: hourPercentage >= 0 ? 'up' : 'down'
-          },
-          '1D': {
-            changePercent: dayPercentage,
-            change: Math.abs(dayChange),
-            direction: dayPercentage >= 0 ? 'up' : 'down'
-          },
-          '1W': {
-            changePercent: weekPercentage,
-            change: Math.abs(weekChange),
-            direction: weekPercentage >= 0 ? 'up' : 'down'
-          },
-          '1M': {
-            changePercent: monthPercentage,
-            change: Math.abs(monthChange),
-            direction: monthPercentage >= 0 ? 'up' : 'down'
-          },
-          '1Y': {
-            changePercent: yearPercentage,
-            change: Math.abs(yearChange),
-            direction: yearPercentage >= 0 ? 'up' : 'down'
-          },
-          'ALL': {
-            // For ALL, use a fixed percentage since CoinGecko doesn't provide this
-            // Bitcoin's inception price was nearly zero, so using a very high percentage is reasonable
-            changePercent: 30000, // Approximate lifetime return
-            change: currentPrice * 0.999, // Approximate dollar change (99.9% of current price)
-            direction: 'up' // Bitcoin is always up from inception
-          }
-        },
-        lastUpdated: Date.now()
-      };
-      
-      // Determine if price went up or down for animation
-      if (previousPriceRef.current !== null) {
-        const direction = currentPrice > previousPriceRef.current ? 'up' : 'down';
+        // Set animation direction based on price comparison
+        const direction = data.price > previousPriceRef.current ? 'up' : 'down';
         setPriceChangeDirection(direction);
         
-        // Schedule removal of animation
-        setTimeout(() => {
-          setPriceChangeDirection(null);
-        }, 1000);
+        log(`Price changed from $${previousPriceRef.current} to $${data.price} (${direction})`);
+        
+        // Clear animation after duration
+        animationTimeoutRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            setPriceChangeDirection(null);
+          }
+        }, ANIMATION_DURATION);
       }
       
-      // Update previous price for next comparison
-      previousPriceRef.current = currentPrice;
+      // Update tracking values
+      previousPriceRef.current = data.price;
+      setLastUpdateTime(now);
       
-      // Update state with all timeframes data
-      setAllTimeframesData(completeData);
-      
-      // Reset error state
+      // Clear any errors
       if (error) setError(null);
       
-      // Update the current Bitcoin data based on selected timeframe
-      updateCurrentTimeframeData(completeData, timeframe);
-      
-      return true; // Return a value so the Promise resolves properly
+      return true;
     } catch (err) {
-      console.error('Error fetching Bitcoin data:', err);
+      // Clear timeout on error
+      clearTimeout(timeoutId);
       
-      // NEVER show errors to the user - always use fallback data
-      if (!allTimeframesData) {
-        console.warn('Using fallback data instead of showing error');
-        setAllTimeframesData(FALLBACK_DATA);
-        updateCurrentTimeframeData(FALLBACK_DATA, timeframe);
-      } else {
-        // If we have existing data, create a small random change to simulate updates
-        const currentPrice = allTimeframesData.currentPrice;
-        const randomChange = (Math.random() * 50) - 25; // Smaller random change between -25 and +25
-        const newPrice = currentPrice + randomChange;
-        
-        console.log(`Using simulated price update: $${newPrice.toFixed(2)} (${randomChange >= 0 ? '+' : '-'}$${Math.abs(randomChange).toFixed(2)})`);
-        
-        // Update all timeframes data with the new price
-        const updatedData = {
-          ...allTimeframesData,
-          currentPrice: newPrice,
-          lastUpdated: Date.now()
-        };
-        
-        // Determine direction
-        const direction = randomChange >= 0 ? 'up' : 'down';
-        setPriceChangeDirection(direction);
-        
-        // Update previous price
-        previousPriceRef.current = newPrice;
-        
-        // Update state
-        setAllTimeframesData(updatedData);
-        updateCurrentTimeframeData(updatedData, timeframe);
-        
-        // Clear animation after delay
-        setTimeout(() => {
-          setPriceChangeDirection(null);
-        }, 1000);
+      // Handle AbortController errors differently
+      const isAborted = err instanceof DOMException && err.name === 'AbortError';
+      const errorMessage = isAborted ? 'Request was aborted' : String(err);
+      
+      log(`Error fetching Bitcoin data: ${errorMessage}`, err);
+      
+      if (!isMountedRef.current) return false;
+      
+      // Set error for UI if not aborted by us during cleanup
+      if (!isAborted || force) {
+        setError(err instanceof Error ? err : new Error(String(err)));
       }
       
-      return false; // Return a value so the Promise resolves properly
+      return false;
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allTimeframesData, error, timeframe, updateCurrentTimeframeData]);
-  
-  // Use a ref to track if a fetch is already in progress
-  const isFetchingRef = useRef(false);
-  
-  // Fetch data only once on component mount, no auto-refresh
-  useEffect(() => {
-    console.log('Fetching Bitcoin data once on mount (no auto-refresh)');
-    
-    // Function to safely fetch data
-    const safeFetchData = async () => {
-      // Skip if already fetching
-      if (isFetchingRef.current) return;
-      
-      // Set fetching flag
-      isFetchingRef.current = true;
-      
-      try {
-        // Perform the data fetch once
-        await fetchData();
-      } finally {
-        // Reset the fetching flag when done
+      // Reset flags
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
         isFetchingRef.current = false;
+        abortControllerRef.current = null;
+      }
+    }
+  }, [timeframe, error, log]);
+  
+  /**
+   * Public function to manually trigger a refresh
+   */
+  const refreshData = useCallback(async () => {
+    log('Manual refresh triggered');
+    await fetchBitcoinData(true);
+  }, [fetchBitcoinData, log]);
+  
+  /**
+   * Handle timeframe switching with instant feedback
+   */
+  const handleTimeframeChange = useCallback((newTimeframe: TimeFrame) => {
+    if (newTimeframe === timeframe) return;
+    
+    log(`Switching timeframe: ${timeframe} → ${newTimeframe}`);
+    
+    // Update the selected timeframe
+    setTimeframe(newTimeframe);
+    
+    // If we have cached data, show it immediately
+    if (timeframesData[newTimeframe]) {
+      log('Using cached data for immediate display');
+      setBitcoinData(timeframesData[newTimeframe]);
+      
+      // Still fetch fresh data for this timeframe in the background (non-blocking)
+      Promise.resolve().then(() => fetchBitcoinData(true));
+    } else {
+      // No cached data, show loading and fetch
+      log('No cached data available, fetching fresh data');
+      setIsLoading(true);
+      fetchBitcoinData(true);
+    }
+  }, [timeframe, timeframesData, fetchBitcoinData, log]);
+  
+  /**
+   * Set up precise interval timer for reliable 5-second updates
+   * Uses a recursively scheduled setTimeout approach for better accuracy
+   */
+  useEffect(() => {
+    // Mark as mounted
+    isMountedRef.current = true;
+    log('Setting up Bitcoin price tracking with precise 5-second updates');
+    
+    /**
+     * Recursive timer function for precise intervals
+     * This approach prevents interval drift that setInterval can experience
+     */
+    const scheduleNextFetch = () => {
+      // Clear any existing timer
+      if (timerIdRef.current) {
+        clearTimeout(timerIdRef.current);
+      }
+      
+      // Schedule the next fetch
+      timerIdRef.current = setTimeout(() => {
+        // Skip fetching if page is hidden
+        if (document.visibilityState === 'visible' && isMountedRef.current) {
+          fetchBitcoinData()
+            .finally(() => {
+              // Schedule next update only after current one completes
+              // This prevents overlapping requests on slow connections
+              if (isMountedRef.current) {
+                scheduleNextFetch();
+              }
+            });
+        } else {
+          // If page is hidden, just reschedule without fetching
+          scheduleNextFetch();
+        }
+      }, REFRESH_INTERVAL);
+    };
+    
+    // Initial fetch
+    fetchBitcoinData(true).finally(() => {
+      if (isMountedRef.current) {
+        // Start the fetch cycle after initial fetch completes
+        scheduleNextFetch();
+      }
+    });
+    
+    // Handle tab visibility changes
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        log('Page became visible - fetching fresh data');
+        
+        // Immediate fetch when tab becomes visible
+        fetchBitcoinData(true).finally(() => {
+          if (isMountedRef.current) {
+            // Reset the interval cycle
+            scheduleNextFetch();
+          }
+        });
+      } else {
+        log('Page hidden - pausing updates');
+        
+        // Cancel any in-progress fetch
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+          abortControllerRef.current = null;
+        }
       }
     };
     
-    // Fetch data only once when component mounts
-    safeFetchData();
+    // Register visibility listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // No interval for auto-updates - user must manually refresh
-    
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - runs only once on mount
+    // Clean up properly on unmount
+    return () => {
+      log('Cleaning up Bitcoin price tracking');
+      isMountedRef.current = false;
+      
+      // Clear all timers
+      if (timerIdRef.current) {
+        clearTimeout(timerIdRef.current);
+      }
+      
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+      
+      // Abort any in-flight requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      // Remove event listeners
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchBitcoinData, log]);
   
+  // Return comprehensive interface
   return {
     timeframe,
     setTimeframe: handleTimeframeChange,
@@ -395,6 +336,10 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
     isLoading,
     error,
     isRefreshing,
-    priceChangeDirection
+    priceChangeDirection,
+    lastUpdateTime,
+    refreshData,
+    diagnosticsVisible,
+    setDiagnosticsVisible
   };
 }

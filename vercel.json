@@ -1,5 +1,51 @@
 {
   "framework": "nextjs",
   "buildCommand": "next build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "github": {
+    "silent": true
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=5, stale-while-revalidate=10"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-cg-api-key"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/**/*": {
+      "memory": 512,
+      "maxDuration": 10
+    }
+  },
+  "regions": ["iad1", "sfo1", "lhr1"],
+  "env": {
+    "NEXT_PUBLIC_DEBUG_MODE": "false",
+    "NEXT_PUBLIC_USE_FALLBACKS": "true",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
 }

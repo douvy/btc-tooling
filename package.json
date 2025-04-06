@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "trace-deprecation": "NODE_OPTIONS='--trace-deprecation' next dev",
+    "find-deps": "npx depcheck"
   },
   "dependencies": {
     "classnames": "^2.5.1",

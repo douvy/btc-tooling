@@ -1,7 +1,8 @@
 import { TimeFrame, BitcoinPrice } from '@/types';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import classNames from 'classnames';
 import TimeframeSelector from './TimeframeSelector';
+import { formatPrice, normalizeDecimalPlaces } from '@/lib/priceUtils';
 
 interface BitcoinPriceDisplayProps {
   data: BitcoinPrice | null;
@@ -14,29 +15,38 @@ interface BitcoinPriceDisplayProps {
   priceChangeDirection?: 'up' | 'down' | null;
 }
 
-export default function BitcoinPriceDisplay({
+/**
+ * Component to display Bitcoin price with animations
+ * Supports desktop, medium, and mobile layouts
+ */
+function BitcoinPriceDisplay({
   data,
   timeframe,
   onTimeframeChange,
   isLoading,
-  // isRefreshing is not currently used in this component
   error,
   variant = 'desktop',
   priceChangeDirection = null
 }: BitcoinPriceDisplayProps) {
-  // For debug purposes - only log when price actually changes
+  // Track previous price for logging significant changes
   const prevPriceRef = useRef<number | null>(null);
   
+  // Log price changes to console (for debugging)
   useEffect(() => {
-    if (data && (prevPriceRef.current === null || data.price !== prevPriceRef.current)) {
-      prevPriceRef.current = data.price;
+    if (!data) return;
+    
+    const isSignificantChange = 
+      prevPriceRef.current === null || 
+      Math.abs(data.price - prevPriceRef.current) >= 1;
       
-      // Only log price changes, not every render
-      if (priceChangeDirection !== null) {
-        console.log(`Price ${priceChangeDirection === 'up' ? '↑' : '↓'} $${data.price.toFixed(2)}`);
-      }
+    if (isSignificantChange) {
+      console.log(
+        `Bitcoin price updated (${timeframe}): $${data.price.toFixed(2)} ` +
+        `(${data.direction === 'up' ? '+' : '-'}${data.changePercent.toFixed(2)}%)`
+      );
+      prevPriceRef.current = data.price;
     }
-  }, [data, priceChangeDirection]);
+  }, [data, timeframe]);
   
   // Handle loading state
   if (isLoading && !data) {
@@ -62,8 +72,7 @@ export default function BitcoinPriceDisplay({
     );
   }
   
-  // Note: We should never reach this state with our improved error handling,
-  // but keeping it as an extra safety measure with a less alarming message
+  // Handle error state (fallback to loading UI)
   if (error && !data) {
     return (
       <div className="animate-pulse px-4 py-2">
@@ -79,7 +88,11 @@ export default function BitcoinPriceDisplay({
   }
   
   const isPositiveChange = data.direction === 'up';
+  const formattedPrice = formatPrice(data.price);
+  const formattedChange = formatPrice(data.change);
+  const formattedPercent = data.changePercent.toFixed(2);
   
+  // Desktop layout
   if (variant === 'desktop') {
     return (
       <div className="flex items-center space-x-6">
@@ -93,17 +106,17 @@ export default function BitcoinPriceDisplay({
                 "animate-pulse-red": priceChangeDirection === 'down'
               }
             )}
-            aria-label="Bitcoin price"
+            aria-label={`Bitcoin price ${formattedPrice} dollars`}
           >
-            {data.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formattedPrice}
           </span>
           <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
             <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-            <span className="mr-1.5 font-fuji-bold" aria-label="Price change">
-              ${Math.abs(data.change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
+              ${formattedChange}
             </span>
-            <span className="font-fuji-bold" aria-label="Percentage change">
-              ({Math.abs(data.changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+            <span className="font-fuji-bold" aria-label={`Percentage change ${formattedPercent} percent`}>
+              ({formattedPercent}%)
             </span>
           </span>
         </div>
@@ -114,10 +127,11 @@ export default function BitcoinPriceDisplay({
     );
   }
   
+  // Medium layout
   if (variant === 'medium') {
     return (
       <div className="flex flex-col">
-        {/* Top row with logo and price */}
+        {/* Top row with price */}
         <div className="flex items-center justify-between">
           {/* Price display */}
           <div className="flex items-center" aria-live="polite">
@@ -127,26 +141,17 @@ export default function BitcoinPriceDisplay({
                 { 
                   "animate-pulse-green": priceChangeDirection === 'up',
                   "animate-pulse-red": priceChangeDirection === 'down',
-                  "text-primary": true // Always maintain the primary color
+                  "text-primary": true
                 }
               )}
-              style={{
-                animation: priceChangeDirection === 'up' 
-                  ? 'pulse-green-primary 1.2s ease-in-out' 
-                  : priceChangeDirection === 'down' 
-                    ? 'pulse-red-primary 1.2s ease-in-out' 
-                    : 'none'
-              }}
+              aria-label={`Bitcoin price ${formattedPrice} dollars`}
             >
-              {data.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formattedPrice}
             </span>
             <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
               <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
-              <span className={classNames({
-                "animate-pulse-green": priceChangeDirection === 'up',
-                "animate-pulse-red": priceChangeDirection === 'down'
-              })}>
-                ({Math.abs(data.changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+              <span aria-label={`Percentage change ${formattedPercent} percent`}>
+                ({formattedPercent}%)
               </span>
             </span>
           </div>
@@ -160,7 +165,7 @@ export default function BitcoinPriceDisplay({
     );
   }
   
-  // Mobile variant
+  // Mobile layout
   return (
     <div className="flex flex-col items-start">
       {/* Timeframe selector row */}
@@ -183,9 +188,9 @@ export default function BitcoinPriceDisplay({
               "text-white": !priceChangeDirection
             }
           )}
-          aria-label="Bitcoin price"
+          aria-label={`Bitcoin price ${formattedPrice} dollars`}
         >
-          {data.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {formattedPrice}
         </span>
       </div>
       
@@ -193,20 +198,17 @@ export default function BitcoinPriceDisplay({
       <div className="flex items-start mt-1" aria-label="Price change">
         <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
           <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-          <span className={classNames("mr-1.5", {
-            "animate-pulse-green": priceChangeDirection === 'up',
-            "animate-pulse-red": priceChangeDirection === 'down'
-          })}>
-            ${Math.abs(data.change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <span className="mr-1.5">
+            ${formattedChange}
           </span>
-          <span className={classNames({
-            "animate-pulse-green": priceChangeDirection === 'up',
-            "animate-pulse-red": priceChangeDirection === 'down'
-          })}>
-            ({Math.abs(data.changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+          <span>
+            ({formattedPercent}%)
           </span>
         </span>
       </div>
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(BitcoinPriceDisplay);
