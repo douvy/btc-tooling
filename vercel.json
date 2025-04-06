@@ -37,7 +37,7 @@
     }
   ],
   "functions": {
-    "api/**/*": {
+    "pages/api/**/*": {
       "memory": 512,
       "maxDuration": 10
     }
