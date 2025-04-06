@@ -1,8 +1,9 @@
 import { TimeFrame, BitcoinPrice } from '@/types';
 import { useEffect, useRef, memo } from 'react';
 import classNames from 'classnames';
-import TimeframeSelector from './TimeframeSelector';
-import { formatPrice, normalizeDecimalPlaces } from '@/lib/priceUtils';
+import DesktopPriceDisplay from './DesktopPriceDisplay';
+import MediumPriceDisplay from './MediumPriceDisplay';
+import MobilePriceDisplay from './MobilePriceDisplay';
 
 interface BitcoinPriceDisplayProps {
   data: BitcoinPrice | null;
@@ -13,11 +14,13 @@ interface BitcoinPriceDisplayProps {
   error: Error | null;
   variant?: 'desktop' | 'medium' | 'mobile';
   priceChangeDirection?: 'up' | 'down' | null;
+  latency?: number;
+  connectionStatus?: 'connected' | 'connecting' | 'disconnected';
 }
 
 /**
  * Component to display Bitcoin price with animations
- * Supports desktop, medium, and mobile layouts
+ * Delegates to variant-specific display components
  */
 function BitcoinPriceDisplay({
   data,
@@ -26,12 +29,14 @@ function BitcoinPriceDisplay({
   isLoading,
   error,
   variant = 'desktop',
-  priceChangeDirection = null
+  priceChangeDirection = null,
+  latency = 0,
+  connectionStatus = 'connected'
 }: BitcoinPriceDisplayProps) {
-  // Track previous price for logging significant changes
+  // Track previous price for logging
   const prevPriceRef = useRef<number | null>(null);
   
-  // Log price changes to console (for debugging)
+  // Log price changes
   useEffect(() => {
     if (!data) return;
     
@@ -48,7 +53,7 @@ function BitcoinPriceDisplay({
     }
   }, [data, timeframe]);
   
-  // Handle loading state
+  // Loading skeleton
   if (isLoading && !data) {
     return (
       <div className={classNames(
@@ -72,7 +77,7 @@ function BitcoinPriceDisplay({
     );
   }
   
-  // Handle error state (fallback to loading UI)
+  // Error state (fallback to loading UI)
   if (error && !data) {
     return (
       <div className="animate-pulse px-4 py-2">
@@ -86,127 +91,44 @@ function BitcoinPriceDisplay({
   if (!data) {
     return null;
   }
-  
-  const isPositiveChange = data.direction === 'up';
-  const formattedPrice = formatPrice(data.price);
-  const formattedChange = formatPrice(data.change);
-  const formattedPercent = data.changePercent.toFixed(2);
-  
-  // Desktop layout
+
+  // Display the appropriate variant
   if (variant === 'desktop') {
     return (
-      <div className="flex items-center space-x-6">
-        {/* Desktop Bitcoin Price Display */}
-        <div className="flex items-center" aria-live="polite">
-          <span 
-            className={classNames(
-              "text-2xl lg:text-5xl font-fuji-bold flex items-center",
-              { 
-                "animate-pulse-green": priceChangeDirection === 'up',
-                "animate-pulse-red": priceChangeDirection === 'down'
-              }
-            )}
-            aria-label={`Bitcoin price ${formattedPrice} dollars`}
-          >
-            {formattedPrice}
-          </span>
-          <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-            <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-            <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
-              ${formattedChange}
-            </span>
-            <span className="font-fuji-bold" aria-label={`Percentage change ${formattedPercent} percent`}>
-              ({formattedPercent}%)
-            </span>
-          </span>
-        </div>
-        
-        {/* Timeframe selector */}
-        <TimeframeSelector timeframe={timeframe} onTimeframeChange={onTimeframeChange} />
-      </div>
+      <DesktopPriceDisplay
+        data={data}
+        timeframe={timeframe}
+        onTimeframeChange={onTimeframeChange}
+        priceChangeDirection={priceChangeDirection}
+        latency={latency}
+        connectionStatus={connectionStatus}
+      />
     );
   }
   
-  // Medium layout
   if (variant === 'medium') {
     return (
-      <div className="flex flex-col">
-        {/* Top row with price */}
-        <div className="flex items-center justify-between">
-          {/* Price display */}
-          <div className="flex items-center" aria-live="polite">
-            <span 
-              className={classNames(
-                "text-2xl font-fuji-bold flex items-center",
-                { 
-                  "animate-pulse-green": priceChangeDirection === 'up',
-                  "animate-pulse-red": priceChangeDirection === 'down',
-                  "text-primary": true
-                }
-              )}
-              aria-label={`Bitcoin price ${formattedPrice} dollars`}
-            >
-              {formattedPrice}
-            </span>
-            <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-              <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
-              <span aria-label={`Percentage change ${formattedPercent} percent`}>
-                ({formattedPercent}%)
-              </span>
-            </span>
-          </div>
-        </div>
-        
-        {/* Timeframe selector on second row */}
-        <div className="flex justify-center pb-3">
-          <TimeframeSelector timeframe={timeframe} onTimeframeChange={onTimeframeChange} variant="medium" />
-        </div>
-      </div>
+      <MediumPriceDisplay
+        data={data}
+        timeframe={timeframe}
+        onTimeframeChange={onTimeframeChange}
+        priceChangeDirection={priceChangeDirection}
+        latency={latency}
+        connectionStatus={connectionStatus}
+      />
     );
   }
   
-  // Mobile layout
+  // Mobile variant
   return (
-    <div className="flex flex-col items-start">
-      {/* Timeframe selector row */}
-      <div className="flex justify-start pb-3">
-        <TimeframeSelector 
-          timeframe={timeframe} 
-          onTimeframeChange={onTimeframeChange} 
-          variant="mobile" 
-        />
-      </div>
-      
-      {/* Price row */}
-      <div className="flex items-start justify-start" aria-live="polite">
-        <span 
-          className={classNames(
-            "text-4xl font-fuji-bold",
-            { 
-              "animate-pulse-green": priceChangeDirection === 'up',
-              "animate-pulse-red": priceChangeDirection === 'down',
-              "text-white": !priceChangeDirection
-            }
-          )}
-          aria-label={`Bitcoin price ${formattedPrice} dollars`}
-        >
-          {formattedPrice}
-        </span>
-      </div>
-      
-      {/* Change row */}
-      <div className="flex items-start mt-1" aria-label="Price change">
-        <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
-          <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-          <span className="mr-1.5">
-            ${formattedChange}
-          </span>
-          <span>
-            ({formattedPercent}%)
-          </span>
-        </span>
-      </div>
-    </div>
+    <MobilePriceDisplay
+      data={data}
+      timeframe={timeframe}
+      onTimeframeChange={onTimeframeChange}
+      priceChangeDirection={priceChangeDirection}
+      latency={latency}
+      connectionStatus={connectionStatus}
+    />
   );
 }
 
