@@ -1,52 +1,79 @@
-import { TimeFrame } from '@/types';
+import { BitcoinPrice, TimeFrame } from '@/types';
+import classNames from 'classnames';
 import TimeframeSelector from './TimeframeSelector';
+import { formatPrice } from '@/lib/priceUtils';
+import { LatencyDisplay } from './LatencyDisplay';
 
 interface MobilePriceDisplayProps {
-  price: number;
-  change: number;
-  changePercent: number;
+  data: BitcoinPrice;
   timeframe: TimeFrame;
   onTimeframeChange: (timeframe: TimeFrame) => void;
-  isPositiveChange: boolean;
+  priceChangeDirection?: 'up' | 'down' | null;
+  latency?: number;
+  connectionStatus?: 'connected' | 'connecting' | 'disconnected';
 }
 
 export default function MobilePriceDisplay({
-  price, 
-  change, 
-  changePercent,
+  data,
   timeframe,
   onTimeframeChange,
-  isPositiveChange
+  priceChangeDirection = null,
+  latency = 0,
+  connectionStatus = 'connected'
 }: MobilePriceDisplayProps) {
+  const isPositiveChange = data.direction === 'up';
+  const formattedPrice = formatPrice(data.price);
+  const formattedChange = formatPrice(data.change);
+  const formattedPercent = data.changePercent.toFixed(2);
+  
   return (
-    <div className="md:hidden py-4 px-6">
-      <div className="flex flex-col items-start">
-        {/* Bottom row with timeframe selector */}
-        <div className="flex justify-start pb-3">
-          <div className="grid grid-cols-6 gap-0.5">
-            <TimeframeSelector 
-              timeframe={timeframe} 
-              onTimeframeChange={onTimeframeChange} 
-              variant="mobile" 
+    <div className="flex flex-col items-start">
+      {/* Timeframe selector row */}
+      <div className="flex justify-start pb-3">
+        <TimeframeSelector 
+          timeframe={timeframe} 
+          onTimeframeChange={onTimeframeChange} 
+          variant="mobile" 
+        />
+      </div>
+      
+      {/* Price row with latency indicator for mobile */}
+      <div className="flex items-center justify-start" aria-live="polite">
+        {latency > 0 && (
+          <div className="mr-1 -mt-1">
+            <LatencyDisplay 
+              latency={latency} 
+              connectionStatus={connectionStatus} 
             />
           </div>
-        </div>
-        <div className="flex items-start justify-start" aria-live="polite">
-          <span className="text-4xl font-fuji-bold text-white" aria-label="Bitcoin price">
-            {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        )}
+        
+        <span 
+          className={classNames(
+            "text-4xl font-fuji-bold",
+            { 
+              "animate-pulse-green": priceChangeDirection === 'up',
+              "animate-pulse-red": priceChangeDirection === 'down',
+              "text-white": !priceChangeDirection
+            }
+          )}
+          aria-label={`Bitcoin price ${formattedPrice} dollars`}
+        >
+          {formattedPrice}
+        </span>
+      </div>
+      
+      {/* Change row */}
+      <div className="flex items-start mt-1" aria-label="Price change">
+        <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
+          <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
+          <span className="mr-1.5">
+            ${formattedChange}
           </span>
-        </div>
-        <div className="flex items-start mt-1" aria-label="Price change">
-          <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
-            <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-            <span className="mr-1.5">
-              ${Math.abs(change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span>
-              ({Math.abs(changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
-            </span>
+          <span>
+            ({formattedPercent}%)
           </span>
-        </div>
+        </span>
       </div>
     </div>
   );
