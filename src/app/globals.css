@@ -1,3 +1,5 @@
+@import url('../styles/fonts.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -15,4 +17,117 @@
 }
 .skip-to-content:focus {
   top: 0;
+}
+
+.timeframe-button:focus,
+button:focus,
+[role="button"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* Enhanced animations for price updates with more pronounced visual feedback */
+@keyframes pulse-green {
+  0% {
+    color: white;
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    color: #27ad75; /* Vibrant green flash */
+    transform: scale(1.02);
+    text-shadow: 0 0 10px rgba(39, 173, 117, 0.5);
+  }
+  40% {
+    color: #27ad75;
+    transform: scale(1.01);
+    text-shadow: 0 0 5px rgba(39, 173, 117, 0.3);
+  }
+  100% {
+    color: white;
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    color: white;
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    color: #f0616d; /* Vibrant red flash */
+    transform: scale(1.02);
+    text-shadow: 0 0 10px rgba(240, 97, 109, 0.5);
+  }
+  40% {
+    color: #f0616d;
+    transform: scale(1.01);
+    text-shadow: 0 0 5px rgba(240, 97, 109, 0.3);
+  }
+  100% {
+    color: white;
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+.animate-pulse-green {
+  animation: pulse-green 1s ease-out;
+}
+
+.animate-pulse-red {
+  animation: pulse-red 1s ease-out;
+}
+
+/* Medium screen specific animations */
+@keyframes pulse-green-primary {
+  0% {
+    color: #FF6600; /* Primary color */
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    color: #27ad75; /* Green flash */
+    transform: scale(1.02);
+    text-shadow: 0 0 10px rgba(39, 173, 117, 0.5);
+  }
+  40% {
+    color: #27ad75;
+    transform: scale(1.01);
+    text-shadow: 0 0 5px rgba(39, 173, 117, 0.3);
+  }
+  100% {
+    color: #FF6600; /* Back to primary */
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+@keyframes pulse-red-primary {
+  0% {
+    color: #FF6600; /* Primary color */
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    color: #f0616d; /* Red flash */
+    transform: scale(1.02);
+    text-shadow: 0 0 10px rgba(240, 97, 109, 0.5);
+  }
+  40% {
+    color: #f0616d;
+    transform: scale(1.01);
+    text-shadow: 0 0 5px rgba(240, 97, 109, 0.3);
+  }
+  100% {
+    color: #FF6600; /* Back to primary */
+    transform: scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
 }

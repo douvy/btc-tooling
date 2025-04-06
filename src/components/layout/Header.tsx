@@ -26,7 +26,7 @@ export default function Header({
       <div className="hidden lg:flex items-center px-6 h-[80px]">
         {/* Left side with logo and title */}
         <div className="flex items-center flex-shrink-0">
-          <Link href="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+          <Link href="/" className="flex items-center focus:outline-none focus:ring-2  rounded-full">
             <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
               <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
             </div>
@@ -60,7 +60,7 @@ export default function Header({
         {/* Top row with logo and price */}
         <div className="flex items-center justify-between h-[72px]">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+            <Link href="/" className="flex items-center focus:outline-none focus:ring-2  rounded-full">
               <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                 <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
               </div>
@@ -91,7 +91,7 @@ export default function Header({
         {/* Top row */}
         <div className="flex items-center h-[72px]">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+            <Link href="/" className="flex items-center focus:outline-none focus:ring-2 rounded-full">
               <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                 <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
               </div>

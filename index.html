@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>BTC Tooling</title>
+    <!-- Enhanced meta tags for SEO and social sharing -->
+    <meta name="description" content="Live Bitcoin Price, Charts, Orderbook, Halving Countdown - Analyze BTC market data in real-time">
+    <meta name="keywords" content="bitcoin, BTC, cryptocurrency, crypto market, bitcoin price, halving">
+    <meta name="author" content="BTC Tooling">
+    <meta property="og:title" content="BTC Tooling - Bitcoin Market Analysis">
+    <meta property="og:description" content="Live Bitcoin Price, Charts, Orderbook, Halving Countdown">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/img/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Favicon with additional sizes -->
+    <link rel="icon" href="assets/img/favicon.png">
+    <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+    
+    <!-- Resource hints for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin>
+    
+    <!-- Custom Styles - Load before Tailwind -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Google Fonts with display swap for better loading performance -->
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Fallback for font loading -->
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    </noscript>
+    
+    <!-- Tailwind with improved config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome with async loading -->
+    <script src="https://kit.fontawesome.com/7f8f63cf7a.js" crossorigin="anonymous" defer></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Core background hierarchy
+                        'main-dark': '#0a0b0d',
+                        'card-bg': '#141519',
+                        'input-bg': '#1E2026',
+                        'divider': '#2A2D33',
+                        
+                        // Primary brand colors
+                        'primary': '#FF6600',
+                        
+                        // Status colors
+                        'success': '#27ad75',
+                        'success-ghost': 'rgba(34, 197, 94, 0.15)',
+                        'error': '#f0616d',
+                        'error-ghost': 'rgba(239, 68, 68, 0.15)',
+                        
+                        // Crypto-specific colors
+                        'btc': '#FF6600',
+                    },
+                }
+            },
+            plugins: [],
+        }
+    </script>
+
+</head>
+
+<body class="bg-main-dark text-white font-gotham-medium leading-tight">
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    
+    <div class="flex min-h-screen flex-col">
+        <!-- Header - Improved with accessibility attributes -->
+        <header class="w-full border-b border-divider main-dark lg:sticky lg:top-0 z-20 backdrop-blur-md bg-main-dark bg-opacity-90" role="banner">
+            <!-- Desktop layout (lg and up) -->
+            <div class="hidden lg:flex items-center px-6 h-[80px]">
+                <!-- Left side with logo and title -->
+                <div class="flex items-center flex-shrink-0">
+                    <a href="/" class="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                            <img src="assets/img/logo.png" alt="BTC Tooling Logo" class="w-full object-cover">
+                        </div>
+                        <h1 class="text-2xl font-fuji-bold">BTC Tooling</h1>
+                    </a>
+                </div>
+                
+                <!-- Spacer -->
+                <div class="flex-grow"></div>
+                
+                <!-- Right side - Price Display next to Timeframe selector -->
+                <div class="flex items-center space-x-6">
+                    <!-- Bitcoin Price Display -->
+                    <div class="flex items-center" aria-live="polite">
+                        <span class="text-2xl lg:text-5xl font-fuji-bold text-white flex items-center">
+                            <span aria-label="Bitcoin price">83,023.20</span>
+                        </span>
+                        <span class="ml-3 text-xl text-success flex items-center self-center">
+                            <i class="fa-solid fa-arrow-up mr-2" aria-hidden="true"></i>
+                            <span class="mr-1.5 font-fuji-bold" aria-label="Price change">$665.52</span>
+                            <span class="font-fuji-bold" aria-label="Percentage change">(0.79%)</span>
+                        </span>
+                    </div>
+                    
+                    <!-- Timeframe selector -->
+                    <div class="flex items-center" role="group" aria-label="Time frame selection">
+                        <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 hour view">1H</button>
+                        <button class="px-4 py-2 text-sm font-medium bg-[#1c2232] text-primary uppercase rounded-sm focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 day view" aria-current="page">1D</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 week view">1W</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 month view">1M</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 year view">1Y</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="All time view">ALL</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Medium layout (md to lg) -->
+            <div class="hidden md:block lg:hidden px-6">
+                <!-- Top row with logo and price -->
+                <div class="flex items-center justify-between h-[72px]">
+                    <div class="flex items-center">
+                        <a href="/" class="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                                <img src="assets/img/logo.png" alt="BTC Tooling Logo" class="w-full object-cover">
+                            </div>
+                            <h1 class="text-xl font-fuji-bold">BTC Tooling</h1>
+                        </a>
+                    </div>
+                    
+                    <!-- Price display -->
+                    <div class="flex items-center" aria-live="polite">
+                        <span class="text-2xl font-fuji-bold text-primary flex items-center">83,023.20</span>
+                        <span class="ml-2 text-success flex items-center self-center">
+                            <i class="fa-solid fa-arrow-up ml-1 mr-0.5" aria-hidden="true"></i>
+                            <span>(1.25%)</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Timeframe selector on second row (only for medium screens) -->
+                <div class="flex justify-center pb-3">
+                    <div class="flex items-center" role="group" aria-label="Time frame selection">
+                        <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 hour view">1H</button>
+                        <button class="px-3 py-1.5 text-sm font-medium bg-[#001e3c] text-[#FF9900] uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 day view" aria-current="page">1D</button>
+                        <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 week view">1W</button>
+                        <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 month view">1M</button>
+                        <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 year view">1Y</button>
+                        <button class="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="All time view">ALL</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile layout (sm and below) -->
+            <div class="md:hidden px-6">
+                <!-- Top row -->
+                <div class="flex items-center h-[72px]">
+                    <div class="flex items-center">
+                        <a href="/" class="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                                <img src="assets/img/logo.png" alt="BTC Tooling Logo" class="w-full object-cover">
+                            </div>
+                            <h1 class="text-xl font-fuji-bold">BTC Tooling</h1>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile-only price display section -->
+        <div class="md:hidden py-4 px-6">
+            <div class="flex flex-col items-start">
+                <!-- Bottom row with timeframe selector -->
+                <div class="flex justify-start pb-3">
+                    <div class="grid grid-cols-6 gap-0.5" role="group" aria-label="Time frame selection">
+                        <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 hour view">1H</button>
+                        <button class="px-2 py-1 text-xs font-medium bg-[#001e3c] text-[#FF9900] uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 day view" aria-current="page">1D</button>
+                        <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 week view">1W</button>
+                        <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 month view">1M</button>
+                        <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="1 year view">1Y</button>
+                        <button class="px-2 py-1 text-xs font-medium text-gray-400 uppercase focus:outline-none focus:ring-2 focus:ring-primary" aria-label="All time view">ALL</button>
+                    </div>
+                </div>
+                <div class="flex items-start justify-start" aria-live="polite">
+                    <span class="text-4xl font-fuji-bold text-white" aria-label="Bitcoin price">83,023.20</span>
+                </div>
+                <div class="flex items-start mt-1" aria-label="Price change">
+                    <span class="text-success flex items-center">
+                        <i class="fa-solid fa-arrow-up mr-2" aria-hidden="true"></i>
+                        <span class="mr-1.5">$665.52</span>
+                        <span>(0.79%)</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Main content container -->
+        <main id="main-content" class="flex-1 flex flex-col" role="main">
+            <!-- Main content area -->
+            <div class="flex flex-col lg:flex-row overflow-auto">
+                <!-- Main content (left on desktop) -->
+                <div class="flex-1 overflow-y-auto">
+                    <!-- Price Chart -->
+                    <section class="rounded-xl p-8 pt-6 mb-6 h-[340px] md:h-[400px]" aria-labelledby="chart-title">
+                        <h2 id="chart-title" class="text-xl font-fuji-bold mb-4">BTC/USD</h2>
+                        <div class="w-full h-[320px] relative">
+                            <!-- Chart -->
+                            <div class="w-full h-full rounded-lg overflow-hidden relative" role="img" aria-label="Bitcoin price chart showing upward trend over time">
+                                <!-- SVG with improved accessibility -->
+                                <svg viewBox="0 0 800 300" class="w-full h-full absolute inset-0" aria-hidden="true">
+                                    <!-- Grid lines -->
+                                    <line x1="0" y1="75" x2="800" y2="75" stroke="#333" stroke-width="1" />
+                                    <line x1="0" y1="150" x2="800" y2="150" stroke="#333" stroke-width="1" />
+                                    <line x1="0" y1="225" x2="800" y2="225" stroke="#333" stroke-width="1" />
+                                    
+                                    <line x1="100" y1="0" x2="100" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="200" y1="0" x2="200" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="300" y1="0" x2="300" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="400" y1="0" x2="400" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="500" y1="0" x2="500" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="600" y1="0" x2="600" y2="300" stroke="#333" stroke-width="1" />
+                                    <line x1="700" y1="0" x2="700" y2="300" stroke="#333" stroke-width="1" />
+                                    
+                                    <!-- Chart line -->
+                                    <path d="M0,220 C50,200 100,180 150,190 C200,200 250,100 300,120 C350,140 400,100 450,80 C500,60 550,100 600,120 C650,140 700,130 800,50" stroke="#FF6600" stroke-width="3" fill="none" />
+                                    
+                                    <!-- Volume bars -->
+                                    <rect x="50" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="100" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="150" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="200" y="250" width="10" height="30" fill="#F44336" opacity="0.5" />
+                                    <rect x="250" y="255" width="10" height="25" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="300" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="350" y="245" width="10" height="35" fill="#F44336" opacity="0.5" />
+                                    <rect x="400" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="450" y="260" width="10" height="20" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="500" y="255" width="10" height="25" fill="#F44336" opacity="0.5" />
+                                    <rect x="550" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="600" y="250" width="10" height="30" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="650" y="260" width="10" height="20" fill="#F44336" opacity="0.5" />
+                                    <rect x="700" y="270" width="10" height="10" fill="#4CAF50" opacity="0.5" />
+                                    <rect x="750" y="265" width="10" height="15" fill="#4CAF50" opacity="0.5" />
+                                </svg>
+                                
+                                <!-- Price labels -->
+                                <div class="absolute top-2 right-2 bg-[#1d1d1d] bg-opacity-70 px-3 py-1 rounded text-sm">
+                                    <span class="text-white font-fuji-bold">$83,023.20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Grid for Orderbook and Halving Countdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 p-8 pt-0">
+                        <!-- Orderbook with improved semantics -->
+                        <section class="rounded-xl" aria-labelledby="orderbook-title">
+                            <!-- Exchange Selector -->
+                            <div class="flex items-center justify-between mb-4">
+                              <h2 id="orderbook-title" class="text-xl font-fuji-bold">Order Book</h2>
+                              <div class="relative">
+                                <label for="exchange-select" class="sr-only">Select Exchange</label>
+                                <select id="exchange-select" class="bg-[#141519] text-white text-sm rounded border border-divider py-1.5 px-2.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-primary">
+                                  <option>Binance</option>
+                                  <option>Coinbase Pro</option>
+                                  <option>Kraken</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                                  <i class="fas fa-chevron-down text-xs" aria-hidden="true"></i>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <!-- Headers -->
+                            <div class="grid grid-cols-4 text-xs text-gray-400 mb-1 px-1" role="rowgroup" aria-label="Order book headers">
+                              <div role="columnheader">Price</div>
+                              <div role="columnheader" class="text-right">Amount</div>
+                              <div role="columnheader" class="text-right">Total</div>
+                              <div role="columnheader" class="text-right">Sum</div>
+                            </div>
+                              
+                            <!-- Asks (Sell Orders) -->
+                            <div class="max-h-[180px] overflow-y-auto mb-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" role="table" aria-label="Sell orders">
+                              <div class="space-y-0" role="rowgroup">
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.88</div>
+                                  <div class="text-right z-10" role="cell">0.0020</div>
+                                  <div class="text-right z-10" role="cell">90500</div>
+                                  <div class="text-right z-10" role="cell">1739</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 65%" aria-hidden="true"></div>
+                                </div>
+                                <!-- More sell orders (keeping same pattern for all) -->
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.87</div>
+                                  <div class="text-right z-10" role="cell">0.0020</div>
+                                  <div class="text-right z-10" role="cell">90000</div>
+                                  <div class="text-right z-10" role="cell">1694</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 60%" aria-hidden="true"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.55</div>
+                                  <div class="text-right z-10" role="cell">0.0000</div>
+                                  <div class="text-right z-10" role="cell">89500</div>
+                                  <div class="text-right z-10" role="cell">1543</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 55%" aria-hidden="true"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.53</div>
+                                  <div class="text-right z-10" role="cell">0.0005</div>
+                                  <div class="text-right z-10" role="cell">89000</div>
+                                  <div class="text-right z-10" role="cell">1513</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 50%" aria-hidden="true"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.33</div>
+                                  <div class="text-right z-10" role="cell">0.0006</div>
+                                  <div class="text-right z-10" role="cell">88500</div>
+                                  <div class="text-right z-10" role="cell">1351</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 45%" aria-hidden="true"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                  <div class="text-error z-10" role="cell">83,040.00</div>
+                                  <div class="text-right z-10" role="cell">0.0000</div>
+                                  <div class="text-right z-10" role="cell">88000</div>
+                                  <div class="text-right z-10" role="cell">1230</div>
+                                  <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 40%" aria-hidden="true"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-error z-10" role="cell">83,039.72</div>
+                                    <div class="text-right z-10" role="cell">0.0000</div>
+                                    <div class="text-right z-10" role="cell">87500</div>
+                                    <div class="text-right z-10" role="cell">883</div>
+                                    <div class="absolute right-0 h-full bg-error bg-opacity-10" style="width: 30%" aria-hidden="true"></div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Current Price -->
+                              <div class="py-1.5 px-1 bg-[#131722] text-center text-base font-fuji-bold rounded relative" aria-live="polite" aria-label="Current Bitcoin price">
+                                <span class="text-primary">83,038.84</span>
+                                <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs text-error">
+                                  <i class="fas fa-chevron-down" aria-hidden="true"></i> 0.02%
+                                </span>
+                              </div>
+                              
+                              <!-- Bids (Buy Orders) -->
+                              <div class="max-h-[180px] overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" role="table" aria-label="Buy orders">
+                                <div class="space-y-0" role="rowgroup">
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.83</div>
+                                    <div class="text-right z-10" role="cell">1.4728</div>
+                                    <div class="text-right z-10" role="cell">83000</div>
+                                    <div class="text-right z-10" role="cell">28</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 95%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.82</div>
+                                    <div class="text-right z-10" role="cell">0.0004</div>
+                                    <div class="text-right z-10" role="cell">82500</div>
+                                    <div class="text-right z-10" role="cell">227</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 20%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.78</div>
+                                    <div class="text-right z-10" role="cell">0.0001</div>
+                                    <div class="text-right z-10" role="cell">82000</div>
+                                    <div class="text-right z-10" role="cell">413</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 25%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.74</div>
+                                    <div class="text-right z-10" role="cell">0.0009</div>
+                                    <div class="text-right z-10" role="cell">81500</div>
+                                    <div class="text-right z-10" role="cell">642</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 30%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.72</div>
+                                    <div class="text-right z-10" role="cell">0.0007</div>
+                                    <div class="text-right z-10" role="cell">81000</div>
+                                    <div class="text-right z-10" role="cell">863</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 35%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.53</div>
+                                    <div class="text-right z-10" role="cell">0.0000</div>
+                                    <div class="text-right z-10" role="cell">80500</div>
+                                    <div class="text-right z-10" role="cell">985</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 40%" aria-hidden="true"></div>
+                                  </div>
+                                  <div class="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
+                                    <div class="text-success z-10" role="cell">83,038.52</div>
+                                    <div class="text-right z-10" role="cell">0.0004</div>
+                                    <div class="text-right z-10" role="cell">80000</div>
+                                    <div class="text-right z-10" role="cell">1209</div>
+                                    <div class="absolute left-0 h-full bg-success bg-opacity-10" style="width: 45%" aria-hidden="true"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </section>
+                          
+                          <!-- Halving Countdown -->
+                          <section class="rounded-lg overflow-hidden" aria-labelledby="halving-title">
+                              <div class="flex items-center justify-between mb-4">
+                                <h2 id="halving-title" class="text-lg font-fuji-bold flex items-center">
+                                  Halving Countdown
+                                </h2>
+                              </div>
+                              
+                              <div class="flex flex-row items-center justify-between">
+                                <!-- Countdown Circle -->
+                                <div class="relative w-[180px] h-[180px] mb-6 sm:mb-0 flex-shrink-0" aria-label="Halving countdown timer">
+                                  <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+                                      <!-- Background circle -->
+                                      <circle cx="50" cy="50" r="42" fill="none" stroke="#2A2D33" stroke-width="8" />
+                                      
+                                      <!-- Progress circle -->
+                                      <circle 
+                                        cx="50" 
+                                        cy="50" 
+                                        r="42" 
+                                        fill="none" 
+                                        stroke="#FF6600" 
+                                        stroke-width="8" 
+                                        stroke-linecap="round"
+                                        stroke-dasharray="263.9" 
+                                        stroke-dashoffset="200" 
+                                      />
+                                    </svg>
+                                  </div>
+                                  
+                                  <!-- Inner content -->
+                                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-xs text-gray-400 mb-1">Est. Time Remaining</span>
+                                    <span class="text-2xl font-fuji-bold mb-1">1084</span>
+                                    <span class="text-base font-medium">Days</span>
+                                    <span class="text-xs text-gray-500 mt-1">Mar. 31, 2028</span>
+                                  </div>
+                                </div>
+                                
+                                <!-- Enhanced Stats with Icons -->
+                                <div class="space-y-5 sm:ml-8">
+                                  <div>
+                                    <h3 class="text-[#81919e] text-sm mb-1 flex items-center">
+                                      Blocks Remaining
+                                    </h3>
+                                    <div class="flex items-baseline">
+                                      <p class="text-2xl font-fuji-bold">158,881</p>
+                                      <span class="ml-2 text-xs text-gray-400">blocks</span>
+                                    </div>
+                                    <!-- Progress bar -->
+                                    <div class="w-full bg-[#2A2D33] rounded-full h-1.5 mt-2" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">
+                                      <div class="bg-primary h-1.5 rounded-full" style="width: 15%" aria-hidden="true"></div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <h3 class="text-[#81919e] text-sm mb-1 flex items-center">
+                                      Current Reward
+                                    </h3>
+                                    <div class="flex items-baseline">
+                                      <p class="text-2xl font-fuji-bold text-primary">6.25</p>
+                                      <span class="ml-2 text-base font-medium">BTC</span>
+                                    </div>
+                                    <p class="text-xs text-[#81919e] mt-1">Next reward: 3.125 BTC</p>
+                                  </div>
+                                  
+                                  <div>
+                                    <h3 class="text-[#81919e] text-sm mb-1 flex items-center">
+                                      Target Block
+                                    </h3>
+                                    <div class="flex items-baseline">
+                                      <p class="text-base font-medium">1,050,000</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Historical data table -->
+                              <div class="mt-4 pt-4 border-t border-divider">
+                                  <h3 class="text-sm font-medium mb-2">Previous Halvings</h3>
+                                  <div class="grid grid-cols-3 gap-2 text-xs">
+                                    <div class="bg-[#141519] rounded p-2 text-center">
+                                      <div class="text-[#81919e]">2012</div>
+                                      <div class="font-medium">50 → 25</div>
+                                    </div>
+                                    <div class="bg-[#141519] rounded p-2 text-center">
+                                      <div class="text-[#81919e]">2016</div>
+                                      <div class="font-medium">25 → 12.5</div>
+                                    </div>
+                                    <div class="bg-[#141519] rounded p-2 text-center">
+                                      <div class="text-[#81919e]">2020</div>
+                                      <div class="font-medium">12.5 → 6.25</div>
+                                    </div>
+                                  </div>
+                                </div>
+                          </section>
+                      </div>
+                  </div>
+                  
+                  <!-- Right Panel - BTC X Insights -->
+                  <aside class="md:w-[330px] block border-l border-divider" role="complementary" aria-labelledby="insights-title">
+                      <div class="h-full overflow-y-auto p-8 pt-6">
+                          <h2 id="insights-title" class="text-xl font-fuji-bold mb-4">BTC X Insights</h2>
+                          <div class="space-y-4">
+                              <!-- Tweet 1 -->
+                              <article class="border-b border-divider pb-4">
+                                  <div class="flex items-start mb-2">
+                                      <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                          <img src="assets/img/ansem.jpg" alt="Profile picture of Ansem" class="w-full h-full object-cover">
+                                      </div>
+                                      <div>
+                                          <p class="font-fuji-bold text-base">Ansem
+                                              <span class="text-[#8a919e] text-base font-normal">@blknoiz06</span>
+                                          </p>
+                                          <p class="text-[#8a919e] text-sm">1:59 PM · APR 5, 2025</p>
+                                      </div>
+                                  </div>
+                                  <p class="text-base mb-2">i really dont think you can conjure up a better scenario for when it makes a ton of sense to have a portion of your long term savings in bitcoin.</p>
+                                  <div class="flex items-center text-gray-400 text-sm">
+                                      <div class="flex space-x-4">
+                                          <span><i class="fa-regular fa-comment mr-1" aria-hidden="true"></i> 177</span>
+                                          <span><i class="fa-regular fa-retweet mr-1" aria-hidden="true"></i> 141</span>
+                                          <span><i class="fa-regular fa-heart mr-1" aria-hidden="true"></i> 2.5k</span>
+                                          <span><i class="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> 34K</span>
+                                      </div>
+                                  </div>
+                              </article>
+                              
+                              <!-- Tweet 2 -->
+                              <article class="border-b border-divider pb-4">
+                                  <div class="flex items-start mb-2">
+                                      <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                          <img src="assets/img/fapital.jpg" alt="Profile picture of Fapital" class="w-full h-full object-cover">
+                                      </div>
+                                      <div>
+                                          <p class="font-fuji-bold text-base">Fapital
+                                              <span class="text-[#8a919e] text-base font-normal">@Fapital3</span>
+                                          </p>
+                                          <p class="text-[#8a919e] text-base font-normal">12:10 PM · APR 4, 2025</p>
+                                      </div>
+                                  </div>
+                                  <p class="text-base mb-2">bitcoin is decoupling from old people assets</p>
+                                  <div class="flex items-center text-gray-400 text-sm">
+                                      <div class="flex space-x-4">
+                                          <span><i class="fa-regular fa-comment mr-1" aria-hidden="true"></i> 33</span>
+                                          <span><i class="fa-regular fa-retweet mr-1" aria-hidden="true"></i> 68</span>
+                                          <span><i class="fa-regular fa-heart mr-1" aria-hidden="true"></i> 698</span>
+                                          <span><i class="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> 24K</span>
+                                      </div>
+                                  </div>
+                              </article>
+                              
+                              <!-- Tweet 3 -->
+                              <article class="border-b border-divider pb-4">
+                                  <div class="flex items-start mb-2">
+                                      <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                          <img src="assets/img/nikita.jpg" alt="Profile picture of Nikita Bier" class="w-full h-full object-cover">
+                                      </div>
+                                      <div>
+                                          <p class="font-fuji-bold text-base">Nikita Bier
+                                              <span class="text-[#8a919e] text-base font-normal">@nikitabier</span>
+                                          </p>
+                                          <p class="text-[#8a919e] text-base font-normal">4:28 PM · APR 4, 2025</p>
+                                      </div>
+                                  </div>
+                                  <p class="text-base mb-2">I think there's a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.</p>
+                                  <div class="flex items-center text-gray-400 text-sm">
+                                      <div class="flex space-x-4">
+                                          <span><i class="fa-regular fa-comment mr-1" aria-hidden="true"></i> 177</span>
+                                          <span><i class="fa-regular fa-retweet mr-1" aria-hidden="true"></i> 141</span>
+                                          <span><i class="fa-regular fa-heart mr-1" aria-hidden="true"></i> 2.5k</span>
+                                          <span><i class="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> 229K</span>
+                                      </div>
+                                  </div>
+                              </article>
+  
+                              <!-- Tweet 4 -->
+                              <article class="pb-0">
+                                  <div class="flex items-start mb-2">
+                                      <div class="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                                          <img src="assets/img/paolo.jpg" alt="Profile picture of Paolo Ardoino" class="w-full h-full object-cover">
+                                      </div>
+                                      <div>
+                                          <p class="font-fuji-bold text-base">Paolo Ardoino 🤖
+                                              <span class="text-[#8a919e] text-base font-normal">@paoloardoino</span>
+                                          </p>
+                                          <p class="text-[#8a919e] text-base font-normal">9:08 AM · APR 4, 2025</p>
+                                      </div>
+                                  </div>
+                                  <p class="text-base mb-2">Bitcoin is the hedge.</p>
+                                  <div class="flex items-center text-gray-400 text-sm">
+                                      <div class="flex space-x-4">
+                                          <span><i class="fa-regular fa-comment mr-1" aria-hidden="true"></i> 206</span>
+                                          <span><i class="fa-regular fa-retweet mr-1" aria-hidden="true"></i> 586</span>
+                                          <span><i class="fa-regular fa-heart mr-1" aria-hidden="true"></i> 4.7k</span>
+                                          <span><i class="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> 1.1M</span>
+                                      </div>
+                                  </div>
+                              </article>
+                          </div>
+                      </div>
+                  </aside>
+              </div>
+  
+              <!-- Footer -->
+              <footer class="mt-0 p-8 pt-4 pb-4 border-t border-divider" role="contentinfo">
+                  <div class="flex flex-col md:flex-row justify-between items-center">
+                      <div class="mb-4 md:mb-0">
+                          <div class="flex items-center">
+                              <img src="assets/img/logo.png" alt="BTC Tooling Logo" class="w-8 h-8 mr-3">
+                              <span class="text-xl font-fuji-bold">BTC Tooling</span>
+                          </div>
+                      </div>
+                      
+                      <div class="flex space-x-6">
+                          <p class="text-[#81919e] text-sm mt-2">Bitcoin data and analytics</p>
+                      </div>
+                  </div>
+              </footer>
+          </main>
+      </div>
+      
+      <!-- JS  -->
+      <script src="assets/js/main.js"></script>
+      
+  </body>
+  </html>

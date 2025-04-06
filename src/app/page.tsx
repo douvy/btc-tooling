@@ -1,24 +1,15 @@
 'use client';
 
-// We don't need these imports as they're not directly used
-// import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import MobilePriceDisplay from '@/components/bitcoin/MobilePriceDisplay';
+import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';
 import OrderBook from '@/components/bitcoin/OrderBook';
 import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import TwitterFeed from '@/components/social/TwitterFeed';
 import { useTimeframe } from '@/hooks/useTimeframe';
 
-// Mock data for demonstration
-const bitcoinPrice = {
-  price: 83023.20,
-  change: 665.52,
-  changePercent: 0.79,
-  direction: 'up' as const
-};
-
+// Mock data for non-price components
 const mockOrderBook = {
   asks: [
     { price: 83040.88, amount: 0.0020, total: 90500, sum: 1739 },
@@ -103,39 +94,114 @@ const tweets = [
 ];
 
 export default function Home() {
-  const { timeframe, setTimeframe } = useTimeframe('1D');
-  const isPositiveChange = bitcoinPrice.change >= 0;
+  // Use the updated hook with Bitcoin price data and real-time 5-second updates
+  const { 
+    timeframe, 
+    setTimeframe, 
+    bitcoinData, 
+    isLoading, 
+    error, 
+    isRefreshing,
+    priceChangeDirection // This drives the 5-second price updates and animations
+  } = useTimeframe('1D');
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header 
-        price={bitcoinPrice.price}
-        change={bitcoinPrice.change}
-        changePercent={bitcoinPrice.changePercent}
-        timeframe={timeframe}
-        onTimeframeChange={setTimeframe}
-        isPositiveChange={isPositiveChange}
-      />
+      {/* Desktop and tablet price displays in Header */}
+      <header className="w-full border-b border-divider main-dark lg:sticky lg:top-0 z-20 backdrop-blur-md bg-main-dark bg-opacity-90" role="banner">
+        {/* Desktop layout (lg and up) */}
+        <div className="hidden lg:flex items-center px-6 h-[80px]">
+          {/* Left side with logo */}
+          <div className="flex items-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+              <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+            </div>
+          </div>
+          
+          {/* Spacer */}
+          <div className="flex-grow"></div>
+          
+          {/* Right side with price display */}
+          <BitcoinPriceDisplay
+            data={bitcoinData}
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            isLoading={isLoading}
+            isRefreshing={isRefreshing}
+            error={error}
+            variant="desktop"
+            priceChangeDirection={priceChangeDirection}
+          />
+        </div>
+        
+        {/* Medium layout (md to lg) */}
+        <div className="hidden md:block lg:hidden px-6">
+          {/* Top row with logo */}
+          <div className="flex items-center justify-between h-[72px]">
+            <div className="flex items-center">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                  <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+                </div>
+                <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
+              </div>
+            </div>
+            
+            {/* Bitcoin price display - medium variant */}
+            <BitcoinPriceDisplay
+              data={bitcoinData}
+              timeframe={timeframe}
+              onTimeframeChange={setTimeframe}
+              isLoading={isLoading}
+              isRefreshing={isRefreshing}
+              error={error}
+              variant="medium"
+              priceChangeDirection={priceChangeDirection}
+            />
+          </div>
+        </div>
+        
+        {/* Mobile layout (sm and below) */}
+        <div className="md:hidden px-6">
+          {/* Top row with logo only */}
+          <div className="flex items-center h-[72px]">
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+              </div>
+              <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <MobilePriceDisplay
-        price={bitcoinPrice.price}
-        change={bitcoinPrice.change}
-        changePercent={bitcoinPrice.changePercent}
-        timeframe={timeframe}
-        onTimeframeChange={setTimeframe}
-        isPositiveChange={isPositiveChange}
-      />
+      {/* Mobile price display */}
+      <div className="md:hidden py-4 px-6">
+        <BitcoinPriceDisplay
+          data={bitcoinData}
+          timeframe={timeframe}
+          onTimeframeChange={setTimeframe}
+          isLoading={isLoading}
+          isRefreshing={isRefreshing}
+          error={error}
+          variant="mobile"
+          priceChangeDirection={priceChangeDirection}
+        />
+      </div>
 
       <main id="main-content" className="flex-1 flex flex-col" role="main">
         <div className="flex flex-col lg:flex-row overflow-auto">
           <div className="flex-1 overflow-y-auto">
-            <PriceChart currentPrice={bitcoinPrice.price} timeframe={timeframe} />
+            <PriceChart 
+              currentPrice={bitcoinData?.price || 0} 
+              timeframe={timeframe} 
+            />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 p-8 pt-0">
               <OrderBook 
                 orderBook={mockOrderBook} 
-                currentPrice={bitcoinPrice.price} 
-                priceChange={bitcoinPrice.change} 
+                currentPrice={bitcoinData?.price || 0} 
+                priceChange={bitcoinData?.change || 0} 
               />
               
               <HalvingCountdown halvingInfo={halvingInfo} />

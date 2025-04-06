@@ -1,0 +1,210 @@
+/* Font declarations */
+@font-face {
+  font-family: 'Fuji-Bold';
+  src: url('../../fonts/Fuji-Bold.woff2') format('woff2'),
+       url('../../fonts/Fuji-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fuji-Regular';
+  src: url('../../fonts/Fuji-Regular.woff2') format('woff2'),
+       url('../../fonts/Fuji-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Bold';
+  src: url('../../fonts/GothamCondensed-Bold.woff2') format('woff2'),
+       url('../../fonts/GothamCondensed-Bold.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Medium';
+  src: url('../../fonts/GothamCondensed-Medium.woff2') format('woff2'),
+       url('../../fonts/GothamCondensed-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Light';
+  src: url('../../fonts/GothamCondensed-Light.woff2') format('woff2'),
+       url('../../fonts/GothamCondensed-Light.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Custom font classes for Tailwind */
+.font-fuji-bold {
+  font-family: 'Fuji-Bold', sans-serif !important;
+}
+
+.font-fuji-regular {
+  font-family: 'Fuji-Regular', sans-serif;
+}
+
+.font-gotham-bold {
+  font-family: 'GothamCondensed-Bold', sans-serif;
+  font-weight: 700;
+}
+
+.font-gotham-medium {
+  font-family: 'GothamCondensed-Medium', sans-serif;
+  font-weight: 700;
+}
+
+.font-gotham-light {
+  font-family: 'GothamCondensed-Light', sans-serif;
+}
+
+/* Global styles */
+body {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'GothamCondensed-Medium', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  background-color: #0a0b0d;
+  font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fuji-Bold', sans-serif;
+}
+
+/* Custom font classes for Tailwind */
+.font-archivo {
+  font-family: 'Archivo', sans-serif;
+}
+
+/*button hover*/
+.button-hover {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.button-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  border-radius: 9999px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.button-hover:hover {
+  color: #2e6b70;
+  border-color: #2e6b70;
+}
+
+.button-hover:hover::before {
+  opacity: 1;
+}
+.inverse-button-hover {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.inverse-button-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #dae9d7;
+  border-radius: 9999px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.inverse-button-hover:hover::before {
+  opacity: 1;
+}
+
+.button-container {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.button-container.hidden {
+  transform: translateY(100px);
+  opacity: 0;
+}
+
+.button-container.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #FF6600;
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Price change animations */
+@keyframes flashGreen {
+  0% {
+    background-color: transparent;
+  }
+  20% {
+    background-color: rgba(39, 173, 117, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flashRed {
+  0% {
+    background-color: transparent;
+  }
+  20% {
+    background-color: rgba(240, 97, 109, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-green {
+  animation: flashGreen 1s ease-out;
+}
+
+.flash-red {
+  animation: flashRed 1s ease-out;
+}
+
+/* Target only mobile view */
+@media (max-width: 767px) {
+  /* Prevent 1px overflow on mobile */
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
