@@ -1,0 +1,68 @@
+/* Font declarations */
+@font-face {
+  font-family: 'Fuji-Bold';
+  src: url('/fonts/Fuji-Bold.woff2') format('woff2'),
+       url('/fonts/Fuji-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fuji-Regular';
+  src: url('/fonts/Fuji-Regular.woff2') format('woff2'),
+       url('/fonts/Fuji-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Bold';
+  src: url('/fonts/GothamCondensed-Bold.woff2') format('woff2'),
+       url('/fonts/GothamCondensed-Bold.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Medium';
+  src: url('/fonts/GothamCondensed-Medium.woff2') format('woff2'),
+       url('/fonts/GothamCondensed-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GothamCondensed-Light';
+  src: url('/fonts/GothamCondensed-Light.woff2') format('woff2'),
+       url('/fonts/GothamCondensed-Light.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Custom font classes for Tailwind */
+.font-fuji-bold {
+  font-family: 'Fuji-Bold', sans-serif;
+}
+
+.font-fuji-regular {
+  font-family: 'Fuji-Regular', sans-serif;
+}
+
+.font-gotham-bold {
+  font-family: 'GothamCondensed-Bold', sans-serif;
+  font-weight: 700;
+}
+
+.font-gotham-medium {
+  font-family: 'GothamCondensed-Medium', sans-serif;
+  font-weight: 700;
+}
+
+.font-gotham-light {
+  font-family: 'GothamCondensed-Light', sans-serif;
+}
