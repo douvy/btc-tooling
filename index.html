@@ -14,9 +14,24 @@
     <meta property="og:image" content="assets/img/logo.png">
     <meta name="twitter:card" content="summary_large_image">
     
-    <!-- Favicon with additional sizes -->
-    <link rel="icon" href="assets/img/favicon.png">
-    <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+    <!-- Complete favicon implementation for all browsers -->
+    <!-- Standard favicon -->
+    <link rel="icon" href="public/images/favicon.png">
+    <link rel="icon" href="public/images/favicon.png" type="image/png">
+    <link rel="shortcut icon" href="public/images/favicon.png">
+    
+    <!-- Root favicon for maximum compatibility -->
+    <link rel="icon" href="favicon.ico">
+    
+    <!-- Apple Touch icon -->
+    <link rel="apple-touch-icon" href="public/images/favicon.png">
+    
+    <!-- Fallback for older browsers -->
+    <link rel="icon" type="image/x-icon" href="public/images/favicon.png">
+    
+    <!-- Windows/IE meta tags -->
+    <meta name="msapplication-TileImage" content="public/images/favicon.png">
+    <meta name="msapplication-TileColor" content="#FF6600">
     
     <!-- Resource hints for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
