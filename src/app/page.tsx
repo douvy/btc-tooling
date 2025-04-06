@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { TimeFrame } from '@/types';
+// We don't need these imports as they're not directly used
+// import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobilePriceDisplay from '@/components/bitcoin/MobilePriceDisplay';

@@ -5,7 +5,8 @@ interface PriceChartProps {
   timeframe: TimeFrame;
 }
 
-export default function PriceChart({ currentPrice, timeframe }: PriceChartProps) {
+export default function PriceChart({ currentPrice, timeframe: _timeframe }: PriceChartProps) {
+  // Note: timeframe is renamed to _timeframe as it's not currently used but will be needed later
   return (
     <section className="rounded-xl p-8 pt-6 mb-6 h-[340px] md:h-[400px]" aria-labelledby="chart-title">
       <h2 id="chart-title" className="text-xl font-fuji-bold mb-4">BTC/USD</h2>
