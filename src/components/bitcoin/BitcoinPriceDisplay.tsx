@@ -1,5 +1,5 @@
 import { TimeFrame, BitcoinPrice } from '@/types';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import TimeframeSelector from './TimeframeSelector';
 
@@ -19,7 +19,7 @@ export default function BitcoinPriceDisplay({
   timeframe,
   onTimeframeChange,
   isLoading,
-  isRefreshing,
+  // isRefreshing is not currently used in this component
   error,
   variant = 'desktop',
   priceChangeDirection = null

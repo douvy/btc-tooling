@@ -31,16 +31,19 @@ interface UseTimeframeResult {
   isLoading: boolean;
   error: Error | null;
   isRefreshing: boolean;
+  priceChangeDirection: 'up' | 'down' | null;
 }
 
 // API endpoint for Bitcoin data from CoinGecko - the exact endpoint specified
 const API_URL = 'https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false';
 
 // No auto refresh - manual updates only
+// NOTE: This variable is intentionally left here for future use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const REFRESH_INTERVAL = null;
 
 // Export the hook
-export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeResult & { priceChangeDirection: 'up' | 'down' | null } {
+export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeResult {
   // State for selected timeframe
   const [timeframe, setTimeframe] = useState<TimeFrame>(initialTimeframe);
   
@@ -53,6 +56,7 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
   // UI states
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  // This state is used to indicate when data is being refreshed
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   
   // Direction of price change for animation
@@ -349,6 +353,7 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allTimeframesData, error, timeframe, updateCurrentTimeframeData]);
   
   // Use a ref to track if a fetch is already in progress
@@ -380,6 +385,7 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
     
     // No interval for auto-updates - user must manually refresh
     
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - runs only once on mount
   
   return {

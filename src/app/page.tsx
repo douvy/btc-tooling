@@ -1,6 +1,5 @@
 'use client';
 
-import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';

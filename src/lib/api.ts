@@ -7,7 +7,7 @@ let lastAPICallTime = 0;
 const API_CALL_COOLDOWN = 100; // 100ms between API calls - much faster response
 
 // Cache the full Bitcoin data to avoid multiple fetches when changing timeframes
-let cachedBitcoinData: any = null;
+let cachedBitcoinData: Record<string, unknown> | null = null;
 let cachedBitcoinDataTimestamp = 0;
 const CACHE_LIFETIME = 4000; // 4 seconds cache lifetime
 
@@ -56,7 +56,7 @@ const FALLBACK_DATA: Record<TimeFrame, BitcoinPrice> = {
 
 // Track last update time and cached mock data to prevent rapid changes
 // Use separate timestamps for each timeframe
-let lastMockUpdateTimes: Record<TimeFrame, number> = {
+const lastMockUpdateTimes: Record<TimeFrame, number> = {
   '1H': 0,
   '1D': 0,
   '1W': 0,
@@ -64,7 +64,7 @@ let lastMockUpdateTimes: Record<TimeFrame, number> = {
   '1Y': 0,
   'ALL': 0
 };
-let cachedMockData: Record<TimeFrame, BitcoinPrice | null> = {
+const cachedMockData: Record<TimeFrame, BitcoinPrice | null> = {
   '1H': null,
   '1D': null,
   '1W': null,
@@ -164,35 +164,9 @@ const getUpdatedMockData = (timeframe: TimeFrame): BitcoinPrice => {
   return mockData;
 };
 
-/**
- * Normalize timeframe values from UI to CoinGecko compatible values
- */
-const getTimeframeDays = (timeframe: TimeFrame): string | number => {
-  switch (timeframe) {
-    case '1H': return 1; // We'll get hourly data and filter just the last hour
-    case '1D': return 1;
-    case '1W': return 7;
-    case '1M': return 30;
-    case '1Y': return 365;
-    case 'ALL': return 'max';
-    default: return 1;
-  }
-};
+// Removed unused function getTimeframeDays
 
-interface CoinGeckoMarketData {
-  current_price: { usd: number };
-  price_change_24h: number;
-  price_change_percentage_24h: number;
-  price_change_percentage_1h_in_currency?: { usd: number };
-  price_change_percentage_24h_in_currency?: { usd: number };
-  price_change_percentage_7d_in_currency?: { usd: number };
-  price_change_percentage_30d_in_currency?: { usd: number };
-  price_change_percentage_1y_in_currency?: { usd: number };
-}
-
-interface CoinGeckoHistoricalData {
-  prices: [number, number][]; // [timestamp, price]
-}
+// Removed unused interfaces
 
 /**
  * Get current Bitcoin price data with all timeframes directly from CoinGecko
@@ -259,8 +233,10 @@ export const getBitcoinPrice = async (requestedTimeframe: TimeFrame = '1D'): Pro
 /**
  * Helper function to extract timeframe-specific data from CoinGecko response
  */
-function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPrice {
-  const marketData = data.market_data;
+function extractTimeframeData(data: Record<string, unknown>, timeframe: TimeFrame): BitcoinPrice {
+  // Use a more permissive any type to handle the complex nested structure
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const marketData = data.market_data as any;
   
   // Current price for all timeframes
   const currentPrice = marketData.current_price.usd;
