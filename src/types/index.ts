@@ -5,6 +5,7 @@ export interface BitcoinPrice {
   change: number;
   changePercent: number;
   direction: 'up' | 'down';
+  timeframe?: TimeFrame; // Optional for tracking which timeframe this data belongs to
 }
 
 export interface OrderBookEntry {

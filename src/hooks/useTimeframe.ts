@@ -131,38 +131,75 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
       // Component might have unmounted during fetch
       if (!isMountedRef.current) return false;
       
-      // Update the current price display
-      setBitcoinData(data);
-      
-      // Store for all timeframes to enable instant switching
-      setTimeframesData(prev => ({
-        ...prev,
-        [timeframe]: data
-      }));
-      
-      // Handle price change animation
-      if (previousPriceRef.current !== null && data.price !== previousPriceRef.current) {
-        // Clear any existing animation
-        if (animationTimeoutRef.current) {
-          clearTimeout(animationTimeoutRef.current);
+      // Update state atomically to prevent race conditions
+      // First update the price data
+      setBitcoinData(prevData => {
+        // Don't update if we switched timeframes during fetch
+        if (prevData && timeframe !== prevData.timeframe) {
+          log(`Timeframe changed during fetch from ${timeframe} to ${prevData.timeframe}, ignoring update`);
+          return prevData;
         }
         
-        // Set animation direction based on price comparison
-        const direction = data.price > previousPriceRef.current ? 'up' : 'down';
-        setPriceChangeDirection(direction);
+        // Add timeframe to data for tracking
+        const enhancedData = {
+          ...data,
+          timeframe // Track which timeframe this data belongs to
+        };
         
-        log(`Price changed from $${previousPriceRef.current} to $${data.price} (${direction})`);
+        // Update the previous price ref for next comparison
+        const oldPrice = previousPriceRef.current;
+        previousPriceRef.current = data.price;
+        
+        // Log significant price changes
+        if (oldPrice !== null && data.price !== oldPrice) {
+          log(`Price changed from $${oldPrice} to $${data.price} (${data.price > oldPrice ? 'up' : 'down'})`);
+        }
+        
+        return enhancedData;
+      });
+      
+      // Store for all timeframes to enable instant switching (always update cache)
+      setTimeframesData(prev => ({
+        ...prev,
+        [timeframe]: {
+          ...data,
+          timeframe // Track which timeframe this data belongs to
+        }
+      }));
+      
+      // Handle price change animation with debouncing
+      // Only animate if the price actually changed and we're still on the same timeframe
+      if (previousPriceRef.current !== null && data.price !== previousPriceRef.current) {
+        // Cancel any existing animation to prevent flicker
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+        }
+        
+        // Determine animation direction
+        const direction = data.price > previousPriceRef.current ? 'up' : 'down';
+        
+        // Use a functional update to ensure we don't miss updates
+        setPriceChangeDirection(prev => {
+          // If we're already animating in the same direction, keep it
+          if (prev === direction) return prev;
+          return direction;
+        });
         
         // Clear animation after duration
         animationTimeoutRef.current = setTimeout(() => {
           if (isMountedRef.current) {
-            setPriceChangeDirection(null);
+            // Use functional update to ensure we're resetting the correct animation
+            setPriceChangeDirection(current => {
+              // Only clear if the direction matches what we set
+              if (current === direction) return null;
+              return current;
+            });
           }
         }, ANIMATION_DURATION);
       }
       
-      // Update tracking values
-      previousPriceRef.current = data.price;
+      // Update last update time
       setLastUpdateTime(now);
       
       // Clear any errors
@@ -183,7 +220,21 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
       
       // Set error for UI if not aborted by us during cleanup
       if (!isAborted || force) {
-        setError(err instanceof Error ? err : new Error(String(err)));
+        // Use functional update to ensure we don't overwrite newer error states
+        setError(currentError => {
+          // If we already have a more recent error, don't overwrite it
+          if (currentError && (currentError as any).timestamp && 
+              err instanceof Error && (err as any).timestamp && 
+              (currentError as any).timestamp > (err as any).timestamp) {
+            return currentError;
+          }
+          
+          // Create enhanced error with timestamp
+          const enhancedError = err instanceof Error ? err : new Error(String(err));
+          // Add timestamp to error object
+          (enhancedError as any).timestamp = Date.now();
+          return enhancedError;
+        });
       }
       
       return false;
@@ -214,16 +265,49 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
     
     log(`Switching timeframe: ${timeframe} → ${newTimeframe}`);
     
-    // Update the selected timeframe
-    setTimeframe(newTimeframe);
+    // Update the selected timeframe with functional update to avoid race conditions
+    setTimeframe(current => {
+      // If somehow another update occurred, avoid overwriting with stale data
+      if (current !== timeframe) {
+        log(`Timeframe changed during update from ${timeframe} to ${current}, using latest`);
+        return current;
+      }
+      return newTimeframe;
+    });
     
     // If we have cached data, show it immediately
     if (timeframesData[newTimeframe]) {
       log('Using cached data for immediate display');
-      setBitcoinData(timeframesData[newTimeframe]);
+      // Use functional updates to ensure we don't have race conditions
+      setBitcoinData(current => {
+        // Clear price change animation when switching timeframes
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+          setPriceChangeDirection(null);
+        }
+        
+        return timeframesData[newTimeframe];
+      });
       
       // Still fetch fresh data for this timeframe in the background (non-blocking)
-      Promise.resolve().then(() => fetchBitcoinData(true));
+      // Use a safer approach than Promise.resolve().then()
+      if (isMountedRef.current) {
+        const timer = setTimeout(() => {
+          if (isMountedRef.current) {
+            fetchBitcoinData(true);
+          }
+        }, 0);
+        
+        // Store the timer to clean it up if needed
+        const prevTimer = timerIdRef.current;
+        timerIdRef.current = timer;
+        
+        // Clean up previous timer if it exists
+        if (prevTimer) {
+          clearTimeout(prevTimer);
+        }
+      }
     } else {
       // No cached data, show loading and fetch
       log('No cached data available, fetching fresh data');
@@ -307,24 +391,37 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
     // Clean up properly on unmount
     return () => {
       log('Cleaning up Bitcoin price tracking');
+      
+      // Mark as unmounted first to prevent any new operations
       isMountedRef.current = false;
       
-      // Clear all timers
+      // Clear all timers (check for null to be safe)
       if (timerIdRef.current) {
         clearTimeout(timerIdRef.current);
+        timerIdRef.current = null;
       }
       
       if (animationTimeoutRef.current) {
         clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
       }
       
       // Abort any in-flight requests
       if (abortControllerRef.current) {
+        log('Aborting in-flight request during cleanup');
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
       
       // Remove event listeners
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Clear any other state that might cause memory leaks
+      previousPriceRef.current = null;
+      isFetchingRef.current = false;
+      
+      // Log completion of cleanup
+      log('Bitcoin price tracking cleanup complete');
     };
   }, [fetchBitcoinData, log]);
   

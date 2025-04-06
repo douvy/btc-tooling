@@ -1,8 +1,8 @@
 import { TimeFrame, BitcoinPrice } from '@/types';
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
 import classNames from 'classnames';
 import TimeframeSelector from './TimeframeSelector';
-import { formatPrice, normalizeDecimalPlaces } from '@/lib/priceUtils';
+import { formatPrice, normalizeDecimalPlaces, calculateDollarChange } from '@/lib/priceUtils';
 
 interface BitcoinPriceDisplayProps {
   data: BitcoinPrice | null;
@@ -29,24 +29,113 @@ function BitcoinPriceDisplay({
   priceChangeDirection = null
 }: BitcoinPriceDisplayProps) {
   // Track previous price for logging significant changes
-  const prevPriceRef = useRef<number | null>(null);
+  const prevPriceRef = useRef<{price: number, timeframe: TimeFrame} | null>(null);
+  
+  // Add state for real-time price calculations
+  const [priceData, setPriceData] = useState<{
+    currentPrice: number;
+    previousPrice: number | null;
+    percentChange: number;
+    dollarChange: number;
+    isPositiveChange: boolean;
+  }>({
+    currentPrice: 0,
+    previousPrice: null,
+    percentChange: 0,
+    dollarChange: 0,
+    isPositiveChange: true
+  });
   
   // Log price changes to console (for debugging)
   useEffect(() => {
     if (!data) return;
     
-    const isSignificantChange = 
-      prevPriceRef.current === null || 
-      Math.abs(data.price - prevPriceRef.current) >= 1;
+    // Check if we've switched timeframes or have a significant price change
+    const isNewTimeframe = 
+      !prevPriceRef.current || 
+      prevPriceRef.current.timeframe !== timeframe;
       
-    if (isSignificantChange) {
-      console.log(
-        `Bitcoin price updated (${timeframe}): $${data.price.toFixed(2)} ` +
-        `(${data.direction === 'up' ? '+' : '-'}${data.changePercent.toFixed(2)}%)`
-      );
-      prevPriceRef.current = data.price;
+    const isSignificantChange = 
+      !prevPriceRef.current || 
+      Math.abs(data.price - prevPriceRef.current.price) >= 1;
+      
+    if (isNewTimeframe || isSignificantChange) {
+      // Only log if this is a real change, not just a component re-render
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Bitcoin price ${isNewTimeframe ? 'timeframe change' : 'updated'} (${timeframe}): $${data.price.toFixed(2)} ` +
+          `(${data.direction === 'up' ? '+' : '-'}${data.changePercent.toFixed(2)}%)`
+        );
+      }
+      
+      // Update reference with current values
+      prevPriceRef.current = {
+        price: data.price,
+        timeframe
+      };
     }
   }, [data, timeframe]);
+  
+  // Update price data whenever the incoming data changes - track actual movement from previous price
+  useEffect(() => {
+    if (!data) return;
+    
+    const currentPrice = data.price;
+    
+    // Update with price movement relative to previous observed price
+    setPriceData(prevPriceData => {
+      // If this is the first update or timeframe changed, just record the price without showing movement
+      if (prevPriceData.previousPrice === null || prevPriceData.currentPrice === 0 || timeframe !== prevPriceRef.current?.timeframe) {
+        return {
+          currentPrice: currentPrice,
+          previousPrice: currentPrice, // Initially, previous = current (no change)
+          percentChange: 0,
+          dollarChange: 0,
+          isPositiveChange: true // Default (doesn't matter since change is 0)
+        };
+      }
+      
+      // Calculate actual movement from previous price
+      const previousPrice = prevPriceData.previousPrice;
+      const dollarChange = Math.abs(currentPrice - previousPrice);
+      const isPositiveChange = currentPrice > previousPrice;
+      
+      // Calculate percentage change relative to previous price
+      const percentChange = previousPrice > 0 
+        ? (dollarChange / previousPrice) * 100 
+        : 0;
+      
+      // Log for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Actual price movement calculated:', {
+          previousPrice: previousPrice.toFixed(2),
+          currentPrice: currentPrice.toFixed(2),
+          dollarChange: dollarChange.toFixed(2),
+          percentChange: percentChange.toFixed(2) + '%',
+          direction: isPositiveChange ? 'up' : 'down',
+          timeframe,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      // Return new state with change calculation
+      return {
+        currentPrice,
+        previousPrice: currentPrice, // Update previous to current for next change
+        dollarChange,
+        percentChange,
+        isPositiveChange
+      };
+    });
+  }, [data, timeframe]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear references to prevent memory leaks
+      prevPriceRef.current = null;
+    };
+  }, []);
   
   // Handle loading state
   if (isLoading && !data) {
@@ -87,10 +176,17 @@ function BitcoinPriceDisplay({
     return null;
   }
   
-  const isPositiveChange = data.direction === 'up';
-  const formattedPrice = formatPrice(data.price);
-  const formattedChange = formatPrice(data.change);
-  const formattedPercent = data.changePercent.toFixed(2);
+  // Prepare display values - use our price change calculations
+  const { currentPrice, percentChange, dollarChange, isPositiveChange } = priceData;
+  const formattedPrice = formatPrice(currentPrice);
+  
+  // Format dollar change and percentage
+  const formattedChange = formatPrice(dollarChange);
+  const formattedPercent = percentChange.toFixed(2);
+  
+  // Use actual direction indicator for CSS classes and icon
+  // This matches the red/green colors to actual price movement, not timeframe data
+  const changeDirection = isPositiveChange ? 'up' : 'down';
   
   // Desktop layout
   if (variant === 'desktop') {
@@ -100,22 +196,42 @@ function BitcoinPriceDisplay({
         <div className="flex items-center" aria-live="polite">
           <span 
             className={classNames(
-              "text-2xl lg:text-5xl font-fuji-bold flex items-center",
+              "text-2xl lg:text-5xl font-fuji-bold flex items-center transition-colors duration-300",
               { 
                 "animate-pulse-green": priceChangeDirection === 'up',
-                "animate-pulse-red": priceChangeDirection === 'down'
+                "animate-pulse-red": priceChangeDirection === 'down',
+                "text-primary": !priceChangeDirection
               }
             )}
             aria-label={`Bitcoin price ${formattedPrice} dollars`}
+            data-price-direction={priceChangeDirection || 'stable'}
           >
             {formattedPrice}
           </span>
-          <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-            <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-            <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
+          <span 
+            className={classNames(
+              "ml-3 text-xl flex items-center self-center transition-colors duration-300",
+              {
+                "text-success": isPositiveChange,
+                "text-error": !isPositiveChange
+              }
+            )}
+            data-change-direction={changeDirection}
+          >
+            <i 
+              className={`fa-solid fa-arrow-${changeDirection} mr-2 transition-transform duration-300`} 
+              aria-hidden="true"
+            ></i>
+            <span 
+              className="mr-1.5 font-fuji-bold transition-all duration-300" 
+              aria-label={`Price change ${formattedChange} dollars`}
+            >
               ${formattedChange}
             </span>
-            <span className="font-fuji-bold" aria-label={`Percentage change ${formattedPercent} percent`}>
+            <span 
+              className="font-fuji-bold transition-all duration-300" 
+              aria-label={`Percentage change ${formattedPercent} percent`}
+            >
               ({formattedPercent}%)
             </span>
           </span>
@@ -137,7 +253,7 @@ function BitcoinPriceDisplay({
           <div className="flex items-center" aria-live="polite">
             <span 
               className={classNames(
-                "text-2xl font-fuji-bold flex items-center",
+                "text-2xl font-fuji-bold flex items-center transition-colors duration-300",
                 { 
                   "animate-pulse-green": priceChangeDirection === 'up',
                   "animate-pulse-red": priceChangeDirection === 'down',
@@ -145,12 +261,28 @@ function BitcoinPriceDisplay({
                 }
               )}
               aria-label={`Bitcoin price ${formattedPrice} dollars`}
+              data-price-direction={priceChangeDirection || 'stable'}
             >
               {formattedPrice}
             </span>
-            <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-              <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
-              <span aria-label={`Percentage change ${formattedPercent} percent`}>
+            <span 
+              className={classNames(
+                "ml-2 flex items-center self-center transition-colors duration-300",
+                {
+                  "text-success": isPositiveChange,
+                  "text-error": !isPositiveChange
+                }
+              )}
+              data-change-direction={changeDirection}
+            >
+              <i 
+                className={`fa-solid fa-arrow-${changeDirection} ml-1 mr-0.5 transition-transform duration-300`} 
+                aria-hidden="true"
+              ></i>
+              <span 
+                className="transition-all duration-300"
+                aria-label={`Percentage change ${formattedPercent} percent`}
+              >
                 ({formattedPercent}%)
               </span>
             </span>
@@ -181,7 +313,7 @@ function BitcoinPriceDisplay({
       <div className="flex items-start justify-start" aria-live="polite">
         <span 
           className={classNames(
-            "text-4xl font-fuji-bold",
+            "text-4xl font-fuji-bold transition-colors duration-300",
             { 
               "animate-pulse-green": priceChangeDirection === 'up',
               "animate-pulse-red": priceChangeDirection === 'down',
@@ -189,6 +321,7 @@ function BitcoinPriceDisplay({
             }
           )}
           aria-label={`Bitcoin price ${formattedPrice} dollars`}
+          data-price-direction={priceChangeDirection || 'stable'}
         >
           {formattedPrice}
         </span>
@@ -196,12 +329,24 @@ function BitcoinPriceDisplay({
       
       {/* Change row */}
       <div className="flex items-start mt-1" aria-label="Price change">
-        <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
-          <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
-          <span className="mr-1.5">
+        <span 
+          className={classNames(
+            "flex items-center transition-colors duration-300",
+            {
+              "text-success": isPositiveChange,
+              "text-error": !isPositiveChange
+            }
+          )}
+          data-change-direction={changeDirection}
+        >
+          <i 
+            className={`fa-solid fa-arrow-${changeDirection} mr-2 transition-transform duration-300`} 
+            aria-hidden="true"
+          ></i>
+          <span className="mr-1.5 transition-all duration-300">
             ${formattedChange}
           </span>
-          <span>
+          <span className="transition-all duration-300">
             ({formattedPercent}%)
           </span>
         </span>
@@ -211,4 +356,30 @@ function BitcoinPriceDisplay({
 }
 
 // Memoize the component to prevent unnecessary re-renders
-export default memo(BitcoinPriceDisplay);
+// Only re-render when props actually change
+export default memo(BitcoinPriceDisplay, (prevProps, nextProps) => {
+  // Always re-render if loading state changes
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  
+  // Always re-render if error state changes
+  if (prevProps.error !== nextProps.error) return false;
+  
+  // Always re-render if animation state changes
+  if (prevProps.priceChangeDirection !== nextProps.priceChangeDirection) return false;
+  
+  // Always re-render if timeframe changes
+  if (prevProps.timeframe !== nextProps.timeframe) return false;
+  
+  // Re-render if data changes or transitions from null
+  if (prevProps.data === null || nextProps.data === null) {
+    return prevProps.data === nextProps.data;
+  }
+  
+  // Deep comparison of Bitcoin price data
+  return (
+    prevProps.data.price === nextProps.data.price &&
+    prevProps.data.change === nextProps.data.change &&
+    prevProps.data.changePercent === nextProps.data.changePercent &&
+    prevProps.data.direction === nextProps.data.direction
+  );
+});

@@ -345,6 +345,18 @@ async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPri
       logWithTime('update', `Updated BTC price (simple): $${result.price.toFixed(2)} (${result.direction === 'up' ? '+' : '-'}${result.changePercent.toFixed(2)}%) - 24h change: $${result.change.toFixed(2)}`);
       lastUpdateTimestamp.dataUpdate = Date.now();
       
+      // Always log price changes in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[BTC API] Price update:', {
+          timeframe: requestedTimeframe,
+          price: result.price,
+          change: result.change,
+          percentChange: result.changePercent,
+          direction: result.direction,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
       // Reset error state
       updateStatus.hasError = false;
       updateStatus.errorMessage = '';
@@ -376,6 +388,18 @@ async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPri
     const result = extractTimeframeData(data, requestedTimeframe);
     logWithTime('update', `Updated BTC price (detailed): $${result.price.toFixed(2)} (${result.direction === 'up' ? '+' : '-'}${result.changePercent.toFixed(2)}%) - change: $${result.change.toFixed(2)}`);
     lastUpdateTimestamp.dataUpdate = Date.now();
+    
+    // Always log price changes in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[BTC API] Detailed price update:', {
+        timeframe: requestedTimeframe,
+        price: result.price,
+        change: result.change,
+        percentChange: result.changePercent,
+        direction: result.direction,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     // Reset error state
     updateStatus.hasError = false;

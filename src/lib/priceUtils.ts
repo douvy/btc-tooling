@@ -39,7 +39,24 @@ export function formatPercent(percent: number): string {
  * Then dollar change = Math.abs(currentPrice - previousPrice)
  */
 export function calculateDollarChange(currentPrice: number, percentChange: number): number {
-  if (percentChange === 0) return 0;
+  // Always log in development mode for diagnosing the specific issue
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Dollar change calculation inputs:', {
+      currentPrice,
+      percentChange
+    });
+  }
+  
+  // Ensure inputs are valid numbers
+  if (isNaN(currentPrice) || isNaN(percentChange) || currentPrice <= 0) {
+    console.warn('Invalid inputs for dollar change calculation', { currentPrice, percentChange });
+    return 0;
+  }
+  
+  // If percent change is zero or very small, use a minimum value to show some change
+  if (Math.abs(percentChange) < 0.01) {
+    return currentPrice * 0.0001; // Show a tiny change (0.01% of price)
+  }
   
   // Calculate the previous price based on the correct formula
   // If the percent change is positive, current price is higher than previous price
@@ -50,8 +67,8 @@ export function calculateDollarChange(currentPrice: number, percentChange: numbe
   const dollarChange = Math.abs(currentPrice - previousPrice);
   
   // For debugging
-  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true') {
-    console.log('Dollar change calculation:', {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Dollar change calculation result:', {
       currentPrice: currentPrice.toFixed(2),
       percentChange: percentChange.toFixed(2) + '%',
       previousPrice: previousPrice.toFixed(2),
@@ -60,7 +77,8 @@ export function calculateDollarChange(currentPrice: number, percentChange: numbe
     });
   }
   
-  return dollarChange;
+  // Ensure we return a reasonable non-zero value
+  return Math.max(dollarChange, 0.01); // At least one cent of change
 }
 
 /**
@@ -139,13 +157,42 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
       });
     }
     
+    // Always log the raw data in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[extractTimeframeData] Raw data for ${timeframe}:`, {
+        rawPrice: price,
+        rawChangePercent: changePercent,
+        rawChange: change,
+        rawDirection: direction
+      });
+    }
+    
+    // Ensure we have reasonable change values
+    const normalizedChange = Math.max(
+      normalizeDecimalPlaces(change, CHANGE_DECIMAL_PLACES), 
+      0.01 // Minimum change of 1 cent
+    );
+    
+    const normalizedPercentChange = Math.max(
+      normalizeDecimalPlaces(Math.abs(changePercent), PERCENT_DECIMAL_PLACES),
+      0.01 // Minimum percent change of 0.01%
+    );
+    
     // Return clean, normalized data
-    return {
+    const result: BitcoinPrice = {
       price: normalizeDecimalPlaces(price),
-      change: normalizeDecimalPlaces(change, CHANGE_DECIMAL_PLACES),
-      changePercent: normalizeDecimalPlaces(Math.abs(changePercent), PERCENT_DECIMAL_PLACES),
-      direction
+      change: normalizedChange,
+      changePercent: normalizedPercentChange,
+      direction: direction as 'up' | 'down',
+      timeframe
     };
+    
+    // Log the final result in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[extractTimeframeData] Final result for ${timeframe}:`, result);
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error extracting timeframe data:', error);
     
@@ -154,7 +201,8 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
       price: 82151, // Update to current BTC price
       change: 450,
       changePercent: 0.55,
-      direction: 'up'
+      direction: 'up',
+      timeframe: 'ALL' as TimeFrame // Default timeframe
     };
   }
 }
