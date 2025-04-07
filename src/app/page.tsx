@@ -176,9 +176,9 @@ export default function Home() {
         {/* Mobile layout (sm and below) */}
         <div className="md:hidden px-6">
           {/* Top row with logo only */}
-          <div className="flex items-center h-[72px]">
+          <div className="flex items-center h-[55px]">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3">
                 <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
               </div>
               <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
