@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-main-dark text-white font-gotham-medium leading-tight min-h-screen flex flex-col">
+      <body className="bg-main-dark text-white font-archivo leading-tight min-h-screen flex flex-col">
         {/* Load Font Awesome Pro kit */}
         <Script
           src="https://kit.fontawesome.com/7f8f63cf7a.js"

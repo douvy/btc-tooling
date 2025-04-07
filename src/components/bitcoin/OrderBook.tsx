@@ -48,25 +48,25 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
       <div className="flex items-center border-b border-divider">
         {/* Minus button with border */}
         <div className="border-r border-divider">
-          <button className="text-xl font-medium px-6 py-3 text-white">−</button>
+          <button className="text-xl font-archivo px-6 py-3 text-white">−</button>
         </div>
         
         {/* Amount display */}
         <div className="flex-1 text-center py-3">
-          <span className="text-base font-medium">{amount}</span>
+          <span className="text-base font-archivo">{amount}</span>
         </div>
         
         {/* Plus button with border */}
         <div className="border-l border-divider">
-          <button className="text-xl font-medium px-6 py-3 text-white">+</button>
+          <button className="text-xl font-archivo px-6 py-3 text-white">+</button>
         </div>
       </div>
 
       {/* Column Headers */}
       <div className="grid grid-cols-12 text-xs text-divider py-2 px-1 border-b border-divider">
         <div className="col-span-1"></div> {/* Bar column */}
-        <div className="col-span-5 text-center text-[#81919e]">Amount (BTC)</div>
-        <div className="col-span-6 text-center text-[#81919e]">Price (USD)</div>
+        <div className="col-span-5 text-center text-[#8a919e]">Amount (BTC)</div>
+        <div className="col-span-6 text-center text-[#8a919e]">Price (USD)</div>
       </div>
 
       {/* Sell Orders (Asks) - Red */}

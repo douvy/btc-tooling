@@ -38,22 +38,22 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
           
           {/* Inner content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xs text-gray-400 mb-1">Est. Time Remaining</span>
+            <span className="text-xs text-[8a919e] mb-1 font-fuji-bold">ETR</span>
             <span className="text-2xl font-fuji-bold mb-1">{halvingInfo.daysRemaining}</span>
             <span className="text-base font-medium">Days</span>
-            <span className="text-xs text-gray-500 mt-1">{halvingInfo.date}</span>
+            <span className="text-xs text-[8a919e] mt-1">{halvingInfo.date}</span>
           </div>
         </div>
         
         {/* Enhanced Stats with Icons */}
         <div className="space-y-5 sm:ml-8">
           <div>
-            <h3 className="text-[#81919e] text-sm mb-1 flex items-center">
+            <h3 className="text-[#8a919e] text-sm mb-1 flex items-center font-fuji-bold">
               Blocks Remaining
             </h3>
             <div className="flex items-baseline">
               <p className="text-2xl font-fuji-bold">{halvingInfo.blocksRemaining.toLocaleString()}</p>
-              <span className="ml-2 text-xs text-gray-400">blocks</span>
+              <span className="ml-2 text-xs text-[8a919e]">blocks</span>
             </div>
             {/* Progress bar */}
             <div className="w-full bg-[#2A2D33] rounded-full h-1.5 mt-2" role="progressbar" aria-valuenow={halvingInfo.progress} aria-valuemin={0} aria-valuemax={100}>
@@ -62,18 +62,18 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
           </div>
           
           <div>
-            <h3 className="text-[#81919e] text-sm mb-1 flex items-center">
+            <h3 className="text-[#8a919e] text-sm mb-1 flex items-center font-fuji-bold">
               Current Reward
             </h3>
             <div className="flex items-baseline">
               <p className="text-2xl font-fuji-bold text-primary">{halvingInfo.currentReward.toFixed(2)}</p>
-              <span className="ml-2 text-base font-medium">BTC</span>
+              <span className="ml-2 text-xl font-gotham-bold">BTC</span>
             </div>
-            <p className="text-xs text-[#81919e] mt-1">Next reward: {halvingInfo.nextReward.toFixed(3)} BTC</p>
+            <p className="text-xs text-[#8a919e] mt-1 font-gotham-medium">Next reward: {halvingInfo.nextReward.toFixed(3)} BTC</p>
           </div>
           
           <div>
-            <h3 className="text-[#81919e] text-sm mb-1 flex items-center">
+            <h3 className="text-[#8a919e] text-sm mb-1 flex items-center font-fuji-bold">
               Target Block
             </h3>
             <div className="flex items-baseline">
@@ -85,18 +85,18 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
       
       {/* Historical data table */}
       <div className="mt-4 pt-4 border-t border-divider">
-        <h3 className="text-sm font-medium mb-2">Previous Halvings</h3>
+        <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#81919e]">2012</div>
+            <div className="text-[#8a919e] font-gotham-bold text-base">2012</div>
             <div className="font-medium">50 → 25</div>
           </div>
-          <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#81919e]">2016</div>
+          <div className="bg-[#141519] rounded p-2 text-center ">
+            <div className="text-[#8a919e] font-gotham-bold text-base">2016</div>
             <div className="font-medium">25 → 12.5</div>
           </div>
           <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#81919e]">2020</div>
+            <div className="text-[#8a919e] font-gotham-bold text-base">2020</div>
             <div className="font-medium">12.5 → 6.25</div>
           </div>
         </div>

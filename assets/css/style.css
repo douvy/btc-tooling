@@ -69,7 +69,7 @@
 
 /* Global styles */
 body {
-  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-family: 'GothamCondensed-Medium', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #ffffff;
   background-color: #0a0b0d;
@@ -83,6 +83,9 @@ h1, h2, h3, h4, h5, h6 {
 /* Custom font classes for Tailwind */
 .font-archivo {
   font-family: 'Archivo', sans-serif;
+}
+.font-open-sans {
+  font-family: 'Open Sans', sans-serif;
 }
 
 /*button hover*/

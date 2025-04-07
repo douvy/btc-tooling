@@ -12,7 +12,7 @@ export default function Footer() {
         </div>
         
         <div className="flex space-x-6">
-          <p className="text-[#81919e] text-sm mt-2">Bitcoin data and analytics</p>
+          <p className="text-[#8a919e] text-sm mt-2 font-gotham-medium">Bitcoin data and analytics</p>
         </div>
       </div>
     </footer>

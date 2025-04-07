@@ -45,13 +45,13 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
         <div>
           <p className="font-fuji-bold text-base">
             {tweet.username}
-            <span className="text-[#8a919e] text-base font-normal"> @{tweet.handle}</span>
+            <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
           </p>
-          <p className="text-[#8a919e] text-sm">{tweet.time}</p>
+          <p className="text-[#8a919e] text-sm font-gotham-medium">{tweet.time}</p>
         </div>
       </div>
-      <p className="text-base mb-2">{tweet.text}</p>
-      <div className="flex items-center text-gray-400 text-sm">
+      <p className="text-sm mb-2">{tweet.text}</p>
+      <div className="flex items-center text-[#8a919e] text-sm font-gotham-medium">
         <div className="flex space-x-4">
           <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {tweet.comments}</span>
           <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {tweet.retweets}</span>
