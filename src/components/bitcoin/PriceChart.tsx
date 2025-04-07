@@ -33,25 +33,25 @@ export default function PriceChart({ currentPrice, timeframe }: PriceChartProps)
   }, [timeframe, chartError]);
   
   return (
-    <section className="rounded-xl overflow-hidden mb-6 h-[400px] md:h-[480px] p-6 md:pl-8 md:pr-8 pt-2" aria-labelledby="chart-title">
+    <section className="rounded-xl overflow-hidden mb-6 h-[400px] md:h-[500px] p-6 md:pl-8 md:pr-8 pt-2 bg-transparent" aria-labelledby="chart-title">
       <h2 id="chart-title" className="text-xl font-fuji-bold mb-2 px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
-      <div className="w-full h-[calc(100%-30px)] relative">
+      <div className="w-full h-[calc(100%-50px)] relative bg-transparent">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#131722] bg-opacity-80 z-10">
-            <div className="w-10 h-10 border-4 border-[#2962FF] border-t-transparent rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="w-10 h-10 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
         
         {chartError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#131722] bg-opacity-90 z-10">
-            <div className="text-red-400 text-center p-4">
+          <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 z-10">
+            <div className="text-[#F44336] text-center p-4">
               <p>Unable to load TradingView chart</p>
               <button 
                 onClick={() => {
                   setChartError(false);
                   setIsLoading(true);
                 }} 
-                className="mt-2 px-4 py-2 bg-[#2962FF] text-white rounded-md text-sm hover:bg-opacity-90"
+                className="mt-2 px-4 py-2 bg-[#4CAF50] text-white rounded-md text-sm hover:bg-opacity-90"
               >
                 Retry
               </button>
@@ -60,7 +60,7 @@ export default function PriceChart({ currentPrice, timeframe }: PriceChartProps)
         )}
         
         <div 
-          className="w-full h-full relative" 
+          className="w-full h-full relative bg-transparent" 
           role="img" 
           aria-label="Bitcoin price chart"
         >

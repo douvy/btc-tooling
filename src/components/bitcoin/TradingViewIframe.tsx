@@ -24,11 +24,15 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
   }, [onLoaded]);
   
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-transparent">
       {/* Use the simpler Advanced Chart widget which is more reliable */}
       <iframe
-        src={`https://www.tradingview.com/widgetembed/?interval=${timeframeMap[timeframe]}&symbol=BITFINEX%3ABTCUSD&theme=dark&style=1&locale=en&enable_publishing=false&allow_symbol_change=false&hide_side_toolbar=false&save_image=false&studies=%5B%5D`}
-        style={{ width: '100%', height: '100%' }}
+        src={`https://www.tradingview.com/widgetembed/?interval=${timeframeMap[timeframe]}&symbol=BITFINEX%3ABTCUSD&theme=dark&style=1&locale=en&enable_publishing=false&allow_symbol_change=false&hide_side_toolbar=false&save_image=false&studies=%5B%5D&backgroundColor=rgba(0%2C0%2C0%2C0)&gridColor=rgba(51%2C51%2C51%2C0.4)&upColor=%234CAF50&downColor=%23F44336&borderUpColor=%234CAF50&borderDownColor=%23F44336&wickUpColor=%234CAF50&wickDownColor=%23F44336&paneProperties.background=rgba(0%2C0%2C0%2C0)&scalesProperties.backgroundColor=rgba(0%2C0%2C0%2C0)`}
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          backgroundColor: 'transparent',
+        }}
         frameBorder="0"
         scrolling="no"
         allowFullScreen
