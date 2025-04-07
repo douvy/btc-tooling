@@ -15,7 +15,7 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
   return (
     <section className="rounded-xl" aria-labelledby="orderbook-title">
       {/* Exchange Selector */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <h2 id="orderbook-title" className="text-xl font-fuji-bold">Order Book</h2>
         <div className="relative">
           <label htmlFor="exchange-select" className="sr-only">Select Exchange</label>
