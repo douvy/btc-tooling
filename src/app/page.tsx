@@ -211,7 +211,7 @@ export default function Home() {
               timeframe={timeframe} 
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
               <OrderBook 
                 orderBook={mockOrderBook} 
                 currentPrice={bitcoinData?.price || 0} 
