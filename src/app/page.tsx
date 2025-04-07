@@ -187,8 +187,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Mobile price display */}
-      <div className="md:hidden py-4 px-6">
+      {/* Mobile price display - with increased padding and space */}
+      <div className="md:hidden py-6 px-6 border-b border-divider">
         <BitcoinPriceDisplay
           data={bitcoinData}
           timeframe={timeframe}
