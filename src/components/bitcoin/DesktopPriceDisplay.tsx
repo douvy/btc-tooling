@@ -30,8 +30,8 @@ export default function DesktopPriceDisplay({
     <div className="flex items-center space-x-6">
       {/* Price Display */}
       <div className="flex items-center" aria-live="polite">
-        {/* Latency indicator */}
-        <div className="flex items-center mr-2">
+        {/* Latency indicator - hidden from UI but keeping for accessibility */}
+        <div className="hidden">
           <LatencyDisplay 
             latency={latency} 
             connectionStatus={connectionStatus} 
@@ -53,10 +53,10 @@ export default function DesktopPriceDisplay({
         <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
           <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
           <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
-            ${formattedChange}
+            ${timeframe === '1D' && data.change < 0.01 ? '0.00' : formattedChange}
           </span>
           <span className="font-fuji-bold" aria-label={`Percentage change ${formattedPercent} percent`}>
-            ({formattedPercent}%)
+            ({timeframe === '1D' && data.changePercent < 0.01 ? '0.00' : formattedPercent}%)
           </span>
         </span>
       </div>

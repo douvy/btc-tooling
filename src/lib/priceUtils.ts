@@ -38,12 +38,13 @@ export function formatPercent(percent: number): string {
  * Using the formula: previousPrice = currentPrice / (1 + percentChange/100)
  * Then dollar change = Math.abs(currentPrice - previousPrice)
  */
-export function calculateDollarChange(currentPrice: number, percentChange: number): number {
+export function calculateDollarChange(currentPrice: number, percentChange: number, timeframe?: TimeFrame, marketData?: any): number {
   // Always log in development mode for diagnosing the specific issue
   if (process.env.NODE_ENV === 'development') {
     console.log('Dollar change calculation inputs:', {
       currentPrice,
-      percentChange
+      percentChange,
+      timeframe
     });
   }
   
@@ -51,6 +52,11 @@ export function calculateDollarChange(currentPrice: number, percentChange: numbe
   if (isNaN(currentPrice) || isNaN(percentChange) || currentPrice <= 0) {
     console.warn('Invalid inputs for dollar change calculation', { currentPrice, percentChange });
     return 0;
+  }
+  
+  // Special case for ALL timeframe - use exact dollar change from start price ($0.06)
+  if (timeframe === 'ALL' && marketData?._allTimeDollarChange !== undefined) {
+    return marketData._allTimeDollarChange;
   }
   
   // If percent change is zero or very small, use a minimum value to show some change
@@ -125,12 +131,15 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
         changePercent = marketData.price_change_percentage_1y || 0;
         break;
       case 'ALL':
-        // ALL time (use longest available timeframe)
-        changePercent = 
-          marketData.ath_change_percentage?.usd ||
-          marketData.price_change_percentage_1y || 
-          marketData.price_change_percentage_200d || 
-          100; // Default to 100% if no historical data available
+        // ALL time - calculate based on the first known Bitcoin price of $0.06
+        const bitcoinStartPrice = 0.06;
+        const allTimeDollarChange = price - bitcoinStartPrice;
+        
+        // Calculate percentage change from first price to current
+        changePercent = ((price - bitcoinStartPrice) / bitcoinStartPrice) * 100;
+        
+        // Store the absolute dollar change for later use
+        marketData._allTimeDollarChange = allTimeDollarChange;
         break;
       default:
         // Default to 24h
@@ -140,7 +149,8 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
     // Calculate dollar change using the correct formula:
     // previousPrice = currentPrice / (1 + percentChange/100)
     // Then dollar change = Math.abs(currentPrice - previousPrice)
-    const change = calculateDollarChange(price, changePercent);
+    // Pass timeframe and market data for special cases like ALL timeframe
+    const change = calculateDollarChange(price, changePercent, timeframe, marketData);
     
     // Determine price movement direction
     const direction = changePercent >= 0 ? 'up' : 'down';

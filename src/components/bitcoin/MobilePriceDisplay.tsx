@@ -37,16 +37,14 @@ export default function MobilePriceDisplay({
         />
       </div>
       
-      {/* Price row with latency indicator for mobile */}
+      {/* Price row with latency indicator for mobile - hidden */}
       <div className="flex items-center justify-start" aria-live="polite">
-        {latency > 0 && (
-          <div className="mr-1 -mt-1">
-            <LatencyDisplay 
-              latency={latency} 
-              connectionStatus={connectionStatus} 
-            />
-          </div>
-        )}
+        <div className="hidden">
+          <LatencyDisplay 
+            latency={latency} 
+            connectionStatus={connectionStatus} 
+          />
+        </div>
         
         <span 
           className={classNames(
@@ -68,10 +66,10 @@ export default function MobilePriceDisplay({
         <span className={`${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
           <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
           <span className="mr-1.5">
-            ${formattedChange}
+            ${timeframe === '1D' && data.change < 0.01 ? '0.00' : formattedChange}
           </span>
           <span>
-            ({formattedPercent}%)
+            ({timeframe === '1D' && data.changePercent < 0.01 ? '0.00' : formattedPercent}%)
           </span>
         </span>
       </div>

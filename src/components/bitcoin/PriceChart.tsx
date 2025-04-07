@@ -14,6 +14,9 @@ export default function PriceChart({ currentPrice, timeframe }: PriceChartProps)
   const initialRenderRef = useRef(true);
   const timeframeRef = useRef(timeframe);
   
+  // Create a ref to track if chart has been loaded once
+  const chartLoadedOnceRef = useRef(false);
+  
   // Handle timeframe changes
   useEffect(() => {
     // Update the ref
@@ -30,13 +33,27 @@ export default function PriceChart({ currentPrice, timeframe }: PriceChartProps)
       setChartError(false);
       setIsLoading(true);
     }
+    
+    // Important: Don't show loading indicator when changing timeframes
+    // if the chart has been loaded once already
+    if (chartLoadedOnceRef.current) {
+      setIsLoading(false);
+    }
   }, [timeframe, chartError]);
+  
+  // Function to handle when chart is loaded
+  const handleChartLoaded = () => {
+    if (timeframeRef.current === timeframe) {
+      setIsLoading(false);
+      chartLoadedOnceRef.current = true;
+    }
+  };
   
   return (
     <section className="rounded-xl overflow-hidden mb-6 h-[400px] md:h-[500px] p-6 md:pl-8 md:pr-8 pt-2 bg-transparent" aria-labelledby="chart-title">
       <h2 id="chart-title" className="text-xl font-fuji-bold mb-2 px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
       <div className="w-full h-[calc(100%-50px)] relative bg-transparent">
-        {isLoading && (
+        {isLoading && !chartLoadedOnceRef.current && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="w-10 h-10 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin"></div>
           </div>
@@ -67,14 +84,10 @@ export default function PriceChart({ currentPrice, timeframe }: PriceChartProps)
           {chartError ? (
             <FallbackChart currentPrice={currentPrice} timeframe={timeframe} />
           ) : (
-            // Use the simpler iframe method directly
+            // Use the improved iframe component that doesn't refresh on timeframe changes
             <TradingViewIframe 
               timeframe={timeframe}
-              onLoaded={() => {
-                if (timeframeRef.current === timeframe) {
-                  setIsLoading(false);
-                }
-              }}
+              onLoaded={handleChartLoaded}
             />
           )}
         </div>

@@ -31,15 +31,13 @@ export default function MediumPriceDisplay({
       <div className="flex items-center justify-between">
         {/* Price display */}
         <div className="flex items-center" aria-live="polite">
-          {/* Small latency indicator for medium display */}
-          {latency > 0 && (
-            <div className="mr-1">
-              <LatencyDisplay 
-                latency={latency} 
-                connectionStatus={connectionStatus} 
-              />
-            </div>
-          )}
+          {/* Small latency indicator for medium display - hidden */}
+          <div className="hidden">
+            <LatencyDisplay 
+              latency={latency} 
+              connectionStatus={connectionStatus} 
+            />
+          </div>
 
           <span 
             className={classNames(
@@ -57,7 +55,7 @@ export default function MediumPriceDisplay({
           <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
             <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
             <span aria-label={`Percentage change ${formattedPercent} percent`}>
-              ({formattedPercent}%)
+              ({timeframe === '1D' && data.changePercent < 0.01 ? '0.00' : formattedPercent}%)
             </span>
           </span>
         </div>
