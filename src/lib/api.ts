@@ -1,5 +1,6 @@
 import { BitcoinPrice, TimeFrame } from '@/types';
 import { extractTimeframeData } from '@/lib/priceUtils';
+import { getApiCache, updateApiCache } from '@/lib/api/cache';
 
 // Environment configuration
 const isDev = process.env.NODE_ENV === 'development';
@@ -270,18 +271,19 @@ export const getBitcoinPrice = async (requestedTimeframe: TimeFrame = '1D'): Pro
     const endpoint = requestedTimeframe === '1D' ? 'simple' : 'detailed';
     
     // PART 1: Check cache first for immediate response (stale data)
-    if (apiCache && apiCache.timestamp + CACHE_LIFETIME > now && apiCache.endpoint === endpoint) {
-      logWithTime('cache', `Using cached data (${((now - apiCache.timestamp) / 1000).toFixed(1)}s old)`);
+    const cache = getApiCache();
+    if (cache && cache.timestamp + CACHE_LIFETIME > now && cache.endpoint === endpoint) {
+      logWithTime('cache', `Using cached data (${((now - cache.timestamp) / 1000).toFixed(1)}s old)`);
       
       // Return data immediately, but start background refresh if cache is older than 1 second
-      if (now - apiCache.timestamp > 1000) {
+      if (now - cache.timestamp > 1000) {
         logWithTime('update', 'Starting background refresh of older data');
         // Use setTimeout to make this non-blocking
         setTimeout(() => refreshInBackground(requestedTimeframe), 0);
       }
       
       // Return cached data immediately
-      return extractTimeframeData(apiCache.data, requestedTimeframe);
+      return extractTimeframeData(cache.data, requestedTimeframe);
     }
     
     // PART 2: No valid cache, get fresh data
@@ -328,14 +330,14 @@ async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPri
         }
       };
       
-      // Update cache
-      apiCache = {
+      // Use the imported function to update cache
+      updateApiCache({
         data: formattedData,
         timestamp: Date.now(),
         endpoint: 'simple',
         source: 'api',
         fetchTime: Date.now() - fetchStart
-      };
+      });
       
       // Save to localStorage
       saveToLocalStorage('btc-price-simple', formattedData);
@@ -372,14 +374,14 @@ async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPri
       throw new Error('Invalid detailed price data format');
     }
     
-    // Update cache
-    apiCache = {
+    // Use the imported function to update cache
+    updateApiCache({
       data,
       timestamp: Date.now(),
       endpoint: 'detailed',
       source: 'api',
       fetchTime: Date.now() - fetchStart
-    };
+    });
     
     // Save to localStorage
     saveToLocalStorage('btc-price-detailed', data);

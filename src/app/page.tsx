@@ -7,6 +7,7 @@ import OrderBook from '@/components/bitcoin/OrderBook';
 import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import TwitterFeed from '@/components/social/TwitterFeed';
 import { useTimeframe } from '@/hooks/useTimeframe';
+import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
 
 // Mock data for non-price components
 const mockOrderBook = {
@@ -93,7 +94,7 @@ const tweets = [
 ];
 
 export default function Home() {
-  // Use the updated hook with Bitcoin price data and real-time 5-second updates
+  // Use the original hook with Bitcoin price data and real-time 5-second updates
   const { 
     timeframe, 
     setTimeframe, 
@@ -101,8 +102,13 @@ export default function Home() {
     isLoading, 
     error, 
     isRefreshing,
-    priceChangeDirection // This drives the 5-second price updates and animations
+    priceChangeDirection,
+    lastUpdateTime,
+    refreshData
   } = useTimeframe('1D');
+  
+  // Use the latency monitor to track WebSocket connection quality
+  const { latency, connectionStatus } = useLatencyMonitor();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -120,17 +126,22 @@ export default function Home() {
           {/* Spacer */}
           <div className="flex-grow"></div>
           
-          {/* Right side with price display */}
-          <BitcoinPriceDisplay
-            data={bitcoinData}
-            timeframe={timeframe}
-            onTimeframeChange={setTimeframe}
-            isLoading={isLoading}
-            isRefreshing={isRefreshing}
-            error={error}
-            variant="desktop"
-            priceChangeDirection={priceChangeDirection}
-          />
+          {/* Right side with price display - original API with latency monitor */}
+          <div className="flex items-center">
+            {/* Use the original Bitcoin price display but enhanced with latency UI */}
+            <BitcoinPriceDisplay
+              data={bitcoinData}
+              timeframe={timeframe}
+              onTimeframeChange={setTimeframe}
+              isLoading={isLoading}
+              isRefreshing={isRefreshing}
+              error={error}
+              variant="desktop"
+              priceChangeDirection={priceChangeDirection}
+              latency={latency}
+              connectionStatus={connectionStatus}
+            />
+          </div>
         </div>
         
         {/* Medium layout (md to lg) */}
@@ -156,6 +167,8 @@ export default function Home() {
               error={error}
               variant="medium"
               priceChangeDirection={priceChangeDirection}
+              latency={latency}
+              connectionStatus={connectionStatus}
             />
           </div>
         </div>
@@ -185,6 +198,8 @@ export default function Home() {
           error={error}
           variant="mobile"
           priceChangeDirection={priceChangeDirection}
+          latency={latency}
+          connectionStatus={connectionStatus}
         />
       </div>
 

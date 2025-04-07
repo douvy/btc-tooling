@@ -30,6 +30,34 @@ button:focus,
   --tw-ring-color: transparent !important;
 }
 
+/* Latency indicator colors */
+.text-success {
+  color: #27ad75; /* Green */
+}
+.text-success-dark {
+  color: #1a8458; /* Darker green */
+}
+.text-warning {
+  color: #ffbf00; /* Amber */
+}
+.text-error {
+  color: #f0616d; /* Red */
+}
+
+/* WebSocket indicator */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* Enhanced animations for price updates with more pronounced visual feedback */
 @keyframes pulse-green {
   0% {
