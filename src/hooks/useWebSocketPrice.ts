@@ -111,7 +111,7 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
           }
         });
         
-        socket.on('connect_error', (err) => {
+        socket.on('connect_error', (err: Error) => {
           if (!mounted) return;
           
           console.error('[WebSocket] Connection error:', err);
@@ -122,7 +122,7 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
           fetchFallbackData();
         });
         
-        socket.on('crypto_update', (message) => {
+        socket.on('crypto_update', (message: {timeframe: TimeFrame, data: any}) => {
           if (!mounted) return;
           
           // Calculate latency
@@ -146,7 +146,7 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
           }
         });
         
-        socket.on('error', (errorData) => {
+        socket.on('error', (errorData: {message?: string}) => {
           if (!mounted) return;
           
           console.error('[WebSocket] Error event:', errorData);

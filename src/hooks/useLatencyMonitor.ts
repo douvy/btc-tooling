@@ -92,7 +92,7 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
           }
         });
         
-        socket.on('connect_error', (err) => {
+        socket.on('connect_error', (err: Error) => {
           if (!mounted) return;
           
           console.error('[Latency Monitor] Connection error:', err);
