@@ -8,7 +8,7 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
   return (
     <section className="rounded-lg overflow-hidden" aria-labelledby="halving-title">
       <div className="flex items-center justify-between mb-4">
-        <h2 id="halving-title" className="text-lg font-fuji-bold flex items-center">
+        <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
           Halving Countdown
         </h2>
       </div>

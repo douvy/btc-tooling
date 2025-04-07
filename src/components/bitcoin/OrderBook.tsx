@@ -8,109 +8,130 @@ interface OrderBookProps {
 }
 
 export default function OrderBook({ orderBook, currentPrice, priceChange }: OrderBookProps) {
-  const [exchange, setExchange] = useState('Binance');
-  const isNegativeChange = priceChange < 0;
-  const changePercent = Math.abs((priceChange / currentPrice) * 100).toFixed(2);
-
-  return (
-    <section className="rounded-xl" aria-labelledby="orderbook-title">
-      {/* Exchange Selector */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 id="orderbook-title" className="text-xl font-fuji-bold">Order Book</h2>
-        <div className="relative">
-          <label htmlFor="exchange-select" className="sr-only">Select Exchange</label>
-          <select 
-            id="exchange-select" 
-            value={exchange}
-            onChange={(e) => setExchange(e.target.value)}
-            className="bg-[#141519] text-white text-sm rounded border border-divider py-1.5 px-2.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-primary"
-          >
-            <option>Binance</option>
-            <option>Coinbase Pro</option>
-            <option>Kraken</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-            <i className="fas fa-chevron-down text-xs" aria-hidden="true"></i>
-          </div>
-        </div>
-      </div>
-      
-      {/* Headers */}
-      <div className="grid grid-cols-4 text-xs text-gray-400 mb-1 px-1" role="rowgroup" aria-label="Order book headers">
-        <div role="columnheader">Price</div>
-        <div role="columnheader" className="text-right">Amount</div>
-        <div role="columnheader" className="text-right">Total</div>
-        <div role="columnheader" className="text-right">Sum</div>
-      </div>
-        
-      {/* Asks (Sell Orders) */}
-      <div className="max-h-[180px] overflow-y-auto mb-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" role="table" aria-label="Sell orders">
-        <div className="space-y-0" role="rowgroup">
-          {orderBook.asks.map((ask, index) => (
-            <OrderBookRow 
-              key={`ask-${index}`} 
-              entry={ask} 
-              type="ask" 
-              maxSum={Math.max(...orderBook.asks.map(a => a.sum))} 
-            />
-          ))}
-        </div>
-      </div>
-      
-      {/* Current Price */}
-      <div className="py-1.5 px-1 bg-[#131722] text-center text-base font-fuji-bold rounded relative" aria-live="polite" aria-label="Current Bitcoin price">
-        <span className="text-primary">{currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        <span className={`absolute left-2 top-1/2 transform -translate-y-1/2 text-xs ${isNegativeChange ? 'text-error' : 'text-success'}`}>
-          <i className={`fas fa-chevron-${isNegativeChange ? 'down' : 'up'}`} aria-hidden="true"></i> {changePercent}%
-        </span>
-      </div>
-      
-      {/* Bids (Buy Orders) */}
-      <div className="max-h-[180px] overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" role="table" aria-label="Buy orders">
-        <div className="space-y-0" role="rowgroup">
-          {orderBook.bids.map((bid, index) => (
-            <OrderBookRow 
-              key={`bid-${index}`} 
-              entry={bid} 
-              type="bid" 
-              maxSum={Math.max(...orderBook.bids.map(b => b.sum))} 
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-interface OrderBookRowProps {
-  entry: OrderBookEntry;
-  type: 'ask' | 'bid';
-  maxSum: number;
-}
-
-function OrderBookRow({ entry, type, maxSum }: OrderBookRowProps) {
-  const percentage = Math.min((entry.sum / maxSum) * 100, 95);
-  const isAsk = type === 'ask';
+  const [amount, setAmount] = useState("0.01");
   
+  // Use sample data from screenshot if needed
+  const sampleAsks = [
+    { price: 77300.58, amount: 0.25871916 },
+    { price: 77299.91, amount: 0.25871916 },
+    { price: 77299.42, amount: 0.25871916 },
+    { price: 77299.41, amount: 0.03730000 },
+    { price: 77298.71, amount: 0.19405241 },
+    { price: 77296.78, amount: 0.01596444 },
+    { price: 77296.77, amount: 0.00014227 },
+    { price: 77290.51, amount: 0.07767600 }
+  ];
+  
+  const sampleBids = [
+    { price: 77290.50, amount: 0.07406000 },
+    { price: 77288.79, amount: 0.00002588 },
+    { price: 77285.24, amount: 0.00001941 },
+    { price: 77283.43, amount: 0.00100000 },
+    { price: 77281.50, amount: 0.00013000 },
+    { price: 77281.27, amount: 0.00001630 },
+    { price: 77280.64, amount: 0.00014233 },
+    { price: 77280.63, amount: 0.01940978 }
+  ];
+  
+  // Calculate the maximum volume for sizing the depth bars
+  const maxVolume = Math.max(
+    ...sampleAsks.map(ask => ask.amount),
+    ...sampleBids.map(bid => bid.amount)
+  );
+
   return (
-    <div className="grid grid-cols-4 text-xs relative h-5 hover:bg-[#1E2026]" role="row">
-      <div className={`${isAsk ? 'text-error' : 'text-success'} z-10`} role="cell">
-        {entry.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+    <div className="text-white w-full font-sans">
+      <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
+        Order Book
+      </h2>
+      {/* Amount Control */}
+      <div className="flex items-center border-b border-divider">
+        {/* Minus button with border */}
+        <div className="border-r border-divider">
+          <button className="text-xl font-medium px-6 py-3 text-white">−</button>
+        </div>
+        
+        {/* Amount display */}
+        <div className="flex-1 text-center py-3">
+          <span className="text-base font-medium">{amount}</span>
+        </div>
+        
+        {/* Plus button with border */}
+        <div className="border-l border-divider">
+          <button className="text-xl font-medium px-6 py-3 text-white">+</button>
+        </div>
       </div>
-      <div className="text-right z-10" role="cell">
-        {entry.amount.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+
+      {/* Column Headers */}
+      <div className="grid grid-cols-12 text-xs text-divider py-2 px-1 border-b border-divider">
+        <div className="col-span-1"></div> {/* Bar column */}
+        <div className="col-span-5 text-center text-[#81919e]">Amount (BTC)</div>
+        <div className="col-span-6 text-center text-[#81919e]">Price (USD)</div>
       </div>
-      <div className="text-right z-10" role="cell">
-        {entry.total.toLocaleString()}
+
+      {/* Sell Orders (Asks) - Red */}
+      <div className="overflow-y-auto">
+        {sampleAsks.map((ask, index) => {
+          const volumePercentage = (ask.amount / maxVolume) * 100;
+          
+          return (
+            <div key={`ask-${index}`} className="grid grid-cols-12 text-xs py-1 relative">
+              {/* Red bar column */}
+              <div className="col-span-1 h-full flex items-center">
+                <div 
+                  className="h-3/5 bg-error"
+                  style={{ width: `${volumePercentage}%` }}
+                ></div>
+              </div>
+              
+              {/* Amount column */}
+              <div className="col-span-5 text-center text-gray-300">
+                {ask.amount.toFixed(8)}
+              </div>
+              
+              {/* Price column */}
+              <div className="col-span-6 text-center text-error">
+                {ask.price.toFixed(2)}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div className="text-right z-10" role="cell">
-        {entry.sum.toLocaleString()}
+
+      {/* Spread Indicator */}
+      <div className="grid grid-cols-12 text-xs py-2 border-t border-b border-divider text-gray-400">
+        <div className="col-span-4 pl-6 text-right">USD Spread</div>
+        <div className="col-span-6 pr-6 text-right">0.01</div>
       </div>
-      <div 
-        className={`absolute ${isAsk ? 'right-0' : 'left-0'} h-full ${isAsk ? 'bg-error' : 'bg-success'} bg-opacity-10`} 
-        style={{ width: `${percentage}%` }} 
-        aria-hidden="true"
-      ></div>
+
+      {/* Buy Orders (Bids) - Green */}
+      <div className="overflow-y-auto">
+        {sampleBids.map((bid, index) => {
+          const volumePercentage = (bid.amount / maxVolume) * 100;
+          
+          return (
+            <div key={`bid-${index}`} className="grid grid-cols-12 text-xs py-1 relative">
+              {/* Green bar column */}
+              <div className="col-span-1 h-full flex items-center">
+                <div 
+                  className="h-3/5 bg-success"
+                  style={{ width: `${volumePercentage}%` }}
+                ></div>
+              </div>
+              
+              {/* Amount column */}
+              <div className="col-span-5 text-center text-gray-300">
+                {bid.amount.toFixed(8)}
+              </div>
+              
+              {/* Price column */}
+              <div className="col-span-6 text-center text-success">
+                {bid.price.toFixed(2)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
