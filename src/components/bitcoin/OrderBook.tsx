@@ -8,7 +8,7 @@ interface OrderBookProps {
 }
 
 export default function OrderBook({ orderBook, currentPrice, priceChange }: OrderBookProps) {
-  const [amount, setAmount] = useState("0.01");
+  const [amount, setAmount] = useState("0.05");
   
   // Use sample data from screenshot if needed
   const sampleAsks = [
@@ -44,21 +44,22 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
       <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
         Order Book
       </h2>
-      {/* Amount Control */}
-      <div className="flex items-center border-b border-divider">
-        {/* Minus button with border */}
-        <div className="border-r border-divider">
-          <button className="text-xl font-archivo px-6 py-3 text-white">−</button>
+
+      {/* Amount Control - Left aligned with more padding for amount */}
+      <div className="flex items-center my-3 gap-1">
+        {/* Minus button */}
+        <div className="w-8 h-8 border border-divider rounded-sm">
+          <button className="w-full h-full flex items-center justify-center text-lg text-white">−</button>
         </div>
         
         {/* Amount display */}
-        <div className="flex-1 text-center py-3">
-          <span className="text-base font-archivo">{amount}</span>
+        <div className="w-[210px] h-8 border border-divider flex items-center justify-center rounded-sm ml-1 mr-1">
+          <span className="text-sm text-white px-6">{amount}</span>
         </div>
         
-        {/* Plus button with border */}
-        <div className="border-l border-divider">
-          <button className="text-xl font-archivo px-6 py-3 text-white">+</button>
+        {/* Plus button */}
+        <div className="w-8 h-8 border border-divider rounded-sm">
+          <button className="w-full h-full flex items-center justify-center text-lg text-white">+</button>
         </div>
       </div>
 
