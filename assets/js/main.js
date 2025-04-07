@@ -330,10 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update direction indicator
                     if (isPositive) {
                         parentEl.className = 'ml-3 text-xl text-success flex items-center self-center';
-                        icon.className = 'fa-solid fa-arrow-up mr-2';
+                        icon.className = 'fa-regular fa-arrow-up-right mr-2';
                     } else {
                         parentEl.className = 'ml-3 text-xl text-error flex items-center self-center';
-                        icon.className = 'fa-solid fa-arrow-down mr-2';
+                        icon.className = 'fa-regular fa-arrow-down-right mr-2';
                     }
                 }
             } else if (isMedium) {
@@ -352,10 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update direction indicator
                     if (isPositive) {
                         changeEl.className = 'ml-2 text-success flex items-center self-center';
-                        icon.className = 'fa-solid fa-arrow-up ml-1 mr-0.5';
+                        icon.className = 'fa-regular fa-arrow-up-right ml-1 mr-0.5';
                     } else {
                         changeEl.className = 'ml-2 text-error flex items-center self-center';
-                        icon.className = 'fa-solid fa-arrow-down ml-1 mr-0.5';
+                        icon.className = 'fa-regular fa-arrow-down-right ml-1 mr-0.5';
                     }
                     
                     // Update text
@@ -383,10 +383,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Update direction indicator
                         if (isPositive) {
                             changeSpan.className = 'text-success flex items-center';
-                            icon.className = 'fa-solid fa-arrow-up mr-2';
+                            icon.className = 'fa-regular fa-arrow-up-right mr-2';
                         } else {
                             changeSpan.className = 'text-error flex items-center';
-                            icon.className = 'fa-solid fa-arrow-down mr-2';
+                            icon.className = 'fa-regular fa-arrow-down-right mr-2';
                         }
                         
                         // Update values

@@ -44,7 +44,7 @@ export default function Header({
               <span aria-label="Bitcoin price">{price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </span>
             <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-              <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
+              <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2`} aria-hidden="true"></i>
               <span className="mr-1.5 font-fuji-bold" aria-label="Price change">${Math.abs(change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               <span className="font-fuji-bold" aria-label="Percentage change">({Math.abs(changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)</span>
             </span>
@@ -74,7 +74,7 @@ export default function Header({
               {price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-              <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
+              <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} ml-1 mr-0.5`} aria-hidden="true"></i>
               <span>({Math.abs(changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)</span>
             </span>
           </div>

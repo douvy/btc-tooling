@@ -53,7 +53,7 @@ export default function MediumPriceDisplay({
             {formattedPrice}
           </span>
           <span className={`ml-2 ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-            <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} ml-1 mr-0.5`} aria-hidden="true"></i>
+            <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} ml-1 mr-0.5`} aria-hidden="true"></i>
             <span aria-label={`Percentage change ${formattedPercent} percent`}>
               ({timeframe === '1D' && data.changePercent < 0.01 ? '0.00' : formattedPercent}%)
             </span>

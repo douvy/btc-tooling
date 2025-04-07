@@ -56,7 +56,7 @@ export default function MobilePriceDisplay({
           {/* Change values on second row */}
           <div className="mt-1">
             <span className={`text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center`}>
-              <i className={`fa-solid fa-arrow-${isPositiveChange ? 'up' : 'down'} mr-2`} aria-hidden="true"></i>
+              <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2`} aria-hidden="true"></i>
               <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
                 ${timeframe === '1D' && data.change < 0.01 ? '0.00' : formattedChange}
               </span>
