@@ -45,7 +45,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Sentiment:
-            </span> CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.
+            </span> CMC Fear & Greed Index at &quot;Extreme Fear&quot; (17). Options skew negative (puts {'>'} calls), especially short-term.
           </p>
         </div>
       </div>
