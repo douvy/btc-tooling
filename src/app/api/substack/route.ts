@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import * as xml2js from 'xml2js';
 
 // Function to extract just the 3 bullet points from executive summary
 function extractExecutiveSummary(content: string): string {
@@ -58,6 +57,44 @@ function formatDate(dateString: string): string {
   return `${month} ${day}, ${year}`;
 }
 
+// Simple function to parse RSS feed without xml2js
+async function parseRssFeed(xml: string): Promise<any[]> {
+  try {
+    // Simple regex-based parsing for item elements
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    const titleRegex = /<title>([\s\S]*?)<\/title>/;
+    const linkRegex = /<link>([\s\S]*?)<\/link>/;
+    const pubDateRegex = /<pubDate>([\s\S]*?)<\/pubDate>/;
+    const contentRegex = /<content:encoded>([\s\S]*?)<\/content:encoded>/;
+    const descriptionRegex = /<description>([\s\S]*?)<\/description>/;
+    
+    const items = [];
+    let match;
+    
+    while ((match = itemRegex.exec(xml)) !== null) {
+      const itemXml = match[1];
+      const titleMatch = itemXml.match(titleRegex);
+      const linkMatch = itemXml.match(linkRegex);
+      const pubDateMatch = itemXml.match(pubDateRegex);
+      const contentMatch = itemXml.match(contentRegex);
+      const descriptionMatch = itemXml.match(descriptionRegex);
+      
+      items.push({
+        title: titleMatch ? titleMatch[1] : '',
+        link: linkMatch ? linkMatch[1] : '',
+        pubDate: pubDateMatch ? pubDateMatch[1] : '',
+        'content:encoded': contentMatch ? contentMatch[1] : '',
+        description: descriptionMatch ? descriptionMatch[1] : ''
+      });
+    }
+    
+    return items;
+  } catch (error) {
+    console.error('Error parsing RSS feed:', error);
+    return [];
+  }
+}
+
 // Add cache headers for better performance on Vercel
 export const runtime = 'edge'; // Use Edge runtime for better performance
 export const revalidate = 3600; // Revalidate cache every hour
@@ -81,22 +118,8 @@ export async function GET() {
     
     const xml = await response.text();
     
-    // Parse the XML to JSON
-    const parser = new xml2js.Parser({ 
-      explicitArray: false,
-      explicitRoot: true 
-    });
-    
-    const result = await parser.parseStringPromise(xml);
-    
-    if (!result || !result.rss || !result.rss.channel) {
-      throw new Error('Invalid RSS feed structure');
-    }
-    
-    // Handle both single item and array of items
-    const items = Array.isArray(result.rss.channel.item) 
-      ? result.rss.channel.item 
-      : result.rss.channel.item ? [result.rss.channel.item] : [];
+    // Parse the RSS feed using our simple parser
+    const items = await parseRssFeed(xml);
     
     if (items.length === 0) {
       throw new Error('No items found in RSS feed');
@@ -111,7 +134,11 @@ export async function GET() {
       return NextResponse.json({ 
         title: "Comprehensive Big-Picture Analysis of the Bitcoin Market as of April 7, 2025",
         date: "APR 7, 2025",
-        executiveSummary: extractExecutiveSummary(""),
+        executiveSummary: [
+          '• BTC Price: ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).',
+          '• Macro Environment: Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.',
+          '• Sentiment: CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.'
+        ].join('\n\n'),
         link: "#"
       });
     }

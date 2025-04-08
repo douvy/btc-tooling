@@ -18,6 +18,18 @@ const nextConfig = {
       // Suppress deprecation warnings in production
       process.noDeprecation = true;
     }
+    
+    // Polyfill for Node.js core modules (needed for xml2js)
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      string_decoder: require.resolve('string_decoder/'),
+      stream: require.resolve('stream-browserify'),
+      timers: require.resolve('timers-browserify'),
+      buffer: require.resolve('buffer/'),
+      util: require.resolve('util/'),
+      events: require.resolve('events/'),
+    };
+    
     return config;
   },
 
