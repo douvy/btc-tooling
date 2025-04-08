@@ -1,16 +1,51 @@
 import { HalvingInfo } from '@/types';
+import { useState } from 'react';
 
 interface HalvingCountdownProps {
   halvingInfo: HalvingInfo;
+  isLoading?: boolean;
+  error?: Error | null;
+  onRefresh?: () => void;
 }
 
-export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps) {
+export default function HalvingCountdown({ 
+  halvingInfo, 
+  isLoading = false, 
+  error = null,
+  onRefresh 
+}: HalvingCountdownProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (onRefresh && !isRefreshing) {
+      setIsRefreshing(true);
+      await onRefresh();
+      // Add small delay to ensure visual feedback of refresh action
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
   return (
     <section className="rounded-lg overflow-hidden" aria-labelledby="halving-title">
       <div className="flex items-center justify-between mb-4">
         <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
           Halving Countdown
+          {isLoading && (
+            <span className="ml-2 text-xs text-[#8a919e] animate-pulse">updating...</span>
+          )}
         </h2>
+        
+        {/* Refresh button */}
+        {onRefresh && (
+          <button 
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
+            aria-label="Refresh halving data"
+            className="text-[#8a919e] hover:text-white transition-colors p-1"
+          >
+            <i className={`fa-regular fa-arrows-rotate ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true"></i>
+          </button>
+        )}
       </div>
       
       <div className="flex flex-row items-center justify-between">
@@ -38,10 +73,10 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
           
           {/* Inner content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xs text-[8a919e] mb-1 font-fuji-bold">ETR</span>
+            <span className="text-xs text-[#8a919e] mb-1 font-fuji-bold">ETR</span>
             <span className="text-2xl font-fuji-bold mb-1">{halvingInfo.daysRemaining}</span>
             <span className="text-base font-medium">Days</span>
-            <span className="text-xs text-[8a919e] mt-1">{halvingInfo.date}</span>
+            <span className="text-xs text-[#8a919e] mt-1">{halvingInfo.date}</span>
           </div>
         </div>
         
@@ -53,7 +88,7 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
             </h3>
             <div className="flex items-baseline">
               <p className="text-2xl font-fuji-bold">{halvingInfo.blocksRemaining.toLocaleString()}</p>
-              <span className="ml-2 text-xs text-[8a919e]">blocks</span>
+              <span className="ml-2 text-xs text-[#8a919e]">blocks</span>
             </div>
             {/* Progress bar */}
             <div className="w-full bg-[#2A2D33] rounded-full h-1.5 mt-2" role="progressbar" aria-valuenow={halvingInfo.progress} aria-valuemin={0} aria-valuemax={100}>
@@ -82,6 +117,21 @@ export default function HalvingCountdown({ halvingInfo }: HalvingCountdownProps)
           </div>
         </div>
       </div>
+      
+      {/* Show error message if there's an error */}
+      {error && (
+        <div className="mt-4 text-error text-sm">
+          <p>Error retrieving live halving data. Using cached or fallback data.</p>
+        </div>
+      )}
+      
+      {/* Live data indicator */}
+      {!error && !isLoading && (
+        <div className="mt-4 flex items-center">
+          <span className="h-2 w-2 rounded-full bg-success animate-pulse mr-2"></span>
+          <span className="text-xs text-[#8a919e]">Live data from blockchain.info</span>
+        </div>
+      )}
       
       {/* Historical data table */}
       <div className="mt-4 pt-4 border-t border-divider">
