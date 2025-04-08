@@ -5,6 +5,7 @@ A modern, responsive Bitcoin dashboard providing real-time price data, charts, o
 ## Features
 - Live Bitcoin price display with multiple timeframes
 - Interactive price chart
+- BTC market analysis summary
 - Real-time orderbook display
 - Halving countdown timer
 - Bitcoin X/Twitter Feed integration
@@ -59,7 +60,4 @@ btc-tooling/
 
 ## Roadmap
 - [ ] Connect to real-time price APIs
-- [ ] Implement fully interactive charts
-- [ ] Add more technical indicators
-- [ ] Add user customizable layouts
-- [ ] Add dark/light mode toggle
+- [ ] Implement fully interactive chart
