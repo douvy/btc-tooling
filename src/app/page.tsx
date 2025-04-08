@@ -5,9 +5,10 @@ import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';
 import OrderBook from '@/components/bitcoin/OrderBook';
 import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
-import TwitterFeed from '@/components/social/TwitterFeed';
+import BTCAnalysis from '@/components/social/BTCAnalysis';
 import { useTimeframe } from '@/hooks/useTimeframe';
 import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
+import Image from 'next/image';
 
 // Mock data for non-price components
 const mockOrderBook = {
@@ -41,6 +42,13 @@ const halvingInfo = {
   targetBlock: 1050000,
   progress: 15
 };
+
+const fallbackAnalysisContent = `
+• BTC Price: ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).
+
+• Macro Environment: Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
+
+• Sentiment: CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.`;
 
 const tweets = [
   {
@@ -222,7 +230,49 @@ export default function Home() {
             </div>
           </div>
           
-          <TwitterFeed tweets={tweets} />
+          <aside className="md:w-[330px] block border-l border-divider " role="complementary"> 
+            <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 md:pb-8">
+              <BTCAnalysis 
+                date="APR 7, 2025"
+                content={fallbackAnalysisContent}
+              />
+              <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-8 mt-8"></div>
+              <h2 className="text-xl font-fuji-bold mb-6">BTC X Insights</h2>
+              <div className="space-y-4">
+                {tweets.map((tweet, index) => (
+                  <article key={tweet.id} className={`${index === tweets.length - 1 ? 'pb-0' : 'border-b border-divider pb-4'}`}>
+                    <div className="flex items-start mb-2">
+                      <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                        <Image 
+                          src={`/images/${tweet.profileImage}`} 
+                          alt={`Profile picture of ${tweet.username}`}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-fuji-bold text-base">
+                          {tweet.username}
+                          <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
+                        </p>
+                        <p className="text-[#8a919e] text-sm font-gotham-medium">{tweet.time}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm mb-2">{tweet.text}</p>
+                    <div className="flex items-center text-[#8a919e] text-sm font-gotham-medium">
+                      <div className="flex space-x-4">
+                        <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {tweet.comments}</span>
+                        <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {tweet.retweets}</span>
+                        <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {tweet.likes}</span>
+                        <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {tweet.views}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
 
         <Footer />
