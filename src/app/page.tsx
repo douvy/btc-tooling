@@ -8,6 +8,7 @@ import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import BTCAnalysis from '@/components/social/BTCAnalysis';
 import { useTimeframe } from '@/hooks/useTimeframe';
 import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
+import { useHalvingData } from '@/hooks/useHalvingData';
 import Image from 'next/image';
 
 // Mock data for non-price components
@@ -118,8 +119,7 @@ export default function Home() {
   // Use the latency monitor to track WebSocket connection quality
   const { latency, connectionStatus } = useLatencyMonitor();
   
-  // Import and use the halving data hook
-  const { useHalvingData } = require('@/hooks/useHalvingData');
+  // Use the halving data hook
   const { halvingData, isLoading: isHalvingLoading, error: halvingError } = useHalvingData();
 
   // Refresh function for manual refresh
