@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { TimeFrame, BitcoinPrice } from '@/types';
-import { getBitcoinPrice } from '@/lib/api';
+import { getBitcoinPrice, clearAPICache } from '@/lib/api';
 
 const REFRESH_INTERVAL = 5000;
 const ANIMATION_DURATION = 1500;
@@ -102,16 +102,39 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
   
   const handleTimeframeChange = useCallback((newTimeframe: TimeFrame) => {
     if (newTimeframe === timeframe) return;
+    
+    // Clear any previous error state
+    setError(null);
+    
+    // Update timeframe immediately
     setTimeframe(newTimeframe);
     
-    if (timeframesCache[newTimeframe]) {
-      setBitcoinData(timeframesCache[newTimeframe]);
-      Promise.resolve().then(() => fetchBitcoinData(true));
-    } else {
-      setIsLoading(true);
-      fetchBitcoinData(true);
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
-  }, [timeframe, timeframesCache, fetchBitcoinData]);
+    
+    // Always force a fresh request on timeframe change to avoid stale data
+    setIsLoading(true);
+    
+    // For better UX, immediately clear any stored animation state
+    setPriceChangeDirection(null);
+    
+    // Clear the API cache to force fresh data
+    clearAPICache();
+    
+    // Force a fresh fetch without using cache
+    fetchBitcoinData(true)
+      .catch(err => {
+        console.error('Error changing timeframe:', err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+      })
+      .finally(() => {
+        // Clean up loading state just in case
+        setIsLoading(false);
+      });
+  }, [timeframe, fetchBitcoinData]);
   
   useEffect(() => {
     isMountedRef.current = true;

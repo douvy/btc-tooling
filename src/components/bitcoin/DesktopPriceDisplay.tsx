@@ -53,10 +53,10 @@ export default function DesktopPriceDisplay({
         <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
           <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2`} aria-hidden="true"></i>
           <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
-            ${timeframe === '1D' && data.change < 0.01 ? '0.00' : formattedChange}
+            ${formattedChange}
           </span>
           <span className="font-fuji-bold" aria-label={`Percentage change ${formattedPercent} percent`}>
-            ({timeframe === '1D' && data.changePercent < 0.01 ? '0.00' : formattedPercent}%)
+            ({formattedPercent}%)
           </span>
         </span>
       </div>

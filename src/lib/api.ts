@@ -53,11 +53,18 @@ interface PriceCache {
   fetchTime: number;
 }
 
-// Cache with 3-second lifetime for frequent updates
+// Cache with short lifetime for frequent updates
 // Using a variable that can be reassigned by imported functions
 // eslint-disable-next-line prefer-const
 let apiCache: PriceCache | null = null;
-const CACHE_LIFETIME = 3000; // 3 seconds
+// Make cache very short-lived to ensure fresh data is fetched frequently
+const CACHE_LIFETIME = 1000; // 1 second
+
+// Create a function to explicitly clear the cache
+export function clearAPICache() {
+  apiCache = null;
+  logWithTime('cache', 'API cache explicitly cleared');
+}
 
 // Request configuration
 const MAX_RETRIES = 2;
@@ -119,12 +126,20 @@ async function enhancedFetch(url: string, options: RequestInit, retryCount = 0):
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
   
   try {
-    // Force no caching
+    // Force no caching at all levels
     options.cache = 'no-store';
     options.signal = signal;
     
+    // Ensure cache-control headers are set
+    options.headers = {
+      ...options.headers,
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+    
     // Add unique query param to bust any caching
-    const bustCache = `_t=${Date.now()}`;
+    const bustCache = `_t=${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     const separator = url.includes('?') ? '&' : '?';
     const urlWithCacheBust = `${url}${separator}${bustCache}`;
     
@@ -237,13 +252,17 @@ async function fetchFromCoinbase(): Promise<any> {
  * Get detailed Bitcoin price data for multiple timeframes
  */
 async function fetchDetailedBitcoinData(): Promise<any> {
+  // Add timestamp to bust any browser or proxy caching
+  const timestamp = Date.now();
+  
   return await fetchFromCoinGecko('coins/bitcoin', {
     localization: 'false',
     tickers: 'false',
     market_data: 'true',
     community_data: 'false',
     developer_data: 'false',
-    sparkline: 'false'
+    sparkline: 'false',
+    _t: timestamp.toString() // Cache-busting query parameter
   });
 }
 
@@ -308,25 +327,74 @@ export const getBitcoinPrice = async (requestedTimeframe: TimeFrame = '1D'): Pro
  * Fetch fresh data from API (used for both initial and background refresh)
  */
 async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPrice> {
-  const endpoint = requestedTimeframe === '1D' ? 'simple' : 'detailed';
+  // ALWAYS use detailed endpoint for more accurate price data
+  const endpoint = 'detailed';
   const fetchStart = Date.now();
   
   try {
-    // Choose appropriate endpoint based on timeframe
+    // Always use detailed data for ALL timeframes to get accurate price changes
     let data;
-    if (requestedTimeframe === '1D') {
-      data = await fetchSimpleBitcoinPrice();
+    if (false) { // Disabled simple endpoint completely
+      // This code path is disabled, we never use the simple endpoint anymore
       
       // Validate and format simple price data
       if (!data?.bitcoin?.usd) {
         throw new Error('Invalid simple price data format');
       }
       
-      // Create API-compatible structure
+      // For 1D timeframe, we should get both price and percentage from CoinGecko
+      // and calculate the dollar change properly
+      const currentPrice = data.bitcoin.usd;
+      const percentChange = data.bitcoin.usd_24h_change || 0;
+      
+      // Fallback to detailed API if 1D data isn't good
+      if (Math.abs(percentChange) < 0.05) {
+        logWithTime('fetch', 'Simple API returned minimal change, fetching detailed data instead');
+        data = await fetchDetailedBitcoinData();
+        
+        if (!data?.market_data?.current_price?.usd) {
+          throw new Error('Invalid detailed price data format');
+        }
+        
+        updateApiCache({
+          data,
+          timestamp: Date.now(),
+          endpoint: 'detailed',
+          source: 'api',
+          fetchTime: Date.now() - fetchStart
+        });
+        
+        saveToLocalStorage('btc-price-detailed', data);
+        
+        const result = extractTimeframeData(data, requestedTimeframe);
+        logWithTime('update', `Updated BTC price (detailed fallback): $${result.price.toFixed(2)} (${result.direction === 'up' ? '+' : '-'}${result.changePercent.toFixed(2)}%) - 24h change: $${result.change.toFixed(2)}`);
+        lastUpdateTimestamp.dataUpdate = Date.now();
+        
+        return result;
+      }
+      
+      // Use real data rather than trying to calculate
+      // Calculate previous price correctly based on percentage
+      const previousPrice = currentPrice / (1 + (percentChange / 100));
+      const dollarChange = Math.abs(currentPrice - previousPrice);
+      
+      // For tracking
+      if (process.env.NODE_ENV === 'development') {
+        console.log('1D Calculation:', {
+          currentPrice,
+          previousPrice,
+          percentChange,
+          dollarChange,
+          formula: `${currentPrice} / (1 + (${percentChange}/100)) = ${previousPrice}`
+        });
+      }
+      
+      // Create API-compatible structure with proper data
       const formattedData = {
         market_data: {
-          current_price: { usd: data.bitcoin.usd },
-          price_change_percentage_24h: data.bitcoin.usd_24h_change || 0,
+          current_price: { usd: currentPrice },
+          price_change_percentage_24h: percentChange,
+          price_change_24h_in_currency: { usd: dollarChange * (percentChange >= 0 ? 1 : -1) },
           total_volume: { usd: data.bitcoin.usd_24h_vol || 0 },
           last_updated_at: data.bitcoin.last_updated_at || Date.now() / 1000
         }
@@ -368,7 +436,7 @@ async function fetchFreshData(requestedTimeframe: TimeFrame): Promise<BitcoinPri
       return result;
     }
     
-    // For other timeframes, use detailed endpoint
+    // Always use detailed endpoint for all timeframes
     data = await fetchDetailedBitcoinData();
     
     // Validate data
