@@ -8,6 +8,7 @@ import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import BTCAnalysis from '@/components/social/BTCAnalysis';
 import { useTimeframe } from '@/hooks/useTimeframe';
 import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
+import { useHalvingData } from '@/hooks/useHalvingData';
 import Image from 'next/image';
 
 // Mock data for non-price components
@@ -117,6 +118,31 @@ export default function Home() {
   
   // Use the latency monitor to track WebSocket connection quality
   const { latency, connectionStatus } = useLatencyMonitor();
+  
+  // Use the halving data hook
+  const { halvingData, isLoading: isHalvingLoading, error: halvingError } = useHalvingData();
+
+  // Refresh function for manual refresh
+  const refreshHalvingData = async () => {
+    try {
+      const response = await fetch('/api/halving', { 
+        cache: 'no-store',
+        headers: { 'pragma': 'no-cache', 'cache-control': 'no-cache' }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to refresh halving data: ${response.status}`);
+      }
+      
+      // Clear the cached data to force a fresh load
+      localStorage.removeItem('halvingData');
+      
+      // The useHalvingData hook will automatically update on the next render
+      window.location.reload(); // Simple refresh to update the UI
+    } catch (err) {
+      console.error('Failed to manually refresh halving data:', err);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -226,7 +252,12 @@ export default function Home() {
                 priceChange={bitcoinData?.change || 0} 
               />
               
-              <HalvingCountdown halvingInfo={halvingInfo} />
+              <HalvingCountdown 
+                halvingInfo={halvingData} 
+                isLoading={isHalvingLoading}
+                error={halvingError}
+                onRefresh={refreshHalvingData}
+              />
             </div>
           </div>
           
