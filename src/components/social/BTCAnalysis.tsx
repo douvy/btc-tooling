@@ -8,85 +8,94 @@ interface AnalysisData {
   link: string;
 }
 
-// Function to format the executive summary with bullet points and styling
-function formatExecutiveSummary(summary: string): JSX.Element {
-  // Remove "Current Context" line if present
-  let cleanedSummary = summary.replace(/Current\s+Context.*?:\s*\n+/i, '');
+// Default fallback bullet points
+const fallbackBullets = [
+  {
+    title: 'BTC Price',
+    content: '~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).'
+  },
+  {
+    title: 'Macro Environment',
+    content: 'Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.'
+  },
+  {
+    title: 'Sentiment',
+    content: 'CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.'
+  }
+];
+
+// Function to parse and format bullet points from the executive summary
+function parseBulletPoints(summary: string): Array<{title: string, content: string}> {
+  // If no summary, return fallback
+  if (!summary || summary.trim().length === 0) {
+    return fallbackBullets;
+  }
   
-  // Extract just the bullet points with BTC Price, Macro, and Sentiment
-  const lines = cleanedSummary.split('\n');
-  const relevantPoints = [];
+  // Extract bullet points from the summary
+  const lines = summary.split('\n');
+  const bulletPoints: Array<{title: string, content: string}> = [];
   
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed.length > 0 && 
-        (trimmed.includes('BTC Price') || 
-         trimmed.includes('Bitcoin Price') || 
-         trimmed.includes('Macro Environment') || 
-         trimmed.includes('Sentiment'))) {
-      relevantPoints.push(trimmed);
+    if (trimmed.length === 0) continue;
+    
+    // Check for BTC Price
+    if (trimmed.includes('BTC Price:') || trimmed.includes('Bitcoin Price:')) {
+      const parts = trimmed.split(':');
+      if (parts.length > 1) {
+        bulletPoints.push({
+          title: 'BTC Price',
+          content: parts.slice(1).join(':').trim()
+        });
+      }
+    } 
+    // Check for Macro Environment
+    else if (trimmed.includes('Macro Environment:')) {
+      const parts = trimmed.split(':');
+      if (parts.length > 1) {
+        bulletPoints.push({
+          title: 'Macro Environment',
+          content: parts.slice(1).join(':').trim()
+        });
+      }
+    } 
+    // Check for Sentiment
+    else if (trimmed.includes('Sentiment:')) {
+      const parts = trimmed.split(':');
+      if (parts.length > 1) {
+        bulletPoints.push({
+          title: 'Sentiment',
+          content: parts.slice(1).join(':').trim()
+        });
+      }
     }
   }
   
-  // If we found bullet points, format them nicely
-  if (relevantPoints.length > 0) {
-    return (
-      <>
-        {relevantPoints.map((point, index) => {
-          // Extract the title and content
-          let title, content;
-          
-          if (point.includes('BTC Price:') || point.includes('Bitcoin Price:')) {
-            const match = point.match(/(?:•|-|)\s*(?:BTC|Bitcoin)\s+Price\s*:\s*(.*)/i);
-            title = 'BTC Price';
-            content = match ? match[1].trim() : '';
-          } else if (point.includes('Macro Environment:')) {
-            const match = point.match(/(?:•|-|)\s*Macro\s+Environment\s*:\s*(.*)/i);
-            title = 'Macro Environment';
-            content = match ? match[1].trim() : '';
-          } else if (point.includes('Sentiment:')) {
-            const match = point.match(/(?:•|-|)\s*Sentiment\s*:\s*(.*)/i);
-            title = 'Sentiment';
-            content = match ? match[1].trim() : '';
-          } else {
-            // Fallback - generic parsing
-            const parts = point.split(':');
-            title = parts[0].replace(/^[•-]\s*/, '').trim();
-            content = parts.slice(1).join(':').trim();
-          }
-          
-          return (
-            <p key={index} className="mb-3">
-              <span className="font-fuji-bold text-base">
-                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> {title}:
-              </span> {content}
-            </p>
-          );
-        })}
-      </>
-    );
+  // If we didn't find all three bullet points, fill in missing ones from fallback
+  if (!bulletPoints.some(b => b.title === 'BTC Price')) {
+    bulletPoints.push(fallbackBullets[0]);
+  }
+  if (!bulletPoints.some(b => b.title === 'Macro Environment')) {
+    bulletPoints.push(fallbackBullets[1]);
+  }
+  if (!bulletPoints.some(b => b.title === 'Sentiment')) {
+    bulletPoints.push(fallbackBullets[2]);
   }
   
-  // If we couldn't find specific bullet points, use the fallback style
+  return bulletPoints;
+}
+
+// Render bullet points as JSX
+function renderBulletPoints(bulletPoints: Array<{title: string, content: string}>): JSX.Element {
   return (
     <>
-      <p className="mb-3">
-        <span className="font-fuji-bold text-base">
-          <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> BTC Price:
-        </span> ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).
-      </p>
-      
-      <p className="mb-3">
-        <span className="font-fuji-bold text-base">
-          <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Macro Environment:
-        </span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
-      </p>
-      
-      <p className="mb-3">
-        <span className="font-fuji-bold text-base">
-          <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Sentiment:
-        </span> CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.
-      </p>
+      {bulletPoints.map((bullet, index) => (
+        <p key={index} className="mb-3">
+          <span className="font-fuji-bold text-base">
+            <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> {bullet.title}:
+          </span> {bullet.content}
+        </p>
+      ))}
     </>
   );
 }
@@ -155,49 +164,13 @@ export default function BTCAnalysis({ date: fallbackDate, content: fallbackConte
         
         <div className="text-sm">
           {loading ? (
-            // While loading, show a loading message
             <p>Loading latest analysis...</p>
           ) : error ? (
-            // If there's an error, show fallback content if available
-            fallbackContent ? (
-              <>
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> BTC Price:</span> ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).
-                </p>
-                
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Macro Environment:</span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
-                </p>
-                
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Sentiment:</span> CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.
-                </p>
-              </>
-            ) : (
-              <p>{error}</p>
-            )
+            renderBulletPoints(parseBulletPoints(fallbackContent || ''))
           ) : analysisData ? (
-            // Format and display the executive summary from live data
-            formatExecutiveSummary(analysisData.executiveSummary)
+            renderBulletPoints(parseBulletPoints(analysisData.executiveSummary))
           ) : (
-            // Fallback if no data but no error
-            fallbackContent ? (
-              <>
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> BTC Price:</span> ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).
-                </p>
-                
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Macro Environment:</span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
-                </p>
-                
-                <p className="mb-3">
-                  <span className="font-fuji-bold text-base"><i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"></i> Sentiment:</span> CMC Fear & Greed Index at "Extreme Fear" (17). Options skew negative (puts > calls), especially short-term.
-                </p>
-              </>
-            ) : (
-              <p>No analysis available right now.</p>
-            )
+            renderBulletPoints(parseBulletPoints(fallbackContent || ''))
           )}
         </div>
       </div>

@@ -58,7 +58,13 @@ function formatDate(dateString: string): string {
 }
 
 // Simple function to parse RSS feed without xml2js
-async function parseRssFeed(xml: string): Promise<any[]> {
+async function parseRssFeed(xml: string): Promise<Array<{
+  title: string;
+  link: string;
+  pubDate: string;
+  'content:encoded': string;
+  description: string;
+}>> {
   try {
     // Simple regex-based parsing for item elements
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
@@ -95,8 +101,7 @@ async function parseRssFeed(xml: string): Promise<any[]> {
   }
 }
 
-// Add cache headers for better performance on Vercel
-export const runtime = 'edge'; // Use Edge runtime for better performance
+// Add cache configuration for better performance on Vercel
 export const revalidate = 3600; // Revalidate cache every hour
 
 export async function GET() {
