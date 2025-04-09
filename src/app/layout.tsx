@@ -7,6 +7,19 @@ export const metadata: Metadata = {
   title: "BTC Tooling",
   description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown - Analyze BTC market data in real-time",
   keywords: "bitcoin, BTC, cryptocurrency, crypto market, bitcoin price, halving",
+  openGraph: {
+    title: "BTC Tooling - Bitcoin Market Analysis",
+    description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown",
+    type: "website",
+    images: [
+      {
+        url: "/images/bg.jpg",
+        width: 1344,
+        height: 896,
+        alt: "BTC Tooling Dashboard",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
