@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown - Analyze BTC market data in real-time",
   keywords: "bitcoin, BTC, cryptocurrency, crypto market, bitcoin price, halving",
   openGraph: {
-    title: "BTC Tooling - Bitcoin Market Analysis",
+    title: "BTC Tooling - Bitcoin Market Tools",
     description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown",
     type: "website",
     images: [
