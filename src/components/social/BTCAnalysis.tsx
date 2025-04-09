@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { useState } from 'react';
 
 // Static component with hardcoded content for guaranteed deployment
 interface BTCAnalysisProps {
@@ -8,6 +9,13 @@ interface BTCAnalysisProps {
 
 export default function BTCAnalysis({ date }: BTCAnalysisProps) {
   const displayDate = date || 'APR 7, 2025';
+  const [expanded, setExpanded] = useState(false);
+  
+  // First half of assessment to always show
+  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm triggered by aggressive US trade policies. While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs";
+  
+  // Rest of assessment to show when expanded
+  const fullAssessment = " and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
   
   return (
     <div>
@@ -32,21 +40,48 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
         <div className="text-sm">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> BTC Price:
-            </span> ~$76,066 (Note: Data points within analyses may vary slightly, e.g., $75k-$78k range, reflecting updates during analysis periods).
-          </p>
-          
-          <p className="mb-3">
-            <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Macro Environment:
             </span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
           </p>
           
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Sentiment:
-            </span> CMC Fear & Greed Index at &quot;Extreme Fear&quot; (17). Options skew negative (puts {'>'} calls), especially short-term.
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Assessment:
+            </span> {initialAssessment}
+            <span 
+              className={`transition-opacity duration-300 ease-in-out ${expanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden inline-block'}`}
+            >
+              {expanded && fullAssessment}
+            </span>
+            {!expanded && '...'}
+            {!expanded && (
+              <button 
+                onClick={() => setExpanded(true)}
+                className="ml-1 text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
+              >
+                Read More
+              </button>
+            )}
           </p>
+
+          <div 
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              expanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <p className="mb-3">
+              <span className="font-fuji-bold text-base">
+                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Sentiment:
+              </span> CMC Fear & Greed Index at &quot;Extreme Fear&quot; (17). Options skew negative (puts {'>'} calls), especially short-term.
+            </p>
+            
+            <button 
+              onClick={() => setExpanded(false)}
+              className="text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
+            >
+              Show Less
+            </button>
+          </div>
         </div>
       </div>
     </div>
