@@ -45,3 +45,17 @@ And then analyze the new code by:
 1. Checking what files have changed
 2. Examining the content of those changes
 3. Summarizing the updates to the codebase
+
+## Project Management
+
+When you see the command:
+- `issues`
+
+Claude should execute:
+```bash
+gh issue list --limit 100
+```
+
+This will:
+1. List all open GitHub issues for the repository
+2. Show issue numbers, status, titles, labels, and creation dates
