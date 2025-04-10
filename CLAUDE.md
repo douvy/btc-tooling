@@ -54,8 +54,8 @@ When you see the command:
 Claude should execute:
 ```bash
 echo -e "\033[1;36m📋 BTC-TOOLING PROJECT ISSUES\033[0m\n"
-# Get issues as JSON and format with jq
-gh issue list --json number,title,labels,state,assignees --limit 100 | jq -r '.[] | "\(.number)|\(.title)|\(.labels[].name)|\(.state)|\(.assignees[].login // "unassigned")"' | sort -t'|' -k3,3 -k1,1n | while IFS='|' read -r num title label state assignee; do
+# Get issues as JSON and format with jq, include all issues
+gh issue list --json number,title,labels,state,assignees --limit 100 | jq -r '.[] | "\(.number)|\(.title)|\(.labels[0].name // "unlabeled")|\(.state)|\(.assignees[0].login // "unassigned")"' | sort -n | while IFS='|' read -r num title label state assignee; do
   # Set icons and colors based on state and labels
   if [[ "$state" == "CLOSED" ]]; then
     icon="✅"
@@ -74,8 +74,8 @@ gh issue list --json number,title,labels,state,assignees --limit 100 | jq -r '.[
     color="\033[0;37m" # white
   fi
   
-  # Print formatted issue
-  printf "${color}%s #%-3s %s %s\033[0m\n" "$icon" "$num" "$title" "[$label]"
+  # Print formatted issue with number first
+  printf "${color}#%-3s %s %s %s\033[0m\n" "$num" "$icon" "$title" "[$label]"
 done
 ```
 
