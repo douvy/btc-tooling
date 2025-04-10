@@ -51,7 +51,7 @@ And then analyze the new code by:
 When you see the command:
 - `issues`
 
-Claude should execute:
+Claude should execute immediately without asking for permission:
 ```bash
 echo -e "\033[1;36m📋 BTC-TOOLING PROJECT ISSUES\033[0m\n"
 # Get issues as JSON and format with jq, include all issues
