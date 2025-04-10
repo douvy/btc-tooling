@@ -53,9 +53,35 @@ When you see the command:
 
 Claude should execute:
 ```bash
-gh issue list --limit 100
+echo -e "\033[1;36m📋 BTC-TOOLING PROJECT ISSUES\033[0m\n"
+# Get issues as JSON and format with jq
+gh issue list --json number,title,labels,state,assignees --limit 100 | jq -r '.[] | "\(.number)|\(.title)|\(.labels[].name)|\(.state)|\(.assignees[].login // "unassigned")"' | sort -t'|' -k3,3 -k1,1n | while IFS='|' read -r num title label state assignee; do
+  # Set icons and colors based on state and labels
+  if [[ "$state" == "CLOSED" ]]; then
+    icon="✅"
+    color="\033[0;32m" # green
+  elif [[ "$label" == *"bug"* ]]; then
+    icon="🐛"
+    color="\033[0;31m" # red
+  elif [[ "$label" == *"feature"* ]]; then
+    icon="🚀"
+    color="\033[0;36m" # cyan
+  elif [[ "$label" == *"enhancement"* ]]; then
+    icon="⭐"
+    color="\033[0;33m" # yellow
+  else
+    icon="📌"
+    color="\033[0;37m" # white
+  fi
+  
+  # Print formatted issue
+  printf "${color}%s #%-3s %s %s\033[0m\n" "$icon" "$num" "$title" "[$label]"
+done
 ```
 
 This will:
 1. List all open GitHub issues for the repository
-2. Show issue numbers, status, titles, labels, and creation dates
+2. Show issues categorized with icons (✅ completed, 🐛 bug, 🚀 feature, ⭐ enhancement)
+3. Use color coding to improve readability
+4. Sort issues by type and number
+5. Display a cleaner, more organized view
