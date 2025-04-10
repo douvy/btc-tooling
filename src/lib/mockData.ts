@@ -89,6 +89,46 @@ export function getMockSimplePrice() {
 }
 
 /**
+ * Generate mock data for the order book
+ */
+export function getMockOrderBook() {
+  // Generate realistic order book entries
+  const currentPrice = lastMockPrice;
+  const spread = 0.01; // Tight spread for BTC
+  
+  // Create asks (sell orders) - higher than current price
+  const asks = Array(8).fill(0).map((_, i) => {
+    const priceOffset = (i + 1) * 0.75 + (Math.random() * 0.5);
+    const price = currentPrice + priceOffset;
+    const amount = 0.05 + (Math.random() * 0.25);
+    const total = price * amount;
+    const sum = 0; // Will be calculated in real implementation
+    
+    return { price, amount, total, sum };
+  }).sort((a, b) => a.price - b.price);
+  
+  // Create bids (buy orders) - lower than current price
+  const bids = Array(8).fill(0).map((_, i) => {
+    const priceOffset = (i + 1) * 0.8 + (Math.random() * 0.5);
+    const price = currentPrice - priceOffset;
+    const amount = 0.05 + (Math.random() * 0.25);
+    const total = price * amount;
+    const sum = 0; // Will be calculated in real implementation
+    
+    return { price, amount, total, sum };
+  }).sort((a, b) => b.price - a.price);
+
+  // Calculate the spread between lowest ask and highest bid
+  const calculatedSpread = asks[0].price - bids[0].price;
+  
+  return {
+    asks,
+    bids,
+    spread: calculatedSpread
+  };
+}
+
+/**
  * Get mock API data for detailed endpoint
  */
 export function getMockDetailedPrice() {
@@ -135,5 +175,45 @@ export function getMockDetailedPrice() {
       },
       last_updated_at: Math.floor(Date.now() / 1000)
     }
+  };
+}
+
+/**
+ * Generate mock data for the order book
+ */
+export function getMockOrderBook() {
+  // Generate realistic order book entries
+  const currentPrice = lastMockPrice;
+  const spread = 0.01; // Tight spread for BTC
+  
+  // Create asks (sell orders) - higher than current price
+  const asks = Array(8).fill(0).map((_, i) => {
+    const priceOffset = (i + 1) * 0.75 + (Math.random() * 0.5);
+    const price = currentPrice + priceOffset;
+    const amount = 0.05 + (Math.random() * 0.25);
+    const total = price * amount;
+    const sum = 0; // Will be calculated in real implementation
+    
+    return { price, amount, total, sum };
+  }).sort((a, b) => a.price - b.price);
+  
+  // Create bids (buy orders) - lower than current price
+  const bids = Array(8).fill(0).map((_, i) => {
+    const priceOffset = (i + 1) * 0.8 + (Math.random() * 0.5);
+    const price = currentPrice - priceOffset;
+    const amount = 0.05 + (Math.random() * 0.25);
+    const total = price * amount;
+    const sum = 0; // Will be calculated in real implementation
+    
+    return { price, amount, total, sum };
+  }).sort((a, b) => b.price - a.price);
+
+  // Calculate the spread between lowest ask and highest bid
+  const calculatedSpread = asks[0].price - bids[0].price;
+  
+  return {
+    asks,
+    bids,
+    spread: calculatedSpread
   };
 }
