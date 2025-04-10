@@ -32,3 +32,16 @@ This will:
 1. Stage all changes
 2. Create a commit with a timestamp
 3. Push to the remote repository
+
+When you see the command:
+- `pull`
+
+Claude should execute:
+```bash
+git pull origin main
+```
+
+And then analyze the new code by:
+1. Checking what files have changed
+2. Examining the content of those changes
+3. Summarizing the updates to the codebase
