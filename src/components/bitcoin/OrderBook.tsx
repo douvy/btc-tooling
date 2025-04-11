@@ -1,12 +1,27 @@
-import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, ChangeEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { OrderBook as OrderBookType, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
+import OrderBookTooltip from './OrderBookTooltip';
 
 interface OrderBookProps {
   orderBook?: OrderBookType;
   currentPrice: number;
   priceChange: number;
+}
+
+// Tooltip data interface for hover state
+interface TooltipData {
+  isVisible: boolean;
+  x: number;
+  y: number;
+  type: 'ask' | 'bid';
+  price: number;
+  amount: number;
+  total: number;
+  sum: number;
+  totalSum: number;
+  percentage: number;
 }
 
 // Preset amount options in BTC
@@ -37,6 +52,66 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
   const [selectedExchange, setSelectedExchange] = useState<Exchange>('bitfinex');
   const [isExchangeTransitioning, setIsExchangeTransitioning] = useState(false);
   const presetsRef = useRef<HTMLDivElement>(null);
+  
+  // Tooltip state
+  const [tooltipData, setTooltipData] = useState<TooltipData>({
+    isVisible: false,
+    x: 0,
+    y: 0,
+    type: 'ask',
+    price: 0,
+    amount: 0,
+    total: 0,
+    sum: 0,
+    totalSum: 0,
+    percentage: 0
+  });
+  
+  // Track which row is being hovered
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  
+  // Handle hover interactions
+  const handleOrderRowMouseEnter = (
+    e: ReactMouseEvent,
+    type: 'ask' | 'bid',
+    price: number,
+    amount: number,
+    total: number,
+    sum: number,
+    totalSum: number,
+    rowId: string
+  ) => {
+    // Calculate percentage of total book
+    const percentage = (sum / totalSum) * 100;
+    
+    // Calculate tooltip position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = rect.right + 10; // Position to the right of the row
+    const y = rect.top;
+    
+    // Update tooltip data
+    setTooltipData({
+      isVisible: true,
+      x,
+      y,
+      type,
+      price,
+      amount,
+      total,
+      sum,
+      totalSum,
+      percentage
+    });
+    
+    // Track hovered row
+    setHoveredRowId(rowId);
+  };
+  
+  // Hide tooltip on mouse leave
+  const handleOrderRowMouseLeave = () => {
+    setTooltipData(prev => ({ ...prev, isVisible: false }));
+    setHoveredRowId(null);
+  };
   
   // Use WebSocket hook for Bitfinex data
   const {
@@ -192,6 +267,20 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
 
   return (
     <div className="text-white w-full font-sans">
+      {/* Tooltip */}
+      <OrderBookTooltip 
+        isVisible={tooltipData.isVisible}
+        x={tooltipData.x}
+        y={tooltipData.y}
+        type={tooltipData.type}
+        price={tooltipData.price}
+        amount={tooltipData.amount}
+        total={tooltipData.total}
+        sum={tooltipData.sum}
+        totalSum={tooltipData.totalSum}
+        percentage={tooltipData.percentage}
+      />
+      
       <div className="flex justify-between items-center">
         <h2 id="halving-title" className="text-xl font-fuji-bold">
           Order Book
@@ -372,10 +461,22 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
           return (
             <div 
               key={`ask-${index}`} 
-              className={`grid grid-cols-18 text-xs py-1 relative hover:bg-gray-800 transition-colors
+              className={`grid grid-cols-18 text-xs py-1 relative transition-colors
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-error' : ''}
+                ${hoveredRowId === `ask-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
               `}
+              onMouseEnter={(e) => handleOrderRowMouseEnter(
+                e, 
+                'ask', 
+                ask.price, 
+                ask.amount, 
+                ask.price * ask.amount, 
+                ask.sum, 
+                asks[asks.length - 1].sum,
+                `ask-${index}`
+              )}
+              onMouseLeave={handleOrderRowMouseLeave}
             >
               {/* Red bar column */}
               <div className="col-span-1 h-full flex items-center">
@@ -405,14 +506,21 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
               <div className="col-span-6 text-center text-gray-300 relative">
                 {viewMode === 'sum' ? (
                   <>
-                    <span>{ask.sum.toFixed(4)}</span>
+                    <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>{ask.sum.toFixed(4)}</span>
                     <div 
-                      className="absolute top-0 right-0 h-full bg-error opacity-10"
+                      className={`absolute top-0 right-0 h-full ${hoveredRowId === `ask-${index}` ? 'bg-error opacity-30' : 'bg-error opacity-10'}`}
                       style={{ width: `${sumPercentage}%` }}
                     ></div>
                   </>
                 ) : (
-                  <span>${(ask.price * ask.amount).toFixed(2)}</span>
+                  <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>${(ask.price * ask.amount).toFixed(2)}</span>
+                )}
+                
+                {/* Visual percentage indicator on hover */}
+                {hoveredRowId === `ask-${index}` && (
+                  <div className="absolute top-0 left-2 text-[10px] text-error">
+                    {(ask.sum / asks[asks.length - 1].sum * 100).toFixed(1)}%
+                  </div>
                 )}
               </div>
             </div>
@@ -445,10 +553,22 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
           return (
             <div 
               key={`bid-${index}`} 
-              className={`grid grid-cols-18 text-xs py-1 relative hover:bg-gray-800 transition-colors
+              className={`grid grid-cols-18 text-xs py-1 relative transition-colors
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-success' : ''}
+                ${hoveredRowId === `bid-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
               `}
+              onMouseEnter={(e) => handleOrderRowMouseEnter(
+                e, 
+                'bid', 
+                bid.price, 
+                bid.amount, 
+                bid.price * bid.amount, 
+                bid.sum, 
+                bids[bids.length - 1].sum,
+                `bid-${index}`
+              )}
+              onMouseLeave={handleOrderRowMouseLeave}
             >
               {/* Green bar column */}
               <div className="col-span-1 h-full flex items-center">
@@ -478,14 +598,21 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
               <div className="col-span-6 text-center text-gray-300 relative">
                 {viewMode === 'sum' ? (
                   <>
-                    <span>{bid.sum.toFixed(4)}</span>
+                    <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>{bid.sum.toFixed(4)}</span>
                     <div 
-                      className="absolute top-0 right-0 h-full bg-success opacity-10"
+                      className={`absolute top-0 right-0 h-full ${hoveredRowId === `bid-${index}` ? 'bg-success opacity-30' : 'bg-success opacity-10'}`}
                       style={{ width: `${sumPercentage}%` }}
                     ></div>
                   </>
                 ) : (
-                  <span>${(bid.price * bid.amount).toFixed(2)}</span>
+                  <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>${(bid.price * bid.amount).toFixed(2)}</span>
+                )}
+                
+                {/* Visual percentage indicator on hover */}
+                {hoveredRowId === `bid-${index}` && (
+                  <div className="absolute top-0 left-2 text-[10px] text-success">
+                    {(bid.sum / bids[bids.length - 1].sum * 100).toFixed(1)}%
+                  </div>
                 )}
               </div>
             </div>
