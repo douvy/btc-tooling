@@ -197,14 +197,16 @@ export function useOrderBookWebSocket(
     }
   }, [exchange]);
   
-  // Main effect for initializing WebSocket connection to real exchange APIs
-  useEffect(() => {
-    // Only run on the client side
-    if (typeof window === 'undefined') {
-      return;
-    }
-    
-    console.log(`[OrderBook] Initializing ${exchange} order book WebSocket connection`);
+  // Function to establish WebSocket connection - defined as a ref to avoid dependency issues
+  const connectWebSocketRef = useRef<() => void>();
+  
+  // Define the connect function
+  connectWebSocketRef.current = () => {
+    // Reset state for new connection
+    setConnectionStatus('connecting');
+    askMapRef.current.clear();
+    bidMapRef.current.clear();
+    channelIdRef.current = null;
     
     // Clean up any existing connection
     if (socketRef.current) {
@@ -216,51 +218,67 @@ export function useOrderBookWebSocket(
       socketRef.current = null;
     }
     
-    // Reset state for new connection
-    setConnectionStatus('connecting');
-    askMapRef.current.clear();
-    bidMapRef.current.clear();
-    channelIdRef.current = null;
-    
     // Create a real WebSocket connection based on the selected exchange
     try {
       let formattedSymbol = symbol;
       
-      try {
-        console.log(`[OrderBook] Attempting to connect to ${exchange} WebSocket...`);
-        
-        // Format symbols properly for each exchange
-        if (exchange === 'binance') {
-          formattedSymbol = 'btcusdt'; // Force lowercase for binance
-          // Connect to Binance WebSocket for depth data - we need to use the direct stream URL, and it doesn't need a subscription message
-          socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
-          console.log(`[OrderBook] Connecting to Binance: ${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
-        } else if (exchange === 'coinbase') {
-          formattedSymbol = 'BTC-USD';
-          // Connect to Coinbase WebSocket - needs subsequent subscription message
-          socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
-          console.log(`[OrderBook] Connecting to Coinbase: ${COINBASE_WEBSOCKET_URL}`);
-        } else {
-          // Default to Bitfinex
-          formattedSymbol = 'tBTCUSD';
-          socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
-          console.log(`[OrderBook] Connecting to Bitfinex: ${BITFINEX_WEBSOCKET_URL}`);
-        }
-      } catch (error) {
-        console.error(`[OrderBook] Error connecting to ${exchange} WebSocket:`, error);
-        setConnectionStatus('fallback_mock');
-        const mockData = getMockOrderBook(exchange);
-        internalOrderBookRef.current = mockData;
-        setOrderBook(mockData);
-        setLastUpdated(new Date());
-        setIsLoading(false);
-        return;
-      }
+      console.log(`[OrderBook] Attempting to connect to ${exchange} WebSocket...`);
       
+      // Format symbols properly for each exchange
+      if (exchange === 'binance') {
+        formattedSymbol = 'btcusdt'; // Force lowercase for binance
+        // Connect to Binance WebSocket for depth data - we need to use the direct stream URL, and it doesn't need a subscription message
+        socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
+        console.log(`[OrderBook] Connecting to Binance: ${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
+      } else if (exchange === 'coinbase') {
+        formattedSymbol = 'BTC-USD';
+        // Connect to Coinbase WebSocket - needs subsequent subscription message
+        socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
+        console.log(`[OrderBook] Connecting to Coinbase: ${COINBASE_WEBSOCKET_URL}`);
+      } else {
+        // Default to Bitfinex
+        formattedSymbol = 'tBTCUSD';
+        socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
+        console.log(`[OrderBook] Connecting to Bitfinex: ${BITFINEX_WEBSOCKET_URL}`);
+      }
+    } catch (error) {
+      console.error(`[OrderBook] Error connecting to ${exchange} WebSocket:`, error);
+      setConnectionStatus('fallback_mock');
+      const mockData = getMockOrderBook(exchange);
+      internalOrderBookRef.current = mockData;
+      setOrderBook(mockData);
+      setLastUpdated(new Date());
+      setIsLoading(false);
+      return;
+    }
+  };
+  
+  // Main effect for initializing WebSocket connection to real exchange APIs
+  useEffect(() => {
+    // Only run on the client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
+    console.log(`[OrderBook] Initializing ${exchange} order book WebSocket connection`);
+    
+    try {
+      // Initialize connection
+      if (connectWebSocketRef.current) {
+        connectWebSocketRef.current();
+      }
+        
+      if (!socketRef.current) {
+        throw new Error('Failed to create WebSocket connection');
+      }
+        
       // Handle socket open event
       socketRef.current.onopen = () => {
         console.log(`[OrderBook] Connected to ${exchange} WebSocket`);
         setConnectionStatus('connected');
+        
+        let formattedSymbol = exchange === 'binance' ? 'btcusdt' : 
+                              exchange === 'coinbase' ? 'BTC-USD' : 'tBTCUSD';
         
         // Send subscription message based on exchange format
         if (exchange === 'binance') {
@@ -605,15 +623,29 @@ export function useOrderBookWebSocket(
         }
       };
       
-      // Handle errors and reconnection
-      socketRef.current.onerror = (error) => {
-        console.error(`[OrderBook] WebSocket error:`, error);
-        setConnectionStatus('error');
+      // Handle errors - simply log and set status, we'll fall back to mock data
+      socketRef.current.onerror = () => {
+        console.log(`[OrderBook] WebSocket connection issue detected - will use fallback data`);
+        setConnectionStatus('fallback_mock');
+        
+        // Ensure we have fallback data
+        if (!internalOrderBookRef.current) {
+          const mockData = getMockOrderBook(exchange);
+          internalOrderBookRef.current = mockData;
+          setOrderBook(mockData);
+          setLastUpdated(new Date());
+        }
       };
       
       socketRef.current.onclose = () => {
-        console.log(`[OrderBook] WebSocket closed`);
-        setConnectionStatus('disconnected');
+        console.log(`[OrderBook] WebSocket closed - using fallback data`);
+        setConnectionStatus('fallback_mock');
+        
+        // Always ensure we have good data
+        const mockData = getMockOrderBook(exchange);
+        internalOrderBookRef.current = mockData;
+        setOrderBook(mockData);
+        setLastUpdated(new Date());
       };
       // Only set up simulated updates if we're in simulation mode
       const useSimulation = false;
