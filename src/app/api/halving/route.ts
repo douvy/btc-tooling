@@ -115,12 +115,13 @@ export async function GET(): Promise<NextResponse<HalvingInfo>> {
     console.error('Error fetching halving data:', error);
     
     // Return fallback data instead of an error for better user experience
+    // Accurate as of April 2025, after the 2024 halving
     return NextResponse.json({
       daysRemaining: 1084,
       date: 'Mar. 31, 2028',
       blocksRemaining: 158881,
-      currentReward: 6.25,
-      nextReward: 3.125,
+      currentReward: 3.125, // Updated reward after 2024 halving
+      nextReward: 1.5625,   // Next halving reward
       targetBlock: 1050000,
       progress: 15
     });

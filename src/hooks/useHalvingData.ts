@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { HalvingInfo } from '@/types';
 
-// Default fallback data
+// Default fallback data - updated for post-2024 halving
 const fallbackHalvingData: HalvingInfo = {
   daysRemaining: 1084,
   date: 'Mar. 31, 2028',
   blocksRemaining: 158881,
-  currentReward: 6.25,
-  nextReward: 3.125,
+  currentReward: 3.125,   // Current reward after 2024 halving
+  nextReward: 1.5625,     // Next halving will be to 1.5625 BTC
   targetBlock: 1050000,
   progress: 15
 };
