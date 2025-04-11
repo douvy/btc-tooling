@@ -291,7 +291,7 @@ export default function Home() {
                         <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
                       </div>
                     </div>
-                    <p className="text-base mb-2 text-[#a6abb5]">{tweet.text}</p>
+                    <p className="text-base mb-2 text-[#b4b8c1]">{tweet.text}</p>
                     <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
                       <div className="flex space-x-4">
                         <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.comments)}</span>
