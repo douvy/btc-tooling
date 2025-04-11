@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { OrderBook } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
+import { fetchOrderBook } from '@/lib/api/orderbook';
 
-type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
+type ConnectionStatus = 
+  | 'connected'      // WebSocket is connected and receiving data
+  | 'connecting'     // Initial connection attempt
+  | 'reconnecting'   // Reconnection attempt after failure
+  | 'disconnected'   // Disconnected, not trying to reconnect
+  | 'error'          // Error state, will try to reconnect
+  | 'fallback_rest'  // Using REST API fallback
+  | 'fallback_cache' // Using cached data fallback
+  | 'fallback_mock'; // Using mock data fallback
 type Exchange = 'bitfinex' | 'coinbase' | 'binance';
 
 // WebSocket URLs for different exchanges
@@ -68,13 +77,34 @@ interface UseOrderBookWebSocketResult {
 /**
  * Custom hook for connecting to Bitfinex WebSocket API and retrieving order book data
  */
+interface FallbackOptions {
+  restAttempts: number;
+  restTimeoutMs: number;
+  maxReconnectAttempts: number;
+  initialReconnectDelayMs: number;
+  maxReconnectDelayMs: number;
+  cacheTimeoutMs: number;
+}
+
 export function useOrderBookWebSocket(
   symbol: string = 'BTCUSD',
   exchange: Exchange = 'bitfinex',
   precision: string = 'P0', // P0 for raw, P1, P2, P3, P4 for different precisions
   frequency: string = 'F0', // F0 = real-time, F1 = 2 sec
-  fpsLimit: number = 5 // Limit updates to 5 fps as per spec
+  fpsLimit: number = 5, // Limit updates to 5 fps as per spec
+  fallbackOptions: Partial<FallbackOptions> = {}
 ): UseOrderBookWebSocketResult {
+  // Merge default options with provided options
+  const options: FallbackOptions = {
+    restAttempts: 3,                   // Number of REST API fallback attempts before using cache
+    restTimeoutMs: 3000,               // Timeout for REST API requests
+    maxReconnectAttempts: 5,           // Maximum WebSocket reconnect attempts
+    initialReconnectDelayMs: 1000,     // Initial delay before reconnecting (doubled each attempt)
+    maxReconnectDelayMs: 30000,        // Maximum delay between reconnect attempts
+    cacheTimeoutMs: 60000,             // How long cached data is considered "fresh"
+    ...fallbackOptions
+  };
+
   const [orderBook, setOrderBook] = useState<OrderBook | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
   const [error, setError] = useState<Error | null>(null);
@@ -91,11 +121,15 @@ export function useOrderBookWebSocket(
   const bidMapRef = useRef<Map<number, { price: number, count: number, amount: number }>>(new Map());
   const channelIdRef = useRef<number | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
+  const restAttemptCountRef = useRef<number>(0);
   const updateTimeoutRef = useRef<number | null>(null);
   const pendingUpdatesRef = useRef<boolean>(false);
   const lastUpdateTimeRef = useRef<number>(0);
   const dataChangedRef = useRef<boolean>(false);
   const internalOrderBookRef = useRef<OrderBook | null>(null);
+  const cachedOrderBookRef = useRef<OrderBook | null>(null);
+  const cacheTimestampRef = useRef<number>(0);
   
   // Performance tracking
   const updateTimesRef = useRef<number[]>([]);
@@ -138,10 +172,18 @@ export function useOrderBookWebSocket(
     // Start timing the update
     updateStartTimeRef.current = performance.now();
     
-    setOrderBook(internalOrderBookRef.current);
+    // Clone the order book to ensure we don't have reference issues
+    const orderBookToUse = { ...internalOrderBookRef.current };
+    
+    // Update state values
+    setOrderBook(orderBookToUse);
     setLastUpdated(new Date());
     setIsLoading(false);
     setError(null);
+    
+    // Store in cache for fallback
+    cachedOrderBookRef.current = orderBookToUse;
+    cacheTimestampRef.current = Date.now();
     
     // Record performance metrics
     const updateEndTime = performance.now();
@@ -157,6 +199,93 @@ export function useOrderBookWebSocket(
     pendingUpdatesRef.current = false;
     dataChangedRef.current = false;
   }, []);
+  
+  // Function to use REST API fallback when WebSocket fails
+  const fetchRESTFallback = useCallback(async () => {
+    // Track that we're using the REST fallback
+    setConnectionStatus('fallback_rest');
+    
+    try {
+      console.log(`[OrderBook] Using REST API fallback for ${exchange}`);
+      
+      // Create an abort controller for the fetch timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), options.restTimeoutMs);
+      
+      // Fetch the order book from the REST API
+      const fetchPromise = fetchOrderBook(exchange, symbol);
+      const fallbackData = await Promise.race([
+        fetchPromise,
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('REST API request timeout')), options.restTimeoutMs);
+        })
+      ]);
+      
+      clearTimeout(timeoutId);
+      
+      // Reset REST attempt count on successful fetch
+      restAttemptCountRef.current = 0;
+      
+      // Update the internal order book
+      internalOrderBookRef.current = fallbackData;
+      
+      // Update the React state
+      setOrderBook(fallbackData);
+      setLastUpdated(new Date());
+      setIsLoading(false);
+      
+      // Store in cache for future fallbacks
+      cachedOrderBookRef.current = fallbackData;
+      cacheTimestampRef.current = Date.now();
+      
+      console.log(`[OrderBook] Successfully fetched ${exchange} order book via REST API`);
+      
+      return true;
+    } catch (err) {
+      console.error(`[OrderBook] Failed to fetch ${exchange} order book via REST API:`, err);
+      
+      // Increment REST attempt count
+      restAttemptCountRef.current++;
+      
+      // Check if we've exceeded the max number of REST API attempts
+      if (restAttemptCountRef.current >= options.restAttempts) {
+        console.log(`[OrderBook] Exceeded max REST API attempts (${options.restAttempts}), using cache`);
+        return false;
+      }
+      
+      // Try again after a delay
+      setTimeout(() => fetchRESTFallback(), 1000);
+      return false;
+    }
+  }, [exchange, symbol, options.restAttempts, options.restTimeoutMs]);
+  
+  // Function to use cached data as fallback
+  const useCachedFallback = useCallback(() => {
+    // First try to use cache if it's still fresh
+    if (cachedOrderBookRef.current && Date.now() - cacheTimestampRef.current < options.cacheTimeoutMs) {
+      console.log(`[OrderBook] Using cached ${exchange} order book data`);
+      setConnectionStatus('fallback_cache');
+      setOrderBook(cachedOrderBookRef.current);
+      setLastUpdated(new Date(cacheTimestampRef.current));
+      setIsLoading(false);
+      return true;
+    }
+    
+    // If cache is stale or doesn't exist, use mock data
+    console.log(`[OrderBook] No fresh cache available for ${exchange}, using mock data`);
+    useMockFallback();
+    return false;
+  }, [exchange, options.cacheTimeoutMs]);
+  
+  // Function to use mock data as fallback
+  const useMockFallback = useCallback(() => {
+    console.log(`[OrderBook] Using mock ${exchange} order book data`);
+    setConnectionStatus('fallback_mock');
+    const mockData = getMockOrderBook(exchange);
+    setOrderBook(mockData);
+    setLastUpdated(new Date());
+    setIsLoading(false);
+  }, [exchange]);
   
   // Process updates to the internal order book structure
   const updateInternalOrderBook = useCallback(() => {
@@ -433,6 +562,12 @@ export function useOrderBookWebSocket(
     askMapRef.current.clear();
     bidMapRef.current.clear();
     channelIdRef.current = null;
+    
+    // Reset reconnection attempts if this is a manual initialization
+    if (reconnectAttemptsRef.current > 0) {
+      console.log(`[OrderBook WebSocket] Manual reconnection, resetting attempts counter`);
+      reconnectAttemptsRef.current = 0;
+    }
 
     try {
       // Initialize WebSocket based on selected exchange
@@ -447,24 +582,70 @@ export function useOrderBookWebSocket(
           initBinanceWebSocket();
           break;
         default:
-          // Use mock data as fallback
-          const mockData = getMockOrderBook(exchange);
-          setOrderBook(mockData);
-          setConnectionStatus('disconnected');
-          setIsLoading(false);
-          setError(new Error(`Exchange ${exchange} not supported. Using mock data.`));
+          console.warn(`[OrderBook WebSocket] Exchange ${exchange} not supported, using fallbacks`);
+          
+          // Try fallbacks in sequence: REST API, cache, then mock data
+          fetchRESTFallback().catch(() => {
+            console.log(`[OrderBook WebSocket] REST API fallback failed, trying cache`);
+            if (!useCachedFallback()) {
+              console.log(`[OrderBook WebSocket] Cache fallback failed, using mock data`);
+              useMockFallback();
+            }
+          });
+          
+          setError(new Error(`Exchange ${exchange} not supported. Using fallback data.`));
       }
     } catch (err) {
       console.error(`[OrderBook WebSocket] Failed to initialize ${exchange} WebSocket:`, err);
       setError(err instanceof Error ? err : new Error(`Failed to initialize ${exchange} WebSocket`));
-      setConnectionStatus('disconnected');
       
-      // Use mock data as fallback
-      const mockData = getMockOrderBook(exchange);
-      setOrderBook(mockData);
-      setIsLoading(false);
+      // Try fallbacks in sequence
+      handleConnectionFailure();
     }
-  }, [exchange, symbol, precision, frequency, processOrderBookData]);
+  }, [exchange, symbol, precision, frequency]);
+  
+  // Handle connection failures with multiple fallback strategies
+  const handleConnectionFailure = useCallback(() => {
+    console.log(`[OrderBook WebSocket] Connection failure, attempt ${reconnectAttemptsRef.current + 1} of ${options.maxReconnectAttempts}`);
+    
+    // Set error state
+    setConnectionStatus('error');
+    
+    // Check if we've exceeded maximum reconnect attempts
+    if (reconnectAttemptsRef.current >= options.maxReconnectAttempts) {
+      console.log(`[OrderBook WebSocket] Exceeded max reconnect attempts (${options.maxReconnectAttempts}), trying REST API`);
+      
+      // Try fallbacks in sequence: REST API, cache, then mock data
+      fetchRESTFallback().catch(() => {
+        console.log(`[OrderBook WebSocket] REST API fallback failed, trying cache`);
+        if (!useCachedFallback()) {
+          console.log(`[OrderBook WebSocket] Cache fallback failed, using mock data`);
+          useMockFallback();
+        }
+      });
+      
+      return;
+    }
+    
+    // Calculate exponential backoff delay
+    const backoffDelay = Math.min(
+      options.initialReconnectDelayMs * Math.pow(2, reconnectAttemptsRef.current),
+      options.maxReconnectDelayMs
+    );
+    
+    // Add some jitter to prevent all clients reconnecting simultaneously
+    const jitter = Math.random() * 1000;
+    const totalDelay = backoffDelay + jitter;
+    
+    console.log(`[OrderBook WebSocket] Reconnecting in ${(totalDelay / 1000).toFixed(1)}s (attempt ${reconnectAttemptsRef.current + 1})`);
+    setConnectionStatus('reconnecting');
+    
+    // Set a timeout to attempt reconnection
+    reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectAttemptsRef.current++;
+      initWebSocket();
+    }, totalDelay);
+  }, [options.maxReconnectAttempts, options.initialReconnectDelayMs, options.maxReconnectDelayMs, fetchRESTFallback, useCachedFallback, useMockFallback]);
   
   // Initialize Bitfinex WebSocket
   const initBitfinexWebSocket = useCallback(() => {
@@ -494,20 +675,22 @@ export function useOrderBookWebSocket(
 
       socketRef.current.onclose = (event) => {
         console.log(`[OrderBook WebSocket] Bitfinex connection closed (${event.code}): ${event.reason}`);
-        setConnectionStatus('disconnected');
         
-        // Attempt to reconnect after a delay
-        if (!event.wasClean) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('[OrderBook WebSocket] Attempting to reconnect to Bitfinex...');
-            initWebSocket();
-          }, 5000);
+        // If it was a clean close (e.g., user switching to another exchange), don't reconnect
+        if (event.wasClean) {
+          setConnectionStatus('disconnected');
+          return;
         }
+        
+        // Otherwise, handle as a connection failure with reconnection
+        setError(new Error(`Bitfinex WebSocket connection closed: ${event.reason || 'Unknown reason'}`));
+        handleConnectionFailure();
       };
 
       socketRef.current.onerror = (event) => {
         console.error('[OrderBook WebSocket] Bitfinex error:', event);
         setError(new Error('Bitfinex WebSocket connection error'));
+        // Don't call handleConnectionFailure here as onclose will be called next
       };
 
       socketRef.current.onmessage = (event) => {
@@ -567,20 +750,22 @@ export function useOrderBookWebSocket(
 
       socketRef.current.onclose = (event) => {
         console.log(`[OrderBook WebSocket] Coinbase connection closed (${event.code}): ${event.reason}`);
-        setConnectionStatus('disconnected');
         
-        // Attempt to reconnect after a delay
-        if (!event.wasClean) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('[OrderBook WebSocket] Attempting to reconnect to Coinbase...');
-            initWebSocket();
-          }, 5000);
+        // If it was a clean close (e.g., user switching to another exchange), don't reconnect
+        if (event.wasClean) {
+          setConnectionStatus('disconnected');
+          return;
         }
+        
+        // Otherwise, handle as a connection failure with reconnection
+        setError(new Error(`Coinbase WebSocket connection closed: ${event.reason || 'Unknown reason'}`));
+        handleConnectionFailure();
       };
 
       socketRef.current.onerror = (event) => {
         console.error('[OrderBook WebSocket] Coinbase error:', event);
         setError(new Error('Coinbase WebSocket connection error'));
+        // Don't call handleConnectionFailure here as onclose will be called next
       };
 
       socketRef.current.onmessage = (event) => {
@@ -638,20 +823,22 @@ export function useOrderBookWebSocket(
 
       socketRef.current.onclose = (event) => {
         console.log(`[OrderBook WebSocket] Binance connection closed (${event.code}): ${event.reason}`);
-        setConnectionStatus('disconnected');
         
-        // Attempt to reconnect after a delay
-        if (!event.wasClean) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('[OrderBook WebSocket] Attempting to reconnect to Binance...');
-            initWebSocket();
-          }, 5000);
+        // If it was a clean close (e.g., user switching to another exchange), don't reconnect
+        if (event.wasClean) {
+          setConnectionStatus('disconnected');
+          return;
         }
+        
+        // Otherwise, handle as a connection failure with reconnection
+        setError(new Error(`Binance WebSocket connection closed: ${event.reason || 'Unknown reason'}`));
+        handleConnectionFailure();
       };
 
       socketRef.current.onerror = (event) => {
         console.error('[OrderBook WebSocket] Binance error:', event);
         setError(new Error('Binance WebSocket connection error'));
+        // Don't call handleConnectionFailure here as onclose will be called next
       };
 
       socketRef.current.onmessage = (event) => {
@@ -712,30 +899,39 @@ export function useOrderBookWebSocket(
 
     // Cleanup function
     return () => {
+      // Close WebSocket connection cleanly
       if (socketRef.current) {
-        socketRef.current.close();
+        // Set the status to prevent automatic reconnection
+        setConnectionStatus('disconnected');
+        
+        // Clean close with 1000 code (normal closure)
+        socketRef.current.close(1000, "Component unmounting");
         socketRef.current = null;
       }
 
+      // Clear all timers and intervals
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
       
-      // Clear any pending updates
       if (updateTimeoutRef.current !== null) {
         clearTimeout(updateTimeoutRef.current);
         updateTimeoutRef.current = null;
       }
       
-      // Clean up FPS counter
       if (fpsCounterIntervalRef.current) {
         clearInterval(fpsCounterIntervalRef.current);
         fpsCounterIntervalRef.current = null;
       }
       
+      // Reset all state flags
       pendingUpdatesRef.current = false;
       dataChangedRef.current = false;
+      reconnectAttemptsRef.current = 0;
+      restAttemptCountRef.current = 0;
+      
+      console.log('[OrderBook WebSocket] Cleaning up all WebSocket resources');
     };
   }, [initWebSocket]);
 
