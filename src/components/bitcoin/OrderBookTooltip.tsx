@@ -103,7 +103,7 @@ export default function OrderBookTooltip({
   return (
     <div 
       className={`
-        fixed z-50 bg-gray-900 text-white rounded-sm shadow-lg border border-divider 
+        fixed z-[9999] bg-gray-900 text-white rounded-sm shadow-lg border border-divider 
         ${isMobile ? 'text-sm p-3 w-[250px]' : 'text-xs p-2 w-[200px]'}
         transition-opacity duration-150 ease-in-out animate-fadeIn
       `}

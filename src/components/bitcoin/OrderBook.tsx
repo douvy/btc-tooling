@@ -587,7 +587,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
             <div 
               key={`ask-${index}`} 
               className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
-                ${isHighlighted ? 'bg-gray-900' : ''}
+                ${isHighlighted ? 'bg-transparent' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-error' : ''}
                 ${hoveredRowId === `ask-${index}` ? 'bg-black bg-opacity-50 shadow-md' : 'hover:bg-black hover:bg-opacity-30'}
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
@@ -632,9 +632,6 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 <span className={animatingAsks[ask.price] ? 'font-bold text-white transition-colors duration-150' : 'transition-colors duration-150'}>
                   {isMobile ? ask.amount.toFixed(4) : ask.amount.toFixed(8)}
                 </span>
-                {isInOrderRange && isHighlighted && (
-                  <span className="ml-1 text-[10px] text-error">✓</span>
-                )}
               </div>
               
               {/* Price column */}
@@ -707,7 +704,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
             <div 
               key={`bid-${index}`} 
               className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
-                ${isHighlighted ? 'bg-gray-900' : ''}
+                ${isHighlighted ? 'bg-transparent' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-success' : ''}
                 ${hoveredRowId === `bid-${index}` ? 'bg-black bg-opacity-50 shadow-md' : 'hover:bg-black hover:bg-opacity-30'}
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
@@ -752,9 +749,6 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 <span className={animatingBids[bid.price] ? 'font-bold text-white transition-colors duration-150' : 'transition-colors duration-150'}>
                   {isMobile ? bid.amount.toFixed(4) : bid.amount.toFixed(8)}
                 </span>
-                {isInOrderRange && isHighlighted && (
-                  <span className="ml-1 text-[10px] text-success">✓</span>
-                )}
               </div>
               
               {/* Price column */}
