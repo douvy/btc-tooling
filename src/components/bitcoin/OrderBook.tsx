@@ -765,14 +765,16 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
             
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center">
-                <span className="mr-1 text-gray-400">Mid Price:</span>
-                <span className="font-bold text-white">
-                  ${((asks[0]?.price + bids[0]?.price) / 2).toFixed(2) || '--'}
-                </span>
-              </div>
-              <div className="flex items-center">
                 <span className="mr-1 text-gray-400">Spread:</span>
                 <span className="font-bold text-blue-400">${spread.toFixed(2)} ({((spread / currentPrice) * 100).toFixed(3)}%)</span>
+              </div>
+              <div className="flex items-center">
+                {connectionStatus === 'connected' && (
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 rounded-full mr-1 bg-green-500" />
+                    <span className="text-green-500">Live</span>
+                  </div>
+                )}
               </div>
             </div>
           </>
@@ -801,106 +803,26 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
             <div className="bg-gray-900 p-2 rounded-sm border border-divider flex flex-col items-center">
               <span className="text-gray-400 text-[10px]">Best Bid</span>
               <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
+              {connectionStatus === 'connected' && (
+                <div className="flex items-center justify-center mt-1">
+                  <div className="w-2 h-2 rounded-full mr-1 bg-green-500" />
+                  <span className="text-green-500 text-[10px]">Live</span>
+                </div>
+              )}
             </div>
           </div>
         )}
         
-        {/* Exchange info footer with connection status and performance metrics */}
-        <div className={`mt-3 pt-2 border-t border-divider flex ${isMobile ? 'flex-col gap-2' : 'flex-col gap-1'} text-[10px] text-gray-500`}>
-          <div className={`${isMobile ? 'flex flex-col space-y-1' : 'flex items-center justify-between'}`}>
-            <div className="flex items-center">
-              <span>{currentExchange.logo}</span>
-              <span className="ml-1">
-                Data from {currentExchange.name}
-                {(connectionStatus === 'fallback_rest' || 
-                  connectionStatus === 'fallback_cache' || 
-                  connectionStatus === 'fallback_mock') && (
-                  <span className={`ml-1 ${isMobile ? 'text-[10px]' : 'text-[8px]'} px-1 py-0.5 bg-gray-700 rounded-sm`}>
-                    FALLBACK
-                  </span>
-                )}
-              </span>
-              
-              {/* Connection status for WebSocket */}
-              <div className="ml-3 flex items-center">
-                <div className={`${isMobile ? 'w-3 h-3' : 'w-2 h-2'} rounded-full mr-1 ${
-                  connectionStatus === 'connected' 
-                    ? 'bg-green-500' 
-                    : connectionStatus === 'connecting' || connectionStatus === 'reconnecting'
-                      ? 'bg-yellow-500 animate-pulse' 
-                      : connectionStatus === 'fallback_rest'
-                        ? 'bg-gray-600'
-                        : connectionStatus === 'fallback_cache'
-                          ? 'bg-purple-500'
-                          : connectionStatus === 'fallback_mock'
-                            ? 'bg-gray-500'
-                            : 'bg-red-500'
-                }`} />
-                <span className={`
-                  ${isMobile ? 'text-[11px]' : ''}
-                  ${connectionStatus === 'connected' 
-                    ? 'text-green-500' 
-                    : connectionStatus === 'connecting'
-                      ? 'text-yellow-500' 
-                      : connectionStatus === 'reconnecting'
-                        ? 'text-yellow-500'
-                        : connectionStatus === 'fallback_rest'
-                          ? 'text-gray-500'
-                          : connectionStatus === 'fallback_cache'
-                            ? 'text-purple-500'
-                            : connectionStatus === 'fallback_mock'
-                              ? 'text-gray-500'
-                              : 'text-red-500'
-                  }`}
-                >
-                  {connectionStatus === 'connected' 
-                    ? 'Live' 
-                    : connectionStatus === 'connecting' 
-                      ? 'Connecting...'
-                      : connectionStatus === 'reconnecting'
-                        ? 'Reconnecting...'
-                        : connectionStatus === 'error'
-                          ? 'Connection Error'
-                        : connectionStatus === 'fallback_rest'
-                          ? 'REST API Fallback'
-                          : connectionStatus === 'fallback_cache'
-                            ? 'Using Cached Data'
-                            : connectionStatus === 'fallback_mock'
-                              ? 'Using Mock Data'
-                              : 'Disconnected'
-                  }
-                </span>
-              </div>
-            </div>
-            <div className={`${isMobile ? 'mt-1' : ''} text-right`}>
-              <span>
-                Last update: {lastUpdated.toLocaleTimeString()}
-                {connectionStatus === 'fallback_cache' && (
-                  <span className="ml-1 text-yellow-400">
-                    ({Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago)
-                  </span>
-                )}
-              </span>
-            </div>
+        {/* Only show fallback status if needed */}
+        {(connectionStatus === 'fallback_rest' || 
+          connectionStatus === 'fallback_cache' || 
+          connectionStatus === 'fallback_mock') && (
+          <div className="mt-3 pt-2 border-t border-divider flex items-center justify-center text-[10px]">
+            <span className="px-1 py-0.5 bg-gray-700 text-gray-400 rounded-sm">
+              FALLBACK DATA
+            </span>
           </div>
-          
-          {/* Performance metrics */}
-          {connectionStatus === 'connected' && (
-            <div className={`flex items-center justify-between ${isMobile ? 'mt-2 pt-2' : 'mt-1 pt-1'} border-t border-divider ${isMobile ? 'text-[10px]' : 'text-[8px]'}`}>
-              <div className="flex items-center">
-                <span className="text-blue-400 mr-1">{performanceMetrics.fps}</span>
-                <span className="text-gray-500">FPS</span>
-                <span className="mx-2">|</span>
-                <span className="text-blue-400 mr-1">{performanceMetrics.updateCount}</span>
-                <span className="text-gray-500">updates</span>
-              </div>
-              <div>
-                <span className="text-gray-500 mr-1">Avg. update time:</span>
-                <span className="text-blue-400">{performanceMetrics.averageUpdateTime.toFixed(2)}ms</span>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
