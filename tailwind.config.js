@@ -39,19 +39,33 @@ module.exports = {
           '100%': { opacity: 1 },
         },
         'orderbook-flash-red': {
-          '0%': { backgroundColor: 'rgba(240, 97, 109, 0.3)' },
+          '0%': { backgroundColor: 'rgba(240, 97, 109, 0.15)' },
+          '50%': { backgroundColor: 'rgba(240, 97, 109, 0.1)' },
           '100%': { backgroundColor: 'transparent' }
         },
         'orderbook-flash-green': {
-          '0%': { backgroundColor: 'rgba(39, 173, 117, 0.3)' },
+          '0%': { backgroundColor: 'rgba(39, 173, 117, 0.15)' },
+          '50%': { backgroundColor: 'rgba(39, 173, 117, 0.1)' },
           '100%': { backgroundColor: 'transparent' }
+        },
+        'price-flicker-red': {
+          '0%': { color: 'rgb(255, 255, 255)' },
+          '50%': { color: 'rgb(255, 120, 130)' },
+          '100%': { color: 'rgb(240, 97, 109)' }
+        },
+        'price-flicker-green': {
+          '0%': { color: 'rgb(255, 255, 255)' },
+          '50%': { color: 'rgb(120, 255, 130)' },
+          '100%': { color: 'rgb(39, 173, 117)' }
         }
       },
       animation: {
         'fadeIn': 'fadeIn 0.2s ease-in-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'orderbook-flash-red': 'orderbook-flash-red 300ms ease-out forwards',
-        'orderbook-flash-green': 'orderbook-flash-green 300ms ease-out forwards'
+        'orderbook-flash-red': 'orderbook-flash-red 200ms ease-out forwards',
+        'orderbook-flash-green': 'orderbook-flash-green 200ms ease-out forwards',
+        'price-flicker-red': 'price-flicker-red 150ms ease-out forwards',
+        'price-flicker-green': 'price-flicker-green 150ms ease-out forwards'
       },
       gridTemplateColumns: {
         '18': 'repeat(18, minmax(0, 1fr))',

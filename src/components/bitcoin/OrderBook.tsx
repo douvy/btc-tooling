@@ -290,11 +290,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       setAnimatingBids(newAnimatingBids);
       setLocalOrderBook(propOrderBook);
       
-      // Clear animations after a delay
+      // Clear animations after a shorter delay (200ms)
       setTimeout(() => {
         setAnimatingAsks({});
         setAnimatingBids({});
-      }, 300);
+      }, 200);
       
       return;
     }
@@ -339,11 +339,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         setAnimatingBids(newAnimatingBids);
         setLocalOrderBook(wsOrderBook);
         
-        // Clear animations after a delay
+        // Clear animations after a shorter delay (200ms)
         setTimeout(() => {
           setAnimatingAsks({});
           setAnimatingBids({});
-        }, 300);
+        }, 200);
       }
       return;
     } 
@@ -700,7 +700,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 <div 
                   className={`h-3/5 ${
                     isInOrderRange && isHighlighted ? 'bg-error opacity-70' : 'bg-error opacity-50'
-                  } transition-all duration-300 ${
+                  } transition-all duration-200 ${
                     animatingAsks[ask.price] ? 'animate-pulse' : ''
                   }`}
                   style={{ width: `${volumePercentage}%` }}
@@ -709,7 +709,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                <span className={animatingAsks[ask.price] ? 'font-bold' : ''}>
+                <span className={animatingAsks[ask.price] ? 'font-bold text-white transition-colors duration-150' : 'transition-colors duration-150'}>
                   {isMobile ? ask.amount.toFixed(4) : ask.amount.toFixed(8)}
                 </span>
                 {isInOrderRange && isHighlighted && (
@@ -718,11 +718,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               </div>
               
               {/* Price column */}
-              <div className={`col-span-6 text-center ${
+              <div className={`col-span-6 text-center transition-all duration-200 ${
                 isInOrderRange && isHighlighted 
                   ? 'text-error font-bold' 
                   : animatingAsks[ask.price]
-                    ? 'text-error font-bold' 
+                    ? 'animate-price-flicker-red font-bold' 
                     : 'text-error'
               }`}>
                 {ask.price.toFixed(2)}
@@ -823,7 +823,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 <div 
                   className={`h-3/5 ${
                     isInOrderRange && isHighlighted ? 'bg-success opacity-70' : 'bg-success opacity-50'
-                  } transition-all duration-300 ${
+                  } transition-all duration-200 ${
                     animatingBids[bid.price] ? 'animate-pulse' : ''
                   }`}
                   style={{ width: `${volumePercentage}%` }}
@@ -832,7 +832,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                <span className={animatingBids[bid.price] ? 'font-bold' : ''}>
+                <span className={animatingBids[bid.price] ? 'font-bold text-white transition-colors duration-150' : 'transition-colors duration-150'}>
                   {isMobile ? bid.amount.toFixed(4) : bid.amount.toFixed(8)}
                 </span>
                 {isInOrderRange && isHighlighted && (
@@ -841,11 +841,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               </div>
               
               {/* Price column */}
-              <div className={`col-span-6 text-center ${
+              <div className={`col-span-6 text-center transition-all duration-200 ${
                 isInOrderRange && isHighlighted 
                   ? 'text-success font-bold' 
                   : animatingBids[bid.price]
-                    ? 'text-success font-bold' 
+                    ? 'animate-price-flicker-green font-bold' 
                     : 'text-success'
               }`}>
                 {bid.price.toFixed(2)}
