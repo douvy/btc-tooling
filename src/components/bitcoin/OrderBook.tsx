@@ -146,15 +146,8 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
       return;
     } 
     
-    // If the connection is still loading and we don't have any data yet
-    if (wsLoading && !localOrderBook) {
-      // Wait for data to load - don't need to do anything here
-      return;
-    }
-    
     // If we still don't have any order book data at all, use mock data as a last resort
     if (!localOrderBook) {
-      console.warn(`[OrderBook] No data available for ${selectedExchange}, using fallback mock data`);
       setIsExchangeTransitioning(true);
       
       setTimeout(() => {
@@ -163,7 +156,7 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
         setIsExchangeTransitioning(false);
       }, 300);
     }
-  }, [propOrderBook, wsOrderBook, selectedExchange, wsLoading, wsError, localOrderBook]);
+  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
   
   // Handle exchange selection
   const handleExchangeChange = (exchange: Exchange) => {
