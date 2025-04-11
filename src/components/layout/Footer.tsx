@@ -12,7 +12,9 @@ export default function Footer() {
         </div>
         
         <div className="flex space-x-6">
-          <p className="text-[#8a919e] text-sm mt-2 font-gotham-medium">Bitcoin data and analytics</p>
+          <p className="text-[#b4bbc1] text-sm mt-2 font-proxima-nova">
+            Real-time Bitcoin market tools by <a href="https://x.com/douvy_" className="text-primary hover:text-primary/80 transition-colors" target="_blank" rel="noopener noreferrer">@douvy_</a>
+          </p>
         </div>
       </div>
     </footer>
