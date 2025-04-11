@@ -32,28 +32,20 @@ interface TooltipData {
   percentage: number;
 }
 
-// Preset amount options in BTC
-const AMOUNT_PRESETS = [
-  { label: '0.01', value: '0.01' },
-  { label: '0.05', value: '0.05' },
-  { label: '0.1', value: '0.1' },
-  { label: '0.25', value: '0.25' },
-  { label: '0.5', value: '0.5' },
-  { label: '1', value: '1' },
-];
+// Amount increment steps for BTC
+const AMOUNT_STEPS = [0.01, 0.05, 0.1, 0.5, 1, 2.5, 5, 10];
+const MIN_AMOUNT = 0.01;
+const MAX_AMOUNT = 10;
 
 // Type for exchange name
 type Exchange = 'bitfinex';
 
 // Create a client-side only version of the component - export the function for testing
 export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
-  const [amount, setAmount] = useState("0.05");
-  const [isCustomAmount, setIsCustomAmount] = useState(false);
-  const [showPresets, setShowPresets] = useState(false);
+  const [amount, setAmount] = useState("0.01");
   // Fixed to 'sum' view mode and 'bitfinex' exchange
   const viewMode = 'sum';
   const selectedExchange = 'bitfinex' as Exchange;
-  const presetsRef = useRef<HTMLDivElement>(null);
   
   // Tooltip state
   const [tooltipData, setTooltipData] = useState<TooltipData>({
@@ -339,73 +331,64 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
   
   // Fixed to Bitfinex exchange
   
-  // Handle click outside to close presets dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (presetsRef.current && !presetsRef.current.contains(event.target as Node)) {
-        setShowPresets(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  // No need for click outside handler anymore
   
   // Handle amount increment/decrement
   const decrementAmount = () => {
-    setIsCustomAmount(true);
-    
     const currentAmount = parseFloat(amount);
-    const step = currentAmount <= 0.1 ? 0.01 : 0.05;
     
-    if (currentAmount > step) {
-      setAmount((currentAmount - step).toFixed(currentAmount <= 0.1 ? 2 : 2));
-    }
+    // Find the previous step in the array
+    const currentIndex = AMOUNT_STEPS.findIndex(step => step >= currentAmount);
+    const prevIndex = Math.max(0, currentIndex - 1);
+    
+    const newAmount = AMOUNT_STEPS[prevIndex];
+    setAmount(newAmount.toString());
   };
   
   const incrementAmount = () => {
-    setIsCustomAmount(true);
-    
     const currentAmount = parseFloat(amount);
-    const step = currentAmount < 0.1 ? 0.01 : 0.05;
     
-    setAmount((currentAmount + step).toFixed(currentAmount < 0.1 ? 2 : 2));
+    // Find the next step in the array
+    const currentIndex = AMOUNT_STEPS.findIndex(step => step > currentAmount);
+    const nextIndex = currentIndex === -1 ? AMOUNT_STEPS.length - 1 : currentIndex;
+    
+    const newAmount = AMOUNT_STEPS[nextIndex];
+    setAmount(newAmount.toString());
   };
+  
+  // Check if at min or max amount
+  const isAtMinAmount = parseFloat(amount) <= MIN_AMOUNT;
+  const isAtMaxAmount = parseFloat(amount) >= MAX_AMOUNT;
   
   // Handle amount input change
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setIsCustomAmount(true);
-    
-    // Only allow valid numbers with up to 8 decimal places
+    // Only allow valid numbers with up to 2 decimal places
     const value = e.target.value;
-    if (/^\d*\.?\d{0,8}$/.test(value) || value === '') {
+    if (/^\d*\.?\d{0,2}$/.test(value) || value === '') {
       setAmount(value);
     }
-  };
-  
-  // Handle preset selection
-  const selectPreset = (preset: string) => {
-    setAmount(preset);
-    setIsCustomAmount(false);
-    setShowPresets(false);
   };
   
   // Handle entering a custom amount
   const handleBlur = () => {
     // Validate and format amount on blur
     if (amount === '' || isNaN(parseFloat(amount))) {
-      setAmount('0.01');
+      setAmount(MIN_AMOUNT.toString());
     } else {
-      // Ensure minimum amount of 0.001 BTC
-      const numAmount = parseFloat(amount);
-      if (numAmount < 0.001) {
-        setAmount('0.001');
-      } else {
-        // Format with appropriate precision
-        setAmount(numAmount.toFixed(numAmount < 0.1 ? 3 : 2));
+      // Ensure amount is within min/max range
+      let numAmount = parseFloat(amount);
+      if (numAmount < MIN_AMOUNT) {
+        numAmount = MIN_AMOUNT;
+      } else if (numAmount > MAX_AMOUNT) {
+        numAmount = MAX_AMOUNT;
       }
+      
+      // Find the closest preset step
+      const closestStep = AMOUNT_STEPS.reduce((prev, curr) => {
+        return (Math.abs(curr - numAmount) < Math.abs(prev - numAmount) ? curr : prev);
+      });
+      
+      setAmount(closestStep.toString());
     }
   };
   
@@ -466,23 +449,24 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         </div>
       </div>
 
-      {/* Enhanced Amount Control - Responsive for mobile */}
+      {/* Amount Control - Responsive for mobile */}
       <div className={`flex items-center my-3 gap-1 ${isMobile ? 'flex-wrap justify-center' : ''}`}>
         {/* Minus button - Larger touch target on mobile */}
-        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} border border-divider rounded-sm hover:bg-gray-700 transition-colors`}>
+        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} 
+          border ${isAtMinAmount ? 'border-gray-800' : 'border-divider'} 
+          rounded-sm ${!isAtMinAmount ? 'hover:bg-gray-700' : ''} 
+          transition-colors`}>
           <button 
-            className="w-full h-full flex items-center justify-center text-lg text-white"
+            className={`w-full h-full flex items-center justify-center text-lg ${isAtMinAmount ? 'text-gray-700 cursor-default' : 'text-white'}`}
             onClick={decrementAmount}
             aria-label="Decrease amount"
+            disabled={isAtMinAmount}
           >−</button>
         </div>
         
-        {/* Amount input with dropdown - Full width on mobile */}
+        {/* Amount input - Full width on mobile */}
         <div className={`relative ${isMobile ? 'flex-1 min-w-[60%]' : ''}`}>
-          <div 
-            className={`${isMobile ? 'w-full' : 'w-[210px]'} h-8 border border-divider flex items-center rounded-sm ml-1 mr-1 cursor-pointer`}
-            onClick={() => setShowPresets(!showPresets)}
-          >
+          <div className={`${isMobile ? 'w-full' : 'w-[210px]'} h-8 border border-divider flex items-center rounded-sm ml-1 mr-1`}>
             <input
               type="text"
               value={amount}
@@ -490,64 +474,21 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               onBlur={handleBlur}
               className="w-full h-full bg-transparent text-sm text-white text-center outline-none"
               aria-label="Amount in BTC"
-              onClick={(e) => e.stopPropagation()}
             />
             <span className="absolute right-3 text-sm text-white">BTC</span>
-            <button 
-              className="absolute right-10 text-xs text-gray-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowPresets(!showPresets);
-              }}
-            >
-              ▼
-            </button>
           </div>
-          
-          {/* Presets dropdown - Full width on mobile */}
-          {showPresets && (
-            <div 
-              ref={presetsRef}
-              className={`absolute mt-1 left-1 ${isMobile ? 'w-full' : 'w-[210px]'} bg-gray-800 border border-divider z-10 rounded-sm shadow-lg`}
-            >
-              <div className="p-2 text-xs text-gray-400">Presets</div>
-              <div className="grid grid-cols-3 gap-1 p-2">
-                {AMOUNT_PRESETS.map((preset) => (
-                  <button
-                    key={preset.value}
-                    className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 rounded ${
-                      amount === preset.value 
-                        ? 'bg-gray-600 text-white' 
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                    onClick={() => selectPreset(preset.value)}
-                  >
-                    {preset.label} BTC
-                  </button>
-                ))}
-              </div>
-              <div className="p-2 border-t border-divider">
-                <button
-                  className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 w-full text-left text-gray-400 hover:text-gray-300`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsCustomAmount(true);
-                    setShowPresets(false);
-                  }}
-                >
-                  Enter custom amount...
-                </button>
-              </div>
-            </div>
-          )}
         </div>
         
         {/* Plus button - Larger touch target on mobile */}
-        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} border border-divider rounded-sm hover:bg-gray-700 transition-colors`}>
+        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} 
+          border ${isAtMaxAmount ? 'border-gray-800' : 'border-divider'} 
+          rounded-sm ${!isAtMaxAmount ? 'hover:bg-gray-700' : ''} 
+          transition-colors`}>
           <button 
-            className="w-full h-full flex items-center justify-center text-lg text-white"
+            className={`w-full h-full flex items-center justify-center text-lg ${isAtMaxAmount ? 'text-gray-700 cursor-default' : 'text-white'}`}
             onClick={incrementAmount}
             aria-label="Increase amount"
+            disabled={isAtMaxAmount}
           >+</button>
         </div>
       </div>
