@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "trace-deprecation": "NODE_OPTIONS='--trace-deprecation' next dev",
-    "find-deps": "npx depcheck"
+    "find-deps": "npx depcheck",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "axios": "^1.8.4",
@@ -29,6 +32,9 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -37,6 +43,8 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
