@@ -13,14 +13,15 @@ When you see any of these commands:
 
 Claude should execute:
 ```bash
-npm install && npm run dev & sleep 5 && open http://localhost:3000
+pkill -f "next dev" || true && npm install && npm run dev & sleep 5 && open http://localhost:3000
 ```
 
 This will:
-1. Install any missing dependencies
-2. Start the Next.js development server
-3. Wait 5 seconds for the server to initialize
-4. Open the application in the default browser at http://localhost:3000
+1. Kill any existing Next.js development servers
+2. Install any missing dependencies
+3. Start the Next.js development server
+4. Wait 5 seconds for the server to initialize
+5. Open the application in the default browser at http://localhost:3000
 
 ## Git Operations
 
