@@ -60,6 +60,32 @@ And then analyze the new code by:
 2. Examining the content of those changes
 3. Summarizing the updates to the codebase
 
+When you see the command:
+- `rollback`
+
+Claude should execute:
+```bash
+git log --pretty=oneline --abbrev-commit -n 20
+```
+
+This will show the last 20 commits to help identify which commit to roll back to. Then, Claude should:
+1. Ask the user which commit hash to roll back to (unless it's obvious from context)
+2. Execute `git checkout [commit-hash]` to temporarily revert to that commit
+3. Explain that this is a temporary rollback for local exploration only
+4. Remind the user to use `rollforward` when they want to return to the latest code
+
+When you see the command:
+- `rollforward`
+
+Claude should execute:
+```bash
+git checkout main && git pull origin main
+```
+
+This will:
+1. Switch back to the main branch
+2. Pull the latest changes from the remote repository
+
 ## Project Management
 
 When you see the command:
