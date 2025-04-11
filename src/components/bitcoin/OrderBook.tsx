@@ -721,7 +721,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                               : 'Disconnected'
                   }
                 </span>
-              </div>}
+              </div>
             </div>
             <div className="text-right">
               <span>

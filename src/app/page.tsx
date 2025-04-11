@@ -146,7 +146,7 @@ export default function Home() {
           {/* Left side with logo */}
           <div className="flex items-center flex-shrink-0">
             <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
-              <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+              <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
             </div>
           </div>
           
@@ -178,7 +178,7 @@ export default function Home() {
             <div className="flex items-center">
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                  <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+                  <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
                 </div>
                 <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
               </div>
@@ -206,7 +206,7 @@ export default function Home() {
           <div className="flex items-center h-[55px]">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                <img src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
+                <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
               </div>
               <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
             </div>

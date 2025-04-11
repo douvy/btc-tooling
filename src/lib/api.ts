@@ -55,7 +55,6 @@ interface PriceCache {
 
 // Cache with short lifetime for frequent updates
 // Using a variable that can be reassigned by imported functions
-// eslint-disable-next-line prefer-const
 let apiCache: PriceCache | null = null;
 // Make cache very short-lived to ensure fresh data is fetched frequently
 const CACHE_LIFETIME = 1000; // 1 second
