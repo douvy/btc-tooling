@@ -95,14 +95,7 @@ async function handleDataFetchError(timeframe: TimeFrame): Promise<BitcoinPrice>
     }
   } catch {}
   
-  // Return static fallback
-  logWithTime('error', 'Using static fallback');
-  return {
-    price: 82151, 
-    change: 450.83,
-    changePercent: 0.55,
-    direction: 'up'
-  };
+  throw new Error('Bitcoin price data unavailable');
 }
 
 function backgroundRefresh(timeframe: TimeFrame) {
