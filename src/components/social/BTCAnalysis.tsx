@@ -37,7 +37,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           </div>
         </div>
         
-        <div className="text-base text-[#b4b8c1]">
+        <div className="text-base text-[#a6abb5]">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Macro Environment:</span>
