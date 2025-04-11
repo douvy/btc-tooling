@@ -3,7 +3,7 @@ import Image from 'next/image';
 export default function Footer() {
   return (
     <footer className="mt-0 p-8 pt-12 pb-12 sm:pt-8 sm:pb-8 border-t border-divider" role="contentinfo">
-      <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between md:items-center items-start">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center">
             <Image src="/images/logo.png" alt="BTC Tooling Logo" width={32} height={32} className="w-8 h-8 mr-3" />

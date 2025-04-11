@@ -780,24 +780,24 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         {/* Mobile layout - More compact with grid */}
         {isMobile && (
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-start">
               <span className="text-[#81919e] text-[10px]">Amount</span>
               <span className="font-bold text-white">{amount} BTC</span>
               <span className="text-[#8a919e] text-[10px]">${(parseFloat(amount) * currentPrice).toFixed(2)}</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-start">
               <span className="text-[#81919e] text-[10px]">Spread</span>
               <span className="font-bold text-white">${spread.toFixed(2)}</span>
               <span className="text-[#8a919e] text-[10px]">({((spread / currentPrice) * 100).toFixed(2)}%)</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-start">
               <span className="text-[#81919e] text-[10px]">Best Ask</span>
               <span className="font-bold text-error">${asks[0]?.price.toFixed(2) || '--'}</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-start">
               <span className="text-[#81919e] text-[10px]">Best Bid</span>
               <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
             </div>
