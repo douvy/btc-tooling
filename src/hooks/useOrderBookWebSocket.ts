@@ -188,14 +188,14 @@ export function useOrderBookWebSocket(
     }
   }, [exchange]);
   
-  // Main effect for initializing mock data with simulated updates
+  // Main effect for initializing WebSocket connection to real exchange APIs
   useEffect(() => {
     // Only run on the client side
     if (typeof window === 'undefined') {
       return;
     }
     
-    console.log(`[OrderBook] Initializing ${exchange} order book data with simulated updates`);
+    console.log(`[OrderBook] Initializing ${exchange} order book WebSocket connection`);
     
     // Clean up any existing connection
     if (socketRef.current) {
@@ -213,26 +213,392 @@ export function useOrderBookWebSocket(
     bidMapRef.current.clear();
     channelIdRef.current = null;
     
-    // Use mock data with simulated updates
+    // Create a real WebSocket connection based on the selected exchange
     try {
-      // Initialize with mock data
+      let formattedSymbol = symbol;
+      
+      // Format symbols properly for each exchange
+      if (exchange === 'binance') {
+        formattedSymbol = symbol.toLowerCase();
+        // Connect to Binance WebSocket for depth data
+        socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
+      } else if (exchange === 'coinbase') {
+        formattedSymbol = 'BTC-USD';
+        // Connect to Coinbase WebSocket
+        socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
+      } else {
+        // Default to Bitfinex
+        formattedSymbol = 'tBTCUSD';
+        socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
+      }
+      
+      // Handle socket open event
+      socketRef.current.onopen = () => {
+        console.log(`[OrderBook] Connected to ${exchange} WebSocket`);
+        setConnectionStatus('connected');
+        
+        // Send subscription message based on exchange format
+        if (exchange === 'binance') {
+          // No subscription needed for Binance stream URL pattern
+        } else if (exchange === 'coinbase') {
+          // Subscribe to Coinbase order book
+          socketRef.current?.send(JSON.stringify({
+            type: 'subscribe',
+            product_ids: [formattedSymbol],
+            channels: ['level2']
+          }));
+        } else {
+          // Subscribe to Bitfinex order book
+          socketRef.current?.send(JSON.stringify({
+            event: 'subscribe',
+            channel: 'book',
+            symbol: formattedSymbol,
+            precision: 'P0',
+            freq: 'F0',
+            len: '25'
+          }));
+        }
+      };
+      
+      // Initialize with mock data while waiting for real data
       const mockData = getMockOrderBook(exchange);
       internalOrderBookRef.current = mockData;
       setOrderBook(mockData);
-      setConnectionStatus('connected'); // Show as connected for better UX
       setLastUpdated(new Date());
       setIsLoading(false);
-      console.log(`[OrderBook] Using simulated data for ${exchange}`);
       
-      // Set up interval for simulated updates (every 1-2 seconds)
-      const updateInterval = setInterval(() => {
+      // Process incoming WebSocket messages from exchange
+      socketRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Process data based on exchange format
+          if (exchange === 'binance') {
+            // Handle Binance orderbook data
+            if (data.a && data.b) { // Check for asks and bids arrays
+              // Each update has 'a' for asks and 'b' for bids
+              // Format: [price, quantity]
+              
+              // Process asks
+              const newAsks = [...(internalOrderBookRef.current?.asks || [])];
+              
+              // Update asks
+              data.a.forEach((ask: string[]) => {
+                const price = parseFloat(ask[0]);
+                const amount = parseFloat(ask[1]);
+                
+                // Find and update or add entry
+                const existingIndex = newAsks.findIndex(a => a.price === price);
+                if (existingIndex >= 0) {
+                  if (amount === 0) {
+                    // Remove if quantity is 0
+                    newAsks.splice(existingIndex, 1);
+                  } else {
+                    // Update existing entry
+                    newAsks[existingIndex] = {
+                      ...newAsks[existingIndex],
+                      amount,
+                      total: price * amount
+                    };
+                  }
+                } else if (amount > 0) {
+                  // Add new entry
+                  newAsks.push({
+                    price,
+                    amount,
+                    total: price * amount,
+                    sum: 0
+                  });
+                }
+              });
+              
+              // Sort asks (lowest price first)
+              newAsks.sort((a, b) => a.price - b.price);
+              
+              // Process bids
+              const newBids = [...(internalOrderBookRef.current?.bids || [])];
+              
+              // Update bids
+              data.b.forEach((bid: string[]) => {
+                const price = parseFloat(bid[0]);
+                const amount = parseFloat(bid[1]);
+                
+                // Find and update or add entry
+                const existingIndex = newBids.findIndex(b => b.price === price);
+                if (existingIndex >= 0) {
+                  if (amount === 0) {
+                    // Remove if quantity is 0
+                    newBids.splice(existingIndex, 1);
+                  } else {
+                    // Update existing entry
+                    newBids[existingIndex] = {
+                      ...newBids[existingIndex],
+                      amount,
+                      total: price * amount
+                    };
+                  }
+                } else if (amount > 0) {
+                  // Add new entry
+                  newBids.push({
+                    price,
+                    amount,
+                    total: price * amount,
+                    sum: 0
+                  });
+                }
+              });
+              
+              // Sort bids (highest price first)
+              newBids.sort((a, b) => b.price - a.price);
+              
+              // Limit to a reasonable number of entries for display
+              const limitedAsks = newAsks.slice(0, 25);
+              const limitedBids = newBids.slice(0, 25);
+              
+              // Recalculate sums
+              let askSum = 0;
+              limitedAsks.forEach((ask, i) => {
+                askSum += ask.amount;
+                limitedAsks[i].sum = askSum;
+              });
+              
+              let bidSum = 0;
+              limitedBids.forEach((bid, i) => {
+                bidSum += bid.amount;
+                limitedBids[i].sum = bidSum;
+              });
+              
+              // Calculate spread
+              const spread = limitedAsks.length > 0 && limitedBids.length > 0
+                ? limitedAsks[0].price - limitedBids[0].price
+                : 0;
+              
+              // Update internal order book
+              const updatedOrderBook = {
+                asks: limitedAsks,
+                bids: limitedBids,
+                spread,
+                exchange
+              };
+              
+              internalOrderBookRef.current = updatedOrderBook;
+              setOrderBook(updatedOrderBook);
+              setLastUpdated(new Date());
+              
+              // Record update for performance metrics
+              const now = performance.now();
+              updateTimesRef.current.push(now - (lastMetricsTimeRef.current || now - 100));
+              lastMetricsTimeRef.current = now;
+              
+              // Keep only the last 60 updates
+              if (updateTimesRef.current.length > 60) {
+                updateTimesRef.current.shift();
+              }
+            }
+          } else if (exchange === 'coinbase') {
+            // Handle Coinbase orderbook data
+            if (data.type === 'snapshot') {
+              // Process snapshot (initial state)
+              const asks = data.asks.map((ask: string[]) => {
+                const price = parseFloat(ask[0]);
+                const amount = parseFloat(ask[1]);
+                return {
+                  price,
+                  amount,
+                  total: price * amount,
+                  sum: 0
+                };
+              });
+              
+              const bids = data.bids.map((bid: string[]) => {
+                const price = parseFloat(bid[0]);
+                const amount = parseFloat(bid[1]);
+                return {
+                  price,
+                  amount,
+                  total: price * amount,
+                  sum: 0
+                };
+              });
+              
+              // Sort
+              asks.sort((a, b) => a.price - b.price);
+              bids.sort((a, b) => b.price - a.price);
+              
+              // Calculate sums
+              let askSum = 0;
+              asks.forEach((ask, i) => {
+                askSum += ask.amount;
+                asks[i].sum = askSum;
+              });
+              
+              let bidSum = 0;
+              bids.forEach((bid, i) => {
+                bidSum += bid.amount;
+                bids[i].sum = bidSum;
+              });
+              
+              // Calculate spread
+              const spread = asks.length > 0 && bids.length > 0
+                ? asks[0].price - bids[0].price
+                : 0;
+              
+              // Update state
+              const newOrderBook = {
+                asks,
+                bids,
+                spread,
+                exchange
+              };
+              
+              internalOrderBookRef.current = newOrderBook;
+              setOrderBook(newOrderBook);
+              setLastUpdated(new Date());
+            } else if (data.type === 'l2update') {
+              // Process updates
+              if (!internalOrderBookRef.current) return;
+              
+              const newAsks = [...internalOrderBookRef.current.asks];
+              const newBids = [...internalOrderBookRef.current.bids];
+              
+              data.changes.forEach((change: string[]) => {
+                const side = change[0];
+                const price = parseFloat(change[1]);
+                const amount = parseFloat(change[2]);
+                
+                if (side === 'buy') {
+                  // Update bid
+                  const existingIndex = newBids.findIndex(b => b.price === price);
+                  if (existingIndex >= 0) {
+                    if (amount === 0) {
+                      newBids.splice(existingIndex, 1);
+                    } else {
+                      newBids[existingIndex] = {
+                        ...newBids[existingIndex],
+                        amount,
+                        total: price * amount
+                      };
+                    }
+                  } else if (amount > 0) {
+                    newBids.push({
+                      price,
+                      amount,
+                      total: price * amount,
+                      sum: 0
+                    });
+                    newBids.sort((a, b) => b.price - a.price);
+                  }
+                } else {
+                  // Update ask
+                  const existingIndex = newAsks.findIndex(a => a.price === price);
+                  if (existingIndex >= 0) {
+                    if (amount === 0) {
+                      newAsks.splice(existingIndex, 1);
+                    } else {
+                      newAsks[existingIndex] = {
+                        ...newAsks[existingIndex],
+                        amount,
+                        total: price * amount
+                      };
+                    }
+                  } else if (amount > 0) {
+                    newAsks.push({
+                      price,
+                      amount,
+                      total: price * amount,
+                      sum: 0
+                    });
+                    newAsks.sort((a, b) => a.price - b.price);
+                  }
+                }
+              });
+              
+              // Recalculate sums
+              let askSum = 0;
+              newAsks.forEach((ask, i) => {
+                askSum += ask.amount;
+                newAsks[i].sum = askSum;
+              });
+              
+              let bidSum = 0;
+              newBids.forEach((bid, i) => {
+                bidSum += bid.amount;
+                newBids[i].sum = bidSum;
+              });
+              
+              // Calculate spread
+              const spread = newAsks.length > 0 && newBids.length > 0
+                ? newAsks[0].price - newBids[0].price
+                : 0;
+              
+              // Update internal order book
+              const updatedOrderBook = {
+                asks: newAsks,
+                bids: newBids,
+                spread,
+                exchange
+              };
+              
+              internalOrderBookRef.current = updatedOrderBook;
+              setOrderBook(updatedOrderBook);
+              setLastUpdated(new Date());
+              
+              // Record update for performance metrics
+              const now = performance.now();
+              updateTimesRef.current.push(now - (lastMetricsTimeRef.current || now - 100));
+              lastMetricsTimeRef.current = now;
+            }
+          } else if (exchange === 'bitfinex') {
+            // Handle Bitfinex orderbook data
+            if (Array.isArray(data) && data[1] === 'hb') {
+              // Heartbeat, ignore
+              return;
+            }
+            
+            if (Array.isArray(data) && data[0] === channelIdRef.current) {
+              // Normal update
+              if (Array.isArray(data[1])) {
+                if (Array.isArray(data[1][0])) {
+                  // Snapshot
+                  const entries: BitfinexOrderBookEntry[] = data[1];
+                  processSnapshot(entries);
+                } else {
+                  // Single update
+                  const entry: BitfinexOrderBookEntry = data[1];
+                  processUpdate(entry);
+                }
+              }
+            } else if (typeof data === 'object' && data.event === 'subscribed' && data.channel === 'book') {
+              // Save channel ID for later updates
+              channelIdRef.current = data.chanId;
+            }
+          }
+        } catch (error) {
+          console.error(`[OrderBook] Error processing ${exchange} WebSocket message:`, error);
+        }
+      };
+      
+      // Handle errors and reconnection
+      socketRef.current.onerror = (error) => {
+        console.error(`[OrderBook] WebSocket error:`, error);
+        setConnectionStatus('error');
+      };
+      
+      socketRef.current.onclose = () => {
+        console.log(`[OrderBook] WebSocket closed`);
+        setConnectionStatus('disconnected');
+      };
+      // Only set up simulated updates if we're in simulation mode
+      const useSimulation = false;
+      if (useSimulation) {
+        // Set up interval for simulated updates (every 1-2 seconds)
+        const updateInterval = setInterval(() => {
         if (internalOrderBookRef.current) {
           updateInternalOrderBook();
         }
       }, 1000 + Math.random() * 1000);
-      
-      // Store the interval for cleanup
-      updateTimeoutRef.current = updateInterval as unknown as number;
+      }
+      // No interval to cleanup if we're not using simulation
       
     } catch (err) {
       console.error('[OrderBook] Error setting mock data:', err);
@@ -262,6 +628,178 @@ export function useOrderBookWebSocket(
   // Track update times for performance metrics
   const updateTimesRef = useRef<number[]>([]);
   const lastMetricsTimeRef = useRef<number>(0);
+  
+  // Helper functions for processing Bitfinex data
+  const processSnapshot = (entries: BitfinexOrderBookEntry[]) => {
+    const asks: OrderBookEntry[] = [];
+    const bids: OrderBookEntry[] = [];
+    
+    // Process each entry [price, count, amount]
+    entries.forEach(entry => {
+      const [price, count, amount] = entry;
+      
+      // In Bitfinex, negative amount = ask, positive = bid
+      if (amount < 0) {
+        // This is an ask
+        asks.push({
+          price,
+          amount: Math.abs(amount),
+          total: price * Math.abs(amount),
+          sum: 0
+        });
+      } else if (amount > 0) {
+        // This is a bid
+        bids.push({
+          price,
+          amount,
+          total: price * amount,
+          sum: 0
+        });
+      }
+    });
+    
+    // Sort
+    asks.sort((a, b) => a.price - b.price);
+    bids.sort((a, b) => b.price - a.price);
+    
+    // Calculate cumulative sums
+    let askSum = 0;
+    asks.forEach((ask, i) => {
+      askSum += ask.amount;
+      asks[i].sum = askSum;
+    });
+    
+    let bidSum = 0;
+    bids.forEach((bid, i) => {
+      bidSum += bid.amount;
+      bids[i].sum = bidSum;
+    });
+    
+    // Calculate spread
+    const spread = asks.length > 0 && bids.length > 0
+      ? asks[0].price - bids[0].price
+      : 0;
+    
+    // Update state
+    const newOrderBook = {
+      asks,
+      bids,
+      spread,
+      exchange: 'bitfinex'
+    };
+    
+    internalOrderBookRef.current = newOrderBook;
+    setOrderBook(newOrderBook);
+    setLastUpdated(new Date());
+  };
+  
+  const processUpdate = (entry: BitfinexOrderBookEntry) => {
+    if (!internalOrderBookRef.current) return;
+    
+    const [price, count, amount] = entry;
+    
+    // Clone current order book
+    const newAsks = [...internalOrderBookRef.current.asks];
+    const newBids = [...internalOrderBookRef.current.bids];
+    
+    if (count === 0) {
+      // Remove price level
+      if (amount < 0) {
+        // Remove ask
+        const index = newAsks.findIndex(ask => ask.price === price);
+        if (index >= 0) {
+          newAsks.splice(index, 1);
+        }
+      } else {
+        // Remove bid
+        const index = newBids.findIndex(bid => bid.price === price);
+        if (index >= 0) {
+          newBids.splice(index, 1);
+        }
+      }
+    } else {
+      // Update or add price level
+      if (amount < 0) {
+        // Update ask
+        const absAmount = Math.abs(amount);
+        const index = newAsks.findIndex(ask => ask.price === price);
+        
+        if (index >= 0) {
+          // Update existing
+          newAsks[index] = {
+            ...newAsks[index],
+            amount: absAmount,
+            total: price * absAmount
+          };
+        } else {
+          // Add new
+          newAsks.push({
+            price,
+            amount: absAmount,
+            total: price * absAmount,
+            sum: 0
+          });
+          newAsks.sort((a, b) => a.price - b.price);
+        }
+      } else {
+        // Update bid
+        const index = newBids.findIndex(bid => bid.price === price);
+        
+        if (index >= 0) {
+          // Update existing
+          newBids[index] = {
+            ...newBids[index],
+            amount,
+            total: price * amount
+          };
+        } else {
+          // Add new
+          newBids.push({
+            price,
+            amount,
+            total: price * amount,
+            sum: 0
+          });
+          newBids.sort((a, b) => b.price - a.price);
+        }
+      }
+    }
+    
+    // Recalculate sums
+    let askSum = 0;
+    newAsks.forEach((ask, i) => {
+      askSum += ask.amount;
+      newAsks[i].sum = askSum;
+    });
+    
+    let bidSum = 0;
+    newBids.forEach((bid, i) => {
+      bidSum += bid.amount;
+      newBids[i].sum = bidSum;
+    });
+    
+    // Calculate spread
+    const spread = newAsks.length > 0 && newBids.length > 0
+      ? newAsks[0].price - newBids[0].price
+      : 0;
+    
+    // Update state
+    const updatedOrderBook = {
+      asks: newAsks,
+      bids: newBids,
+      spread,
+      exchange: 'bitfinex'
+    };
+    
+    internalOrderBookRef.current = updatedOrderBook;
+    setOrderBook(updatedOrderBook);
+    setLastUpdated(new Date());
+    
+    // Record update for performance metrics
+    const now = performance.now();
+    updateTimesRef.current.push(now - (lastMetricsTimeRef.current || now - 100));
+    lastMetricsTimeRef.current = now;
+  };
   
   // Simulate real-time order book updates and track performance measurements
   useEffect(() => {
