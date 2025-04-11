@@ -42,24 +42,17 @@ const AMOUNT_PRESETS = [
   { label: '1', value: '1' },
 ];
 
-// Available exchanges
-type Exchange = 'bitfinex' | 'coinbase' | 'binance';
-
-const EXCHANGES = [
-  { id: 'bitfinex', name: 'Bitfinex', logo: '💱' },
-  { id: 'coinbase', name: 'Coinbase', logo: '🔷' },
-  { id: 'binance', name: 'Binance', logo: '🟡' },
-];
+// Type for exchange name
+type Exchange = 'bitfinex';
 
 // Create a client-side only version of the component - export the function for testing
 export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
-  const [orderType, setOrderType] = useState<'buy' | 'sell'>('sell');
-  const [viewMode, setViewMode] = useState<'sum' | 'detailed'>('sum');
-  const [selectedExchange, setSelectedExchange] = useState<Exchange>('bitfinex');
-  const [isExchangeTransitioning, setIsExchangeTransitioning] = useState(false);
+  // Fixed to 'sum' view mode and 'bitfinex' exchange
+  const viewMode = 'sum';
+  const selectedExchange = 'bitfinex' as Exchange;
   const presetsRef = useRef<HTMLDivElement>(null);
   
   // Tooltip state
@@ -306,66 +299,45 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       const newAnimatingBids: Record<number, boolean> = {};
       
       if (localOrderBook) {
-        // Only animate changes if not changing exchange
-        if (!isExchangeTransitioning) {
-          // Find changed asks
-          wsOrderBook.asks.forEach(ask => {
-            const existingAsk = localOrderBook.asks.find(a => a.price === ask.price);
-            if (!existingAsk || existingAsk.amount !== ask.amount) {
-              newAnimatingAsks[ask.price] = true;
-            }
-          });
-          
-          // Find changed bids
-          wsOrderBook.bids.forEach(bid => {
-            const existingBid = localOrderBook.bids.find(b => b.price === bid.price);
-            if (!existingBid || existingBid.amount !== bid.amount) {
-              newAnimatingBids[bid.price] = true;
-            }
-          });
-        }
+        // Find changed asks
+        wsOrderBook.asks.forEach(ask => {
+          const existingAsk = localOrderBook.asks.find(a => a.price === ask.price);
+          if (!existingAsk || existingAsk.amount !== ask.amount) {
+            newAnimatingAsks[ask.price] = true;
+          }
+        });
+        
+        // Find changed bids
+        wsOrderBook.bids.forEach(bid => {
+          const existingBid = localOrderBook.bids.find(b => b.price === bid.price);
+          if (!existingBid || existingBid.amount !== bid.amount) {
+            newAnimatingBids[bid.price] = true;
+          }
+        });
       }
       
-      // Handle the exchange transition with a smooth animation
-      if (selectedExchange !== localOrderBook?.exchange) {
-        setIsExchangeTransitioning(true);
-        setTimeout(() => {
-          setLocalOrderBook(wsOrderBook);
-          setIsExchangeTransitioning(false);
-        }, 300);
-      } else {
-        // Regular update - set animations and update the book
-        setAnimatingAsks(newAnimatingAsks);
-        setAnimatingBids(newAnimatingBids);
-        setLocalOrderBook(wsOrderBook);
-        
-        // Clear animations after a very short delay (100ms)
-        setTimeout(() => {
-          setAnimatingAsks({});
-          setAnimatingBids({});
-        }, 100);
-      }
+      // Regular update - set animations and update the book
+      setAnimatingAsks(newAnimatingAsks);
+      setAnimatingBids(newAnimatingBids);
+      setLocalOrderBook(wsOrderBook);
+      
+      // Clear animations after a very short delay (100ms)
+      setTimeout(() => {
+        setAnimatingAsks({});
+        setAnimatingBids({});
+      }, 100);
+      
       return;
     } 
     
     // If we still don't have any order book data at all, use mock data as a last resort
     if (!localOrderBook) {
-      setIsExchangeTransitioning(true);
-      
-      setTimeout(() => {
-        const newOrderBook = getMockOrderBook(selectedExchange);
-        setLocalOrderBook(newOrderBook);
-        setIsExchangeTransitioning(false);
-      }, 300);
+      const newOrderBook = getMockOrderBook(selectedExchange);
+      setLocalOrderBook(newOrderBook);
     }
-  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook, isExchangeTransitioning]);
+  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
   
-  // Handle exchange selection
-  const handleExchangeChange = (exchange: Exchange) => {
-    if (exchange !== selectedExchange) {
-      setSelectedExchange(exchange);
-    }
-  };
+  // Fixed to Bitfinex exchange
   
   // Handle click outside to close presets dropdown
   useEffect(() => {
@@ -450,10 +422,8 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
     );
   }
   
-  // Add transition effect when switching exchanges
-  const contentClasses = isExchangeTransitioning
-    ? 'opacity-30 transition-opacity duration-300 ease-in-out'
-    : 'opacity-100 transition-opacity duration-300 ease-in-out';
+  // Content classes for consistent styling
+  const contentClasses = 'opacity-100';
   
   const { asks, bids, spread } = localOrderBook;
   
@@ -463,8 +433,8 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
     ...bids.map(bid => bid.amount)
   );
   
-  // Get the current exchange display name
-  const currentExchange = EXCHANGES.find(ex => ex.id === selectedExchange) || EXCHANGES[0];
+  // Bitfinex is the only exchange used
+  const currentExchange = { logo: '💱', name: 'Bitfinex' };
 
   return (
     <div className="text-white w-full font-sans">
@@ -483,31 +453,16 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       />
       
       <div className="flex justify-between items-center">
-        <h2 id="halving-title" className="text-xl font-fuji-bold">
-          Order Book
-        </h2>
-        
-        {/* Exchange Selection Tabs */}
-        <div className="flex bg-gray-900 rounded-sm shadow overflow-hidden">
-          {EXCHANGES.map((exchange) => (
-            <button
-              key={exchange.id}
-              onClick={() => handleExchangeChange(exchange.id as Exchange)}
-              className={`
-                px-3 py-1 text-xs font-medium transition-all duration-300 ease-in-out
-                flex items-center justify-center gap-1
-                ${selectedExchange === exchange.id 
-                  ? 'bg-gray-700 text-white' 
-                  : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800'}
-                ${isExchangeTransitioning ? 'opacity-50 pointer-events-none' : ''}
-              `}
-              disabled={isExchangeTransitioning}
-              aria-pressed={selectedExchange === exchange.id}
-            >
-              <span>{exchange.logo}</span>
-              <span>{exchange.name}</span>
-            </button>
-          ))}
+        <div className="flex justify-between items-center w-full">
+          <h2 id="halving-title" className="text-xl font-fuji-bold">
+            Order Book
+          </h2>
+          
+          {/* Exchange indicator */}
+          <div className="text-right text-sm text-gray-400 flex items-center">
+            <span>💱</span>
+            <span className="ml-1">Bitfinex</span>
+          </div>
         </div>
       </div>
 
@@ -597,43 +552,8 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         </div>
       </div>
 
-      {/* Order Type Buttons */}
-      <div className="flex mb-3 text-xs">
-        <button 
-          className={`px-2 py-1 rounded-l-sm border border-divider hover:bg-gray-700 transition-colors
-            ${orderType === 'buy' ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300'}`}
-          onClick={() => setOrderType('buy')}
-          aria-pressed={orderType === 'buy'}
-        >
-          Buy
-        </button>
-        <button 
-          className={`px-2 py-1 rounded-r-sm border-t border-r border-b border-divider hover:bg-gray-700 transition-colors
-            ${orderType === 'sell' ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300'}`}
-          onClick={() => setOrderType('sell')}
-          aria-pressed={orderType === 'sell'}
-        >
-          Sell
-        </button>
-        <div className="ml-auto flex gap-2">
-          <button 
-            className={`px-2 py-1 rounded-sm border border-divider hover:bg-gray-700 transition-colors
-              ${viewMode === 'sum' ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300'}`}
-            onClick={() => setViewMode('sum')}
-            aria-pressed={viewMode === 'sum'}
-          >
-            Sum
-          </button>
-          <button 
-            className={`px-2 py-1 rounded-sm border border-divider hover:bg-gray-700 transition-colors
-              ${viewMode === 'detailed' ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300'}`}
-            onClick={() => setViewMode('detailed')}
-            aria-pressed={viewMode === 'detailed'}
-          >
-            Detailed
-          </button>
-        </div>
-      </div>
+      {/* Order Book Margin for spacing */}
+      <div className="mb-3"></div>
       
       {/* Column Headers with Exchange Indicator */}
       <div className={`grid grid-cols-18 text-xs py-2 px-1 border-b border-divider ${contentClasses}`}>
