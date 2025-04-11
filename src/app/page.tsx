@@ -5,6 +5,7 @@ import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';
 // Use dynamic import for OrderBook to ensure it only runs on client-side
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
 const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
   ssr: false,
   loading: () => (
@@ -103,6 +104,20 @@ export default function Home() {
   
   // Use the halving data hook
   const { halvingData, isLoading: isHalvingLoading, error: halvingError } = useHalvingData();
+
+  // Update document title with current BTC price
+  useEffect(() => {
+    if (bitcoinData && bitcoinData.price) {
+      // Format price with no decimal places for the title (to save space)
+      const formattedPrice = bitcoinData.price.toLocaleString('en-US', { 
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+      
+      // Set document title with format: "$75,432 - BTC Tooling"
+      document.title = `$${formattedPrice} - BTC Tooling`;
+    }
+  }, [bitcoinData]);
 
   // Refresh function for manual refresh
   const refreshHalvingData = async () => {
