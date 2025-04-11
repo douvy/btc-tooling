@@ -19,11 +19,12 @@ export function normalizeDecimalPlaces(value: number, decimalPlaces = PRICE_DECI
 /**
  * Format price for display with proper locale and currency symbol
  */
-export function formatPrice(price: number): string {
-  return price.toLocaleString('en-US', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
+export function formatPrice(price: number, decimals: number = 2, symbol: string = ''): string {
+  const formatted = price.toLocaleString('en-US', { 
+    minimumFractionDigits: decimals, 
+    maximumFractionDigits: decimals 
   });
+  return `${symbol}${formatted}`;
 }
 
 /**
@@ -31,6 +32,42 @@ export function formatPrice(price: number): string {
  */
 export function formatPercent(percent: number): string {
   return `${percent.toFixed(2)}%`;
+}
+
+/**
+ * Format percentage with options for decimals and plus sign
+ * Used for displaying percentage changes
+ */
+export function formatPercentage(value: number, decimals: number = 2, showPlusSign: boolean = false): string {
+  const fixed = value.toFixed(decimals);
+  // Only add plus sign for positive values when requested
+  const prefix = showPlusSign && value > 0 ? '+' : '';
+  return `${prefix}${fixed}%`;
+}
+
+/**
+ * Calculate price change between old and new price
+ * Returns an object with absolute change, percentage change, and direction
+ */
+export function calculatePriceChange(oldPrice: number, newPrice: number): { 
+  change: number; 
+  changePercent: number; 
+  direction: 'up' | 'down';
+} {
+  // Calculate absolute change
+  const change = newPrice - oldPrice;
+  
+  // Calculate percentage change while avoiding division by zero
+  const changePercent = oldPrice === 0 ? 0 : (change / oldPrice) * 100;
+  
+  // Determine direction
+  const direction = change >= 0 ? 'up' : 'down';
+  
+  return {
+    change,
+    changePercent,
+    direction
+  };
 }
 
 /**
