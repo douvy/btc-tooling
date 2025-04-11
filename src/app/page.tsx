@@ -11,28 +11,8 @@ import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
 import { useHalvingData } from '@/hooks/useHalvingData';
 import Image from 'next/image';
 
-// Mock data for non-price components
-const mockOrderBook = {
-  asks: [
-    { price: 83040.88, amount: 0.0020, total: 90500, sum: 1739 },
-    { price: 83040.87, amount: 0.0020, total: 90000, sum: 1694 },
-    { price: 83040.55, amount: 0.0000, total: 89500, sum: 1543 },
-    { price: 83040.53, amount: 0.0005, total: 89000, sum: 1513 },
-    { price: 83040.33, amount: 0.0006, total: 88500, sum: 1351 },
-    { price: 83040.00, amount: 0.0000, total: 88000, sum: 1230 },
-    { price: 83039.72, amount: 0.0000, total: 87500, sum: 883 }
-  ],
-  bids: [
-    { price: 83038.83, amount: 1.4728, total: 83000, sum: 28 },
-    { price: 83038.82, amount: 0.0004, total: 82500, sum: 227 },
-    { price: 83038.78, amount: 0.0001, total: 82000, sum: 413 },
-    { price: 83038.74, amount: 0.0009, total: 81500, sum: 642 },
-    { price: 83038.72, amount: 0.0007, total: 81000, sum: 863 },
-    { price: 83038.53, amount: 0.0000, total: 80500, sum: 985 },
-    { price: 83038.52, amount: 0.0004, total: 80000, sum: 1209 }
-  ],
-  spread: 0.01
-};
+// Import mock data generator
+import { getMockOrderBook } from '@/lib/mockData';
 
 const halvingInfo = {
   daysRemaining: 1084,
@@ -247,7 +227,6 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
               <OrderBook 
-                orderBook={mockOrderBook} 
                 currentPrice={bitcoinData?.price || 0} 
                 priceChange={bitcoinData?.change || 0} 
               />
