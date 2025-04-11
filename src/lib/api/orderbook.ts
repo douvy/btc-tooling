@@ -1,4 +1,4 @@
-import { OrderBook } from '@/types';
+import { OrderBook, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 
 /**
@@ -39,8 +39,8 @@ export async function fetchBitfinexOrderBook(
     const data = await response.json();
     
     // Process the data into our standard format
-    const asks: any[] = [];
-    const bids: any[] = [];
+    const asks: OrderBookEntry[] = [];
+    const bids: OrderBookEntry[] = [];
     
     data.forEach((entry: number[]) => {
       const [price, count, amount] = entry;
@@ -71,13 +71,13 @@ export async function fetchBitfinexOrderBook(
     
     // Calculate cumulative sums
     let askSum = 0;
-    asks.forEach((ask, i) => {
+    asks.forEach((ask: OrderBookEntry, i: number) => {
       askSum += ask.amount;
       asks[i].sum = askSum;
     });
     
     let bidSum = 0;
-    bids.forEach((bid, i) => {
+    bids.forEach((bid: OrderBookEntry, i: number) => {
       bidSum += bid.amount;
       bids[i].sum = bidSum;
     });
@@ -151,13 +151,13 @@ export async function fetchCoinbaseOrderBook(
     
     // Calculate cumulative sums
     let askSum = 0;
-    asks.forEach((ask, i) => {
+    asks.forEach((ask: OrderBookEntry, i: number) => {
       askSum += ask.amount;
       asks[i].sum = askSum;
     });
     
     let bidSum = 0;
-    bids.forEach((bid, i) => {
+    bids.forEach((bid: OrderBookEntry, i: number) => {
       bidSum += bid.amount;
       bids[i].sum = bidSum;
     });
@@ -231,13 +231,13 @@ export async function fetchBinanceOrderBook(
     
     // Calculate cumulative sums
     let askSum = 0;
-    asks.forEach((ask, i) => {
+    asks.forEach((ask: OrderBookEntry, i: number) => {
       askSum += ask.amount;
       asks[i].sum = askSum;
     });
     
     let bidSum = 0;
-    bids.forEach((bid, i) => {
+    bids.forEach((bid: OrderBookEntry, i: number) => {
       bidSum += bid.amount;
       bids[i].sum = bidSum;
     });

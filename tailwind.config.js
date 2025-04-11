@@ -33,6 +33,16 @@ module.exports = {
         'gotham-medium': ['GothamCondensed-Medium', 'sans-serif'],
         'gotham-light': ['GothamCondensed-Light', 'sans-serif'],
       },
+      animation: {
+        'fadeIn': 'fadeIn 0.2s ease-in-out',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        }
+      },
     },
   },
   plugins: [],
