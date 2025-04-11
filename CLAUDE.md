@@ -93,6 +93,13 @@ This will:
 4. Sort issues by type and number
 5. Display a cleaner, more organized view
 
+### Viewing Full Issue Contents
+
+When the user requests "Display the full contents of issue #X" or similar:
+1. Use the GitHub CLI to fetch the live issue data
+2. Execute: `gh issue view X` (where X is the issue number)
+3. Display the complete issue details including description, tasks, comments, and metadata
+
 ## Issue Completion Protocol
 
 After completing an issue and before committing changes:
