@@ -138,7 +138,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
     showTooltip(rect, type, price, amount, total, sum, totalSum, rowId);
   };
   
-  // Handle touch interactions for mobile
+  // Handle touch interactions for mobile - highlight row without tooltip
   const handleOrderRowTouch = (
     e: ReactTouchEvent,
     type: 'ask' | 'bid',
@@ -149,16 +149,15 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
     totalSum: number,
     rowId: string
   ) => {
-    e.preventDefault(); // Prevent scrolling
+    if (!isMobile) return;
     
-    const rect = e.currentTarget.getBoundingClientRect();
-    showTooltip(rect, type, price, amount, total, sum, totalSum, rowId, true);
+    // Just highlight the row without showing tooltip
+    setHoveredRowId(rowId);
     
-    // Auto-hide tooltip after a delay
+    // Auto-clear highlight after a delay
     setTimeout(() => {
-      setTooltipData(prev => ({ ...prev, isVisible: false }));
       setHoveredRowId(null);
-    }, 3000);
+    }, 1000);
   };
   
   // Hide tooltip on mouse leave
@@ -450,12 +449,12 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       </div>
 
       {/* Amount Control - Responsive for mobile */}
-      <div className={`flex items-center my-3 gap-1 ${isMobile ? 'flex-wrap justify-center' : ''}`}>
-        {/* Minus button - Larger touch target on mobile */}
-        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} 
+      <div className={`flex items-center my-3 ${isMobile ? '' : 'gap-1'}`}>
+        {/* Minus button */}
+        <div className={`${isMobile ? 'w-12' : 'w-8'} h-10 
           border ${isAtMinAmount ? 'border-gray-800' : 'border-divider'} 
           rounded-sm ${!isAtMinAmount ? 'hover:bg-gray-700' : ''} 
-          transition-colors`}>
+          transition-colors flex-shrink-0`}>
           <button 
             className={`w-full h-full flex items-center justify-center text-lg ${isAtMinAmount ? 'text-gray-700 cursor-default' : 'text-white'}`}
             onClick={decrementAmount}
@@ -464,26 +463,26 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
           >−</button>
         </div>
         
-        {/* Amount input - Full width on mobile */}
-        <div className={`relative ${isMobile ? 'flex-1 min-w-[60%]' : ''}`}>
-          <div className={`${isMobile ? 'w-full' : 'w-[210px]'} h-8 border border-divider flex items-center rounded-sm ml-1 mr-1`}>
+        {/* Amount input - Fixed width to ensure proper sizing */}
+        <div className="flex-grow mx-3">
+          <div className="w-full h-10 border border-divider flex items-center rounded-sm relative">
             <input
               type="text"
               value={amount}
               onChange={handleAmountChange}
               onBlur={handleBlur}
-              className="w-full h-full bg-transparent text-sm text-white text-center outline-none"
+              className="w-full h-full bg-transparent text-sm text-white text-center outline-none px-8"
               aria-label="Amount in BTC"
             />
-            <span className="absolute right-3 text-sm text-white">BTC</span>
+            <span className="absolute right-2 text-sm text-white">BTC</span>
           </div>
         </div>
         
-        {/* Plus button - Larger touch target on mobile */}
-        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} 
+        {/* Plus button */}
+        <div className={`${isMobile ? 'w-12' : 'w-8'} h-10 
           border ${isAtMaxAmount ? 'border-gray-800' : 'border-divider'} 
           rounded-sm ${!isAtMaxAmount ? 'hover:bg-gray-700' : ''} 
-          transition-colors`}>
+          transition-colors flex-shrink-0`}>
           <button 
             className={`w-full h-full flex items-center justify-center text-lg ${isAtMaxAmount ? 'text-gray-700 cursor-default' : 'text-white'}`}
             onClick={incrementAmount}
