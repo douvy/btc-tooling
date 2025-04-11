@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, ChangeEvent, MouseEvent as ReactMouseEvent } from 'react';
+import { 
+  useState, 
+  useEffect, 
+  useRef, 
+  ChangeEvent, 
+  MouseEvent as ReactMouseEvent,
+  TouchEvent as ReactTouchEvent
+} from 'react';
 import { OrderBook as OrderBookType, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
@@ -72,24 +79,43 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
   // Track which row is being hovered
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   
-  // Handle hover interactions
-  const handleOrderRowMouseEnter = (
-    e: ReactMouseEvent,
+  // Mobile optimization: Detect screen size and control number of visible orders
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [mobileOrderCount, setMobileOrderCount] = useState<number>(8); // Default fewer orders on mobile
+  
+  // Common function to handle hover/touch
+  const showTooltip = (
+    rect: DOMRect,
     type: 'ask' | 'bid',
     price: number,
     amount: number,
     total: number,
     sum: number,
     totalSum: number,
-    rowId: string
+    rowId: string,
+    isTouchEvent: boolean = false
   ) => {
     // Calculate percentage of total book
     const percentage = (sum / totalSum) * 100;
     
-    // Calculate tooltip position
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.right + 10; // Position to the right of the row
-    const y = rect.top;
+    // Calculate tooltip position - adjust for mobile touch events
+    let x = rect.right + 10; // Position to the right of the row
+    let y = rect.top;
+    
+    // For touch events on mobile, position tooltip in a more touch-friendly way
+    if (isTouchEvent && isMobile) {
+      // On mobile and touch, center tooltip horizontally and place it above or below the row
+      x = window.innerWidth / 2 - 125; // 250px wide tooltip centered
+      
+      // Position above or below depending on vertical position
+      if (rect.top > window.innerHeight / 2) {
+        // If in bottom half of screen, position above
+        y = rect.top - 200;
+      } else {
+        // If in top half of screen, position below
+        y = rect.bottom + 10;
+      }
+    }
     
     // Update tooltip data
     setTooltipData({
@@ -105,15 +131,83 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
       percentage
     });
     
-    // Track hovered row
+    // Track hovered/touched row
     setHoveredRowId(rowId);
+  };
+  
+  // Handle hover interactions
+  const handleOrderRowMouseEnter = (
+    e: ReactMouseEvent,
+    type: 'ask' | 'bid',
+    price: number,
+    amount: number,
+    total: number,
+    sum: number,
+    totalSum: number,
+    rowId: string
+  ) => {
+    // Skip hover handling on mobile devices (use touch instead)
+    if (isMobile) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    showTooltip(rect, type, price, amount, total, sum, totalSum, rowId);
+  };
+  
+  // Handle touch interactions for mobile
+  const handleOrderRowTouch = (
+    e: ReactTouchEvent,
+    type: 'ask' | 'bid',
+    price: number,
+    amount: number,
+    total: number,
+    sum: number,
+    totalSum: number,
+    rowId: string
+  ) => {
+    e.preventDefault(); // Prevent scrolling
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    showTooltip(rect, type, price, amount, total, sum, totalSum, rowId, true);
+    
+    // Auto-hide tooltip after a delay
+    setTimeout(() => {
+      setTooltipData(prev => ({ ...prev, isVisible: false }));
+      setHoveredRowId(null);
+    }, 3000);
   };
   
   // Hide tooltip on mouse leave
   const handleOrderRowMouseLeave = () => {
-    setTooltipData(prev => ({ ...prev, isVisible: false }));
-    setHoveredRowId(null);
+    // Only respond to mouse leave on desktop
+    if (!isMobile) {
+      setTooltipData(prev => ({ ...prev, isVisible: false }));
+      setHoveredRowId(null);
+    }
   };
+  
+  // Handle touch events outside of order rows to hide tooltip
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isMobile) {
+      return;
+    }
+    
+    const handleTouchOutside = (e: TouchEvent) => {
+      // Hide tooltip when touching elsewhere
+      if (tooltipData.isVisible) {
+        const target = e.target as Element;
+        // Check if touch is outside of order rows
+        if (!target.closest('.order-row')) {
+          setTooltipData(prev => ({ ...prev, isVisible: false }));
+          setHoveredRowId(null);
+        }
+      }
+    };
+    
+    document.addEventListener('touchstart', handleTouchOutside);
+    return () => {
+      document.removeEventListener('touchstart', handleTouchOutside);
+    };
+  }, [isMobile, tooltipData.isVisible]);
   
   // Use WebSocket hook for Bitfinex data with FPS limiting
   const {
@@ -128,6 +222,40 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
   // Manage local order book based on props or WebSocket data
   const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
   
+  // Detect mobile screen size and adjust layout accordingly
+  useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768; // md breakpoint in Tailwind
+      setIsMobile(mobile);
+      
+      // Adjust number of visible orders based on screen size
+      // Smaller screens get fewer rows to avoid crowded UI
+      if (mobile) {
+        if (window.innerWidth < 375) {
+          setMobileOrderCount(5); // Very small screens
+        } else {
+          setMobileOrderCount(8); // Regular mobile screens
+        }
+      } else {
+        setMobileOrderCount(Infinity); // Show all on larger screens
+      }
+    };
+    
+    // Initial check
+    checkMobile();
+    
+    // Set up listener for resize events
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up event listener
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Use provided orderBook prop, WebSocket data, or fallbacks as appropriate
   useEffect(() => {
     // First priority: Use prop data if available
@@ -311,10 +439,10 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
         </div>
       </div>
 
-      {/* Enhanced Amount Control */}
-      <div className="flex items-center my-3 gap-1">
-        {/* Minus button */}
-        <div className="w-8 h-8 border border-divider rounded-sm hover:bg-gray-700 transition-colors">
+      {/* Enhanced Amount Control - Responsive for mobile */}
+      <div className={`flex items-center my-3 gap-1 ${isMobile ? 'flex-wrap justify-center' : ''}`}>
+        {/* Minus button - Larger touch target on mobile */}
+        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} border border-divider rounded-sm hover:bg-gray-700 transition-colors`}>
           <button 
             className="w-full h-full flex items-center justify-center text-lg text-white"
             onClick={decrementAmount}
@@ -322,10 +450,10 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
           >−</button>
         </div>
         
-        {/* Amount input with dropdown */}
-        <div className="relative">
+        {/* Amount input with dropdown - Full width on mobile */}
+        <div className={`relative ${isMobile ? 'flex-1 min-w-[60%]' : ''}`}>
           <div 
-            className="w-[210px] h-8 border border-divider flex items-center rounded-sm ml-1 mr-1 cursor-pointer"
+            className={`${isMobile ? 'w-full' : 'w-[210px]'} h-8 border border-divider flex items-center rounded-sm ml-1 mr-1 cursor-pointer`}
             onClick={() => setShowPresets(!showPresets)}
           >
             <input
@@ -349,18 +477,18 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
             </button>
           </div>
           
-          {/* Presets dropdown */}
+          {/* Presets dropdown - Full width on mobile */}
           {showPresets && (
             <div 
               ref={presetsRef}
-              className="absolute mt-1 left-1 w-[210px] bg-gray-800 border border-divider z-10 rounded-sm shadow-lg"
+              className={`absolute mt-1 left-1 ${isMobile ? 'w-full' : 'w-[210px]'} bg-gray-800 border border-divider z-10 rounded-sm shadow-lg`}
             >
               <div className="p-2 text-xs text-gray-400">Presets</div>
               <div className="grid grid-cols-3 gap-1 p-2">
                 {AMOUNT_PRESETS.map((preset) => (
                   <button
                     key={preset.value}
-                    className={`text-xs py-1 px-2 rounded ${
+                    className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 rounded ${
                       amount === preset.value 
                         ? 'bg-blue-500 text-white' 
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -373,7 +501,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               </div>
               <div className="p-2 border-t border-divider">
                 <button
-                  className="text-xs py-1 px-2 w-full text-left text-blue-400 hover:text-blue-300"
+                  className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 w-full text-left text-blue-400 hover:text-blue-300`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsCustomAmount(true);
@@ -387,8 +515,8 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
           )}
         </div>
         
-        {/* Plus button */}
-        <div className="w-8 h-8 border border-divider rounded-sm hover:bg-gray-700 transition-colors">
+        {/* Plus button - Larger touch target on mobile */}
+        <div className={`${isMobile ? 'w-10 h-10' : 'w-8 h-8'} border border-divider rounded-sm hover:bg-gray-700 transition-colors`}>
           <button 
             className="w-full h-full flex items-center justify-center text-lg text-white"
             onClick={incrementAmount}
@@ -438,19 +566,23 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
       {/* Column Headers with Exchange Indicator */}
       <div className={`grid grid-cols-18 text-xs py-2 px-1 border-b border-divider ${contentClasses}`}>
         <div className="col-span-1"></div> {/* Bar column */}
-        <div className="col-span-5 text-center text-[#8a919e]">Amount (BTC)</div>
+        <div className="col-span-5 text-center text-[#8a919e]">
+          {isMobile ? 'Amt' : 'Amount'} {!isMobile && '(BTC)'}
+        </div>
         <div className="col-span-6 text-center text-[#8a919e]">
           Price (USD)
           <span className="ml-1 text-[10px] text-blue-400">{currentExchange.logo}</span>
         </div>
         <div className="col-span-6 text-center text-[#8a919e]">
-          {viewMode === 'sum' ? 'Sum (BTC)' : 'Total (USD)'}
+          {viewMode === 'sum' 
+            ? (isMobile ? 'Sum' : 'Sum (BTC)') 
+            : (isMobile ? 'Total' : 'Total (USD)')}
         </div>
       </div>
 
       {/* Sell Orders (Asks) - Red */}
-      <div className={`overflow-y-auto max-h-[150px] ${contentClasses}`}>
-        {asks.map((ask, index) => {
+      <div className={`overflow-y-auto ${isMobile ? 'max-h-[120px]' : 'max-h-[150px]'} ${contentClasses}`}>
+        {asks.slice(0, isMobile ? mobileOrderCount : asks.length).map((ask, index) => {
           const volumePercentage = (ask.amount / maxVolume) * 100;
           const selectedAmount = parseFloat(amount);
           const isHighlighted = selectedAmount <= ask.amount;
@@ -462,10 +594,11 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
           return (
             <div 
               key={`ask-${index}`} 
-              className={`grid grid-cols-18 text-xs py-1 relative transition-colors
+              className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-error' : ''}
                 ${hoveredRowId === `ask-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
+                ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
               `}
               onMouseEnter={(e) => handleOrderRowMouseEnter(
                 e, 
@@ -478,6 +611,16 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                 `ask-${index}`
               )}
               onMouseLeave={handleOrderRowMouseLeave}
+              onTouchStart={(e) => handleOrderRowTouch(
+                e,
+                'ask',
+                ask.price,
+                ask.amount,
+                ask.price * ask.amount,
+                ask.sum,
+                asks[asks.length - 1].sum,
+                `ask-${index}`
+              )}
             >
               {/* Red bar column */}
               <div className="col-span-1 h-full flex items-center">
@@ -489,7 +632,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                {ask.amount.toFixed(8)}
+                {isMobile ? ask.amount.toFixed(4) : ask.amount.toFixed(8)}
                 {isInOrderRange && isHighlighted && (
                   <span className="ml-1 text-[10px] text-error">✓</span>
                 )}
@@ -498,7 +641,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               {/* Price column */}
               <div className={`col-span-6 text-center ${isInOrderRange && isHighlighted ? 'text-error font-bold' : 'text-error'}`}>
                 {ask.price.toFixed(2)}
-                {isInOrderRange && isHighlighted && selectedAmount >= ask.amount * 0.8 && (
+                {!isMobile && isInOrderRange && isHighlighted && selectedAmount >= ask.amount * 0.8 && (
                   <span className="ml-1 text-xs">${(ask.price * ask.amount).toFixed(2)}</span>
                 )}
               </div>
@@ -507,14 +650,18 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               <div className="col-span-6 text-center text-gray-300 relative">
                 {viewMode === 'sum' ? (
                   <>
-                    <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>{ask.sum.toFixed(4)}</span>
+                    <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>
+                      {isMobile ? ask.sum.toFixed(2) : ask.sum.toFixed(4)}
+                    </span>
                     <div 
                       className={`absolute top-0 right-0 h-full ${hoveredRowId === `ask-${index}` ? 'bg-error opacity-30' : 'bg-error opacity-10'}`}
                       style={{ width: `${sumPercentage}%` }}
                     ></div>
                   </>
                 ) : (
-                  <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>${(ask.price * ask.amount).toFixed(2)}</span>
+                  <span className={hoveredRowId === `ask-${index}` ? 'font-bold text-white' : ''}>
+                    ${isMobile ? Math.round(ask.price * ask.amount) : (ask.price * ask.amount).toFixed(2)}
+                  </span>
                 )}
                 
                 {/* Visual percentage indicator on hover */}
@@ -541,8 +688,8 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
       </div>
 
       {/* Buy Orders (Bids) - Green */}
-      <div className={`overflow-y-auto max-h-[150px] ${contentClasses}`}>
-        {bids.map((bid, index) => {
+      <div className={`overflow-y-auto ${isMobile ? 'max-h-[120px]' : 'max-h-[150px]'} ${contentClasses}`}>
+        {bids.slice(0, isMobile ? mobileOrderCount : bids.length).map((bid, index) => {
           const volumePercentage = (bid.amount / maxVolume) * 100;
           const selectedAmount = parseFloat(amount);
           const isHighlighted = selectedAmount <= bid.amount;
@@ -554,10 +701,11 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
           return (
             <div 
               key={`bid-${index}`} 
-              className={`grid grid-cols-18 text-xs py-1 relative transition-colors
+              className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-success' : ''}
                 ${hoveredRowId === `bid-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
+                ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
               `}
               onMouseEnter={(e) => handleOrderRowMouseEnter(
                 e, 
@@ -570,6 +718,16 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                 `bid-${index}`
               )}
               onMouseLeave={handleOrderRowMouseLeave}
+              onTouchStart={(e) => handleOrderRowTouch(
+                e,
+                'bid',
+                bid.price,
+                bid.amount,
+                bid.price * bid.amount,
+                bid.sum,
+                bids[bids.length - 1].sum,
+                `bid-${index}`
+              )}
             >
               {/* Green bar column */}
               <div className="col-span-1 h-full flex items-center">
@@ -581,7 +739,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                {bid.amount.toFixed(8)}
+                {isMobile ? bid.amount.toFixed(4) : bid.amount.toFixed(8)}
                 {isInOrderRange && isHighlighted && (
                   <span className="ml-1 text-[10px] text-success">✓</span>
                 )}
@@ -590,7 +748,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               {/* Price column */}
               <div className={`col-span-6 text-center ${isInOrderRange && isHighlighted ? 'text-success font-bold' : 'text-success'}`}>
                 {bid.price.toFixed(2)}
-                {isInOrderRange && isHighlighted && selectedAmount >= bid.amount * 0.8 && (
+                {!isMobile && isInOrderRange && isHighlighted && selectedAmount >= bid.amount * 0.8 && (
                   <span className="ml-1 text-xs">${(bid.price * bid.amount).toFixed(2)}</span>
                 )}
               </div>
@@ -599,14 +757,18 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               <div className="col-span-6 text-center text-gray-300 relative">
                 {viewMode === 'sum' ? (
                   <>
-                    <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>{bid.sum.toFixed(4)}</span>
+                    <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>
+                      {isMobile ? bid.sum.toFixed(2) : bid.sum.toFixed(4)}
+                    </span>
                     <div 
                       className={`absolute top-0 right-0 h-full ${hoveredRowId === `bid-${index}` ? 'bg-success opacity-30' : 'bg-success opacity-10'}`}
                       style={{ width: `${sumPercentage}%` }}
                     ></div>
                   </>
                 ) : (
-                  <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>${(bid.price * bid.amount).toFixed(2)}</span>
+                  <span className={hoveredRowId === `bid-${index}` ? 'font-bold text-white' : ''}>
+                    ${isMobile ? Math.round(bid.price * bid.amount) : (bid.price * bid.amount).toFixed(2)}
+                  </span>
                 )}
                 
                 {/* Visual percentage indicator on hover */}
@@ -621,46 +783,78 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
         })}
       </div>
       
-      {/* Enhanced amount summary footer */}
+      {/* Enhanced amount summary footer - Responsive for mobile */}
       <div className={`mt-3 text-xs border-t border-divider pt-3 ${contentClasses}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Amount:</span>
-            <span className="font-bold text-white">{amount} BTC</span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Value:</span>
-            <span className="font-bold text-white">${(parseFloat(amount) * currentPrice).toFixed(2)}</span>
-          </div>
-        </div>
+        {/* Desktop layout */}
+        {!isMobile && (
+          <>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Amount:</span>
+                <span className="font-bold text-white">{amount} BTC</span>
+              </div>
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Value:</span>
+                <span className="font-bold text-white">${(parseFloat(amount) * currentPrice).toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Best Ask:</span>
+                <span className="font-bold text-error">${asks[0]?.price.toFixed(2) || '--'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Best Bid:</span>
+                <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Mid Price:</span>
+                <span className="font-bold text-white">
+                  ${((asks[0]?.price + bids[0]?.price) / 2).toFixed(2) || '--'}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-400">Spread:</span>
+                <span className="font-bold text-blue-400">${spread.toFixed(2)} ({((spread / currentPrice) * 100).toFixed(3)}%)</span>
+              </div>
+            </div>
+          </>
+        )}
         
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Best Ask:</span>
-            <span className="font-bold text-error">${asks[0]?.price.toFixed(2) || '--'}</span>
+        {/* Mobile layout - More compact with grid */}
+        {isMobile && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-gray-900 p-2 rounded-sm border border-divider flex flex-col items-center">
+              <span className="text-gray-400 text-[10px]">Amount</span>
+              <span className="font-bold text-white">{amount} BTC</span>
+              <span className="text-blue-400 text-[10px]">${(parseFloat(amount) * currentPrice).toFixed(2)}</span>
+            </div>
+            
+            <div className="bg-gray-900 p-2 rounded-sm border border-divider flex flex-col items-center">
+              <span className="text-gray-400 text-[10px]">Spread</span>
+              <span className="font-bold text-blue-400">${spread.toFixed(2)}</span>
+              <span className="text-blue-300 text-[10px]">({((spread / currentPrice) * 100).toFixed(2)}%)</span>
+            </div>
+            
+            <div className="bg-gray-900 p-2 rounded-sm border border-divider flex flex-col items-center">
+              <span className="text-gray-400 text-[10px]">Best Ask</span>
+              <span className="font-bold text-error">${asks[0]?.price.toFixed(2) || '--'}</span>
+            </div>
+            
+            <div className="bg-gray-900 p-2 rounded-sm border border-divider flex flex-col items-center">
+              <span className="text-gray-400 text-[10px]">Best Bid</span>
+              <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Best Bid:</span>
-            <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Mid Price:</span>
-            <span className="font-bold text-white">
-              ${((asks[0]?.price + bids[0]?.price) / 2).toFixed(2) || '--'}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-1 text-gray-400">Spread:</span>
-            <span className="font-bold text-blue-400">${spread.toFixed(2)} ({((spread / currentPrice) * 100).toFixed(3)}%)</span>
-          </div>
-        </div>
+        )}
         
         {/* Exchange info footer with connection status and performance metrics */}
-        <div className="mt-3 pt-2 border-t border-divider flex flex-col gap-1 text-[10px] text-gray-500">
-          <div className="flex items-center justify-between">
+        <div className={`mt-3 pt-2 border-t border-divider flex ${isMobile ? 'flex-col gap-2' : 'flex-col gap-1'} text-[10px] text-gray-500`}>
+          <div className={`${isMobile ? 'flex flex-col space-y-1' : 'flex items-center justify-between'}`}>
             <div className="flex items-center">
               <span>{currentExchange.logo}</span>
               <span className="ml-1">
@@ -668,7 +862,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                 {(connectionStatus === 'fallback_rest' || 
                   connectionStatus === 'fallback_cache' || 
                   connectionStatus === 'fallback_mock') && (
-                  <span className="ml-1 text-[8px] px-1 py-0.5 bg-gray-700 rounded-sm">
+                  <span className={`ml-1 ${isMobile ? 'text-[10px]' : 'text-[8px]'} px-1 py-0.5 bg-gray-700 rounded-sm`}>
                     FALLBACK
                   </span>
                 )}
@@ -676,7 +870,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
               
               {/* Connection status for WebSocket */}
               <div className="ml-3 flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-1 ${
+                <div className={`${isMobile ? 'w-3 h-3' : 'w-2 h-2'} rounded-full mr-1 ${
                   connectionStatus === 'connected' 
                     ? 'bg-green-500' 
                     : connectionStatus === 'connecting' || connectionStatus === 'reconnecting'
@@ -689,8 +883,9 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                             ? 'bg-gray-500'
                             : 'bg-red-500'
                 }`} />
-                <span className={
-                  connectionStatus === 'connected' 
+                <span className={`
+                  ${isMobile ? 'text-[11px]' : ''}
+                  ${connectionStatus === 'connected' 
                     ? 'text-green-500' 
                     : connectionStatus === 'connecting'
                       ? 'text-yellow-500' 
@@ -703,7 +898,8 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                             : connectionStatus === 'fallback_mock'
                               ? 'text-gray-500'
                               : 'text-red-500'
-                }>
+                  }`}
+                >
                   {connectionStatus === 'connected' 
                     ? 'Live' 
                     : connectionStatus === 'connecting' 
@@ -723,7 +919,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
                 </span>
               </div>
             </div>
-            <div className="text-right">
+            <div className={`${isMobile ? 'mt-1' : ''} text-right`}>
               <span>
                 Last update: {lastUpdated.toLocaleTimeString()}
                 {connectionStatus === 'fallback_cache' && (
@@ -737,7 +933,7 @@ function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: Orde
           
           {/* Performance metrics */}
           {connectionStatus === 'connected' && (
-            <div className="flex items-center justify-between mt-1 pt-1 border-t border-divider text-[8px]">
+            <div className={`flex items-center justify-between ${isMobile ? 'mt-2 pt-2' : 'mt-1 pt-1'} border-t border-divider ${isMobile ? 'text-[10px]' : 'text-[8px]'}`}>
               <div className="flex items-center">
                 <span className="text-blue-400 mr-1">{performanceMetrics.fps}</span>
                 <span className="text-gray-500">FPS</span>
