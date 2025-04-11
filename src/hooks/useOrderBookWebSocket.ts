@@ -270,7 +270,7 @@ export function useOrderBookWebSocket(
       return;
     }
     
-    // Generate random updates to the orderbook much more frequently (200-400ms)
+    // Generate random updates to the orderbook extremely frequently (20-50ms for real-time feel)
     const updateInterval = setInterval(() => {
       if (!internalOrderBookRef.current) {
         return;
@@ -284,8 +284,10 @@ export function useOrderBookWebSocket(
       const newAsks = [...currentBook.asks];
       const newBids = [...currentBook.bids];
       
-      // Randomly modify 2-5 orders for more frequent changes
-      const numChanges = Math.floor(Math.random() * 4) + 2;
+      // Randomly modify 1-3 orders for extremely frequent updates
+      // Since the update interval is so small, we need fewer changes per update
+      // to avoid overwhelming performance
+      const numChanges = Math.floor(Math.random() * 3) + 1;
       
       for (let i = 0; i < numChanges; i++) {
         // 50% chance to modify an ask, 50% to modify a bid
@@ -391,7 +393,7 @@ export function useOrderBookWebSocket(
         updateCount: performanceMetrics.updateCount + 1,
         averageUpdateTime: avgUpdateTime
       });
-    }, 200 + Math.random() * 200); // Random interval between 200-400ms
+    }, 20 + Math.random() * 30); // Random interval between 20-50ms
     
     return () => clearInterval(updateInterval);
   }, [connectionStatus, orderBook, performanceMetrics.updateCount]);

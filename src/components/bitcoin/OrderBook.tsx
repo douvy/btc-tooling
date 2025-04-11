@@ -290,11 +290,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       setAnimatingBids(newAnimatingBids);
       setLocalOrderBook(propOrderBook);
       
-      // Clear animations after a shorter delay (200ms)
+      // Clear animations after a very short delay (100ms)
       setTimeout(() => {
         setAnimatingAsks({});
         setAnimatingBids({});
-      }, 200);
+      }, 100);
       
       return;
     }
@@ -339,11 +339,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         setAnimatingBids(newAnimatingBids);
         setLocalOrderBook(wsOrderBook);
         
-        // Clear animations after a shorter delay (200ms)
+        // Clear animations after a very short delay (100ms)
         setTimeout(() => {
           setAnimatingAsks({});
           setAnimatingBids({});
-        }, 200);
+        }, 100);
       }
       return;
     } 
@@ -497,7 +497,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 px-3 py-1 text-xs font-medium transition-all duration-300 ease-in-out
                 flex items-center justify-center gap-1
                 ${selectedExchange === exchange.id 
-                  ? 'bg-blue-600 text-white' 
+                  ? 'bg-gray-700 text-white' 
                   : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800'}
                 ${isExchangeTransitioning ? 'opacity-50 pointer-events-none' : ''}
               `}
@@ -562,7 +562,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                     key={preset.value}
                     className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 rounded ${
                       amount === preset.value 
-                        ? 'bg-blue-500 text-white' 
+                        ? 'bg-gray-600 text-white' 
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                     onClick={() => selectPreset(preset.value)}
@@ -573,7 +573,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               </div>
               <div className="p-2 border-t border-divider">
                 <button
-                  className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 w-full text-left text-blue-400 hover:text-blue-300`}
+                  className={`text-xs ${isMobile ? 'py-2' : 'py-1'} px-2 w-full text-left text-gray-400 hover:text-gray-300`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsCustomAmount(true);
@@ -669,7 +669,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-error' : ''}
-                ${hoveredRowId === `ask-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
+                ${hoveredRowId === `ask-${index}` ? 'bg-black bg-opacity-50 shadow-md' : 'hover:bg-black hover:bg-opacity-30'}
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
                 ${animatingAsks[ask.price] ? 'animate-orderbook-flash-red' : ''}
               `}
@@ -789,12 +789,9 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               className={`grid grid-cols-18 text-xs ${isMobile ? 'py-2' : 'py-1'} relative transition-colors order-row
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-success' : ''}
-                ${hoveredRowId === `bid-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
-<<<<<<< Updated upstream
+                ${hoveredRowId === `bid-${index}` ? 'bg-black bg-opacity-50 shadow-md' : 'hover:bg-black hover:bg-opacity-30'}
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
-=======
                 ${animatingBids[bid.price] ? 'animate-orderbook-flash-green' : ''}
->>>>>>> Stashed changes
               `}
               onMouseEnter={(e) => handleOrderRowMouseEnter(
                 e, 
@@ -977,7 +974,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                     : connectionStatus === 'connecting' || connectionStatus === 'reconnecting'
                       ? 'bg-yellow-500 animate-pulse' 
                       : connectionStatus === 'fallback_rest'
-                        ? 'bg-blue-500'
+                        ? 'bg-gray-600'
                         : connectionStatus === 'fallback_cache'
                           ? 'bg-purple-500'
                           : connectionStatus === 'fallback_mock'
@@ -993,7 +990,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                       : connectionStatus === 'reconnecting'
                         ? 'text-yellow-500'
                         : connectionStatus === 'fallback_rest'
-                          ? 'text-blue-500'
+                          ? 'text-gray-500'
                           : connectionStatus === 'fallback_cache'
                             ? 'text-purple-500'
                             : connectionStatus === 'fallback_mock'

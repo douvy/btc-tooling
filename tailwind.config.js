@@ -62,10 +62,10 @@ module.exports = {
       animation: {
         'fadeIn': 'fadeIn 0.2s ease-in-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'orderbook-flash-red': 'orderbook-flash-red 200ms ease-out forwards',
-        'orderbook-flash-green': 'orderbook-flash-green 200ms ease-out forwards',
-        'price-flicker-red': 'price-flicker-red 150ms ease-out forwards',
-        'price-flicker-green': 'price-flicker-green 150ms ease-out forwards'
+        'orderbook-flash-red': 'orderbook-flash-red 100ms ease-out forwards',
+        'orderbook-flash-green': 'orderbook-flash-green 100ms ease-out forwards',
+        'price-flicker-red': 'price-flicker-red 80ms ease-out forwards',
+        'price-flicker-green': 'price-flicker-green 80ms ease-out forwards'
       },
       gridTemplateColumns: {
         '18': 'repeat(18, minmax(0, 1fr))',
