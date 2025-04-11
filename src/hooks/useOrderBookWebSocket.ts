@@ -198,7 +198,7 @@ export function useOrderBookWebSocket(
   }, [exchange]);
   
   // Function to establish WebSocket connection - defined as a ref to avoid dependency issues
-  const connectWebSocketRef = useRef<() => void>();
+  const connectWebSocketRef = useRef<(() => void) | undefined>(undefined);
   
   // Define the connect function
   connectWebSocketRef.current = () => {
@@ -277,8 +277,8 @@ export function useOrderBookWebSocket(
         console.log(`[OrderBook] Connected to ${exchange} WebSocket`);
         setConnectionStatus('connected');
         
-        let formattedSymbol = exchange === 'binance' ? 'btcusdt' : 
-                              exchange === 'coinbase' ? 'BTC-USD' : 'tBTCUSD';
+        const formattedSymbol = exchange === 'binance' ? 'btcusdt' : 
+                                 exchange === 'coinbase' ? 'BTC-USD' : 'tBTCUSD';
         
         // Send subscription message based on exchange format
         if (exchange === 'binance') {
