@@ -5,11 +5,11 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "BTC Tooling",
-  description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown - Analyze BTC market data in real-time",
+  description: "A Bitcoin dashboard providing real-time price data, chart, market summary, orderbook, X insights and halving countdown data",
   keywords: "bitcoin, BTC, cryptocurrency, crypto market, bitcoin price, halving",
   openGraph: {
     title: "BTC Tooling - Bitcoin Market Tools",
-    description: "Live Bitcoin Price, Charts, Orderbook, Halving Countdown",
+    description: "A Bitcoin dashboard providing real-time price data, chart, market summary, orderbook, X insights and halving countdown data",
     type: "website",
     images: [
       {
