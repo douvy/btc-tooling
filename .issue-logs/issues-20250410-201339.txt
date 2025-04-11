@@ -1,0 +1,20 @@
+[1;36m📋 BTC-TOOLING PROJECT ISSUES[0m
+
+[0;32m#1   ✅ Fix Inaccurate BTC Price Display [bug][0m
+[0;31m#2   🐛 Fix Inconsistent 5-Second Updates [bug][0m
+[0;32m#3   ✅ Fix Incorrect Price Fluctuations [bug][0m
+[0;32m#4   ✅ Fix Data Bugs During Price Updates [bug][0m
+[0;33m#5   ⭐ Implement API Rate Limiting Handling [enhancement][0m
+[0;33m#6   ⭐ Verify Environment Setup and Configuration [enhancement][0m
+[0;33m#7   ⭐ Add Performance Testing Suite [enhancement][0m
+[0;32m#9   ✅ fix Price component divider issue on mobile [unlabeled][0m
+[0;32m#12  ✅ [Feature] OrderBook Iteration 1: Basic Structure and Layout [feature][0m
+[0;36m#13  🚀 [Feature] OrderBook Iteration 2: Amount Controls Functionality [feature][0m
+[0;36m#14  🚀 [Feature] OrderBook Iteration 3: Exchange Selection [feature][0m
+[0;36m#15  🚀 [Feature] OrderBook Iteration 4: WebSocket Integration (Bitfinex) [feature][0m
+[0;36m#16  🚀 [Feature] OrderBook Iteration 5: Hover Interactions [feature][0m
+[0;36m#17  🚀 [Feature] OrderBook Iteration 6: Performance Optimization [feature][0m
+[0;36m#18  🚀 [Feature] OrderBook Iteration 7: Additional Exchange WebSockets [feature][0m
+[0;36m#19  🚀 [Feature] OrderBook Iteration 8: Error Handling & Fallbacks [feature][0m
+[0;36m#20  🚀 [Feature] OrderBook Iteration 9: Mobile Optimization [feature][0m
+[0;36m#21  🚀 [Feature] OrderBook Iteration 10: Testing & Refinement [feature][0m
