@@ -227,18 +227,23 @@ export default function Home() {
               timeframe={timeframe} 
             />
             
+            {/* Order book always stays in its position on all devices */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
               <OrderBook 
                 currentPrice={bitcoinData?.price || 0} 
                 priceChange={bitcoinData?.change || 0} 
               />
               
-              <HalvingCountdown 
-                halvingInfo={halvingData} 
-                isLoading={isHalvingLoading}
-                error={halvingError}
-                onRefresh={refreshHalvingData}
-              />
+              {/* Halving countdown with conditional visibility based on screen size 
+                  Only visible on desktop/tablet (md and up) */}
+              <div className="hidden md:block">
+                <HalvingCountdown 
+                  halvingInfo={halvingData} 
+                  isLoading={isHalvingLoading}
+                  error={halvingError}
+                  onRefresh={refreshHalvingData}
+                />
+              </div>
             </div>
           </div>
           
@@ -282,6 +287,18 @@ export default function Home() {
                     </div>
                   </article>
                 ))}
+              </div>
+              
+              {/* Mobile-only Halving Countdown - appears after tweets */}
+              <div className="md:hidden mt-8">
+                {/* Full-width divider to match other section dividers */}
+                <div className="mx-[-1.5rem] md:mx-[-2rem] border-t border-divider mb-8"></div>
+                <HalvingCountdown 
+                  halvingInfo={halvingData} 
+                  isLoading={isHalvingLoading}
+                  error={halvingError}
+                  onRefresh={refreshHalvingData}
+                />
               </div>
             </div>
           </aside>
