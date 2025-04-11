@@ -32,7 +32,7 @@ export default function OrderBookTooltip({
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [position, setPosition] = useState({ x, y });
 
-  // Check for mobile device
+  // Check for mobile device and adjust position in the same effect
   useEffect(() => {
     // Only run on client
     if (typeof window === 'undefined') {
@@ -42,9 +42,35 @@ export default function OrderBookTooltip({
     const checkMobile = () => {
       const mobile = window.innerWidth < 768; // md breakpoint in Tailwind
       setIsMobile(mobile);
+      
+      // Calculate tooltip position
+      if (isVisible && !mobile) {
+        const tooltipWidth = 200; // Desktop width
+        const tooltipHeight = 180;
+        
+        // Calculate adjusted position based on screen boundaries
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+    
+        // Adjust X position: prefer right side but flip to left if needed
+        let adjustedX = x;
+        if (x + tooltipWidth > viewportWidth - 10) {
+          // Not enough space on right, try left
+          adjustedX = Math.max(10, x - tooltipWidth - 10); // 10px from edge
+        }
+        
+        // Adjust Y position: prefer below but flip to above if needed
+        let adjustedY = y;
+        if (y + tooltipHeight > viewportHeight - 10) {
+          // Not enough space below, try above
+          adjustedY = Math.max(10, y - tooltipHeight - 10); // 10px from edge
+        }
+        
+        setPosition({ x: adjustedX, y: adjustedY });
+      }
     };
     
-    // Initial check
+    // Initial check and position
     checkMobile();
     
     // Set up listener for resize events
@@ -52,45 +78,7 @@ export default function OrderBookTooltip({
     
     // Clean up event listener
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Adjust position when props change
-  useEffect(() => {
-    if (!isVisible) return;
-    
-    // Only run on client
-    if (typeof window === 'undefined') {
-      return;
-    }
-    
-    const tooltipWidth = isMobile ? 250 : 200;
-    const tooltipHeight = 180;
-    
-    // Calculate adjusted position based on screen boundaries
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Adjust X position: prefer right side but flip to left if needed
-    let adjustedX = x;
-    if (x + tooltipWidth > viewportWidth - 10) {
-      // Not enough space on right, try left
-      adjustedX = Math.max(10, x - tooltipWidth - 10); // 10px from edge
-    }
-    
-    // Adjust Y position: prefer below but flip to above if needed
-    let adjustedY = y;
-    if (y + tooltipHeight > viewportHeight - 10) {
-      // Not enough space below, try above
-      adjustedY = Math.max(10, y - tooltipHeight - 10); // 10px from edge
-    }
-    
-    // On very small screens, or if still doesn't fit, center in viewport
-    if (isMobile && (adjustedX < 20 || adjustedX + tooltipWidth > viewportWidth - 20)) {
-      adjustedX = Math.max(10, (viewportWidth - tooltipWidth) / 2);
-    }
-    
-    setPosition({ x: adjustedX, y: adjustedY });
-  }, [isVisible, x, y, isMobile]);
+  }, [isVisible, x, y]);
 
   if (!isVisible) return null;
 
