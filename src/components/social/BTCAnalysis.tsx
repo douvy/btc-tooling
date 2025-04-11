@@ -11,11 +11,11 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
   const displayDate = date || 'APR 7, 2025';
   const [expanded, setExpanded] = useState(false);
   
-  // First half of assessment to always show
-  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm triggered by aggressive US trade policies. While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs";
+  // First half of assessment to always show - shortened by 4 lines
+  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm triggered by aggressive US trade policies.";
   
-  // Rest of assessment to show when expanded
-  const fullAssessment = " and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
+  // Rest of assessment to show when expanded - includes the content that was removed from initial
+  const fullAssessment = " While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
   
   return (
     <div>
@@ -37,16 +37,16 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           </div>
         </div>
         
-        <div className="text-sm">
+        <div className="text-base text-[#a6abb5]">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Macro Environment:
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Macro Environment:</span>
             </span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
           </p>
           
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Assessment:
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Assessment:</span>
             </span> {initialAssessment}
             <span 
               className={`transition-opacity duration-300 ease-in-out ${expanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden inline-block'}`}
@@ -71,7 +71,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           >
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
-                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> Sentiment:
+                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-[#d0d2d8]">Sentiment:</span>
               </span> CMC Fear & Greed Index at &quot;Extreme Fear&quot; (17). Options skew negative (puts {'>'} calls), especially short-term.
             </p>
             
