@@ -19,6 +19,7 @@ export interface OrderBook {
   asks: OrderBookEntry[];
   bids: OrderBookEntry[];
   spread: number;
+  exchange?: string; // Optional identifier for the exchange providing this data
 }
 
 export interface HalvingInfo {

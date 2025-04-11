@@ -90,10 +90,40 @@ export function getMockSimplePrice() {
 
 /**
  * Generate mock data for the order book
+ * @param exchange Optional exchange identifier for generating exchange-specific data
  */
-export function getMockOrderBook() {
+export function getMockOrderBook(exchange = 'bitfinex') {
   // Generate realistic order book entries
   const currentPrice = lastMockPrice;
+  
+  // Apply exchange-specific price adjustments to simulate different exchange prices
+  let exchangePrice = currentPrice;
+  let volumeMultiplier = 1.0;
+  let orderDepth = 12;
+  let spreadVariance = 1.0;
+  
+  // Different exchanges have slightly different price and volume characteristics
+  switch (exchange) {
+    case 'coinbase':
+      // Coinbase typically has slightly higher prices
+      exchangePrice = currentPrice * (1 + (Math.random() * 0.002));
+      volumeMultiplier = 0.85; // Less volume on Coinbase Pro
+      orderDepth = 10;
+      spreadVariance = 1.2; // Wider spreads typically
+      break;
+    case 'binance':
+      // Binance typically has slightly lower prices but more volume
+      exchangePrice = currentPrice * (1 - (Math.random() * 0.001));
+      volumeMultiplier = 1.3; // More volume on Binance
+      orderDepth = 15;
+      spreadVariance = 0.8; // Tighter spreads typically
+      break;
+    case 'bitfinex':
+    default:
+      // Bitfinex as baseline
+      exchangePrice = currentPrice;
+      break;
+  }
   
   // Create more realistic order quantities
   const createAmountDistribution = () => {
@@ -106,12 +136,12 @@ export function getMockOrderBook() {
     return baseAmounts.map(amt => {
       // Add some randomness to the amounts
       const randomFactor = 0.85 + (Math.random() * 0.3);
-      return amt * randomFactor;
+      return amt * randomFactor * volumeMultiplier;
     });
   };
   
   // Create asks (sell orders) - higher than current price
-  const askPriceOffsets = Array(12).fill(0).map((_, i) => {
+  const askPriceOffsets = Array(orderDepth).fill(0).map((_, i) => {
     // Price increases with larger gaps as we move away from mid price
     const baseFactor = 1 + (i * 0.15);
     return (i + 1) * baseFactor + (Math.random() * (baseFactor * 0.5));
@@ -120,7 +150,7 @@ export function getMockOrderBook() {
   const askAmounts = createAmountDistribution();
   
   const asks = askPriceOffsets.map((offset, i) => {
-    const price = currentPrice + offset;
+    const price = exchangePrice + offset;
     // Select an amount based on index, with some randomization
     const amountIndex = Math.min(i, askAmounts.length - 1);
     // Use different amount distribution for asks to avoid identical order books
@@ -133,7 +163,7 @@ export function getMockOrderBook() {
   }).sort((a, b) => a.price - b.price);
   
   // Create bids (buy orders) - lower than current price
-  const bidPriceOffsets = Array(12).fill(0).map((_, i) => {
+  const bidPriceOffsets = Array(orderDepth).fill(0).map((_, i) => {
     // Price decreases with larger gaps as we move away from mid price
     const baseFactor = 1 + (i * 0.15);
     return (i + 1) * baseFactor + (Math.random() * (baseFactor * 0.5));
@@ -142,7 +172,7 @@ export function getMockOrderBook() {
   const bidAmounts = createAmountDistribution();
   
   const bids = bidPriceOffsets.map((offset, i) => {
-    const price = currentPrice - offset;
+    const price = exchangePrice - offset;
     // Select an amount based on index, with some randomization
     const amountIndex = Math.min(i, bidAmounts.length - 1);
     const amount = i < 5 
@@ -167,12 +197,14 @@ export function getMockOrderBook() {
   });
 
   // Calculate the spread between lowest ask and highest bid
-  const calculatedSpread = asks[0].price - bids[0].price;
+  // Apply exchange-specific spread variance
+  const calculatedSpread = (asks[0].price - bids[0].price) * spreadVariance;
   
   return {
     asks,
     bids,
-    spread: calculatedSpread
+    spread: calculatedSpread,
+    exchange // Include the exchange identifier
   };
 }
 

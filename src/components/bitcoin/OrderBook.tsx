@@ -18,6 +18,15 @@ const AMOUNT_PRESETS = [
   { label: '1', value: '1' },
 ];
 
+// Available exchanges
+type Exchange = 'bitfinex' | 'coinbase' | 'binance';
+
+const EXCHANGES = [
+  { id: 'bitfinex', name: 'Bitfinex', logo: '💱' },
+  { id: 'coinbase', name: 'Coinbase', logo: '🔷' },
+  { id: 'binance', name: 'Binance', logo: '🟡' },
+];
+
 export default function OrderBook({ orderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
   const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
@@ -25,6 +34,8 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
   const [showPresets, setShowPresets] = useState(false);
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('sell');
   const [viewMode, setViewMode] = useState<'sum' | 'detailed'>('sum');
+  const [selectedExchange, setSelectedExchange] = useState<Exchange>('bitfinex');
+  const [isExchangeTransitioning, setIsExchangeTransitioning] = useState(false);
   const presetsRef = useRef<HTMLDivElement>(null);
   
   // Use provided orderBook or fetch mock data
@@ -32,9 +43,28 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
     if (orderBook) {
       setLocalOrderBook(orderBook);
     } else {
-      setLocalOrderBook(getMockOrderBook());
+      // For now, we're using mock data for all exchanges
+      // In the future, this would fetch from different API endpoints based on selectedExchange
+      const newOrderBook = getMockOrderBook(selectedExchange);
+      
+      // Handle the exchange transition
+      setIsExchangeTransitioning(true);
+      
+      // Add a slight delay to simulate fetching from different exchanges
+      // This also provides the opportunity for transition animations
+      setTimeout(() => {
+        setLocalOrderBook(newOrderBook);
+        setIsExchangeTransitioning(false);
+      }, 300);
     }
-  }, [orderBook]);
+  }, [orderBook, selectedExchange]);
+  
+  // Handle exchange selection
+  const handleExchangeChange = (exchange: Exchange) => {
+    if (exchange !== selectedExchange) {
+      setSelectedExchange(exchange);
+    }
+  };
   
   // Handle click outside to close presets dropdown
   useEffect(() => {
@@ -110,11 +140,19 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
   if (!localOrderBook) {
     return (
       <div className="text-white w-full font-sans animate-pulse p-4">
-        <h2 className="text-xl font-fuji-bold flex items-center">Order Book</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-fuji-bold">Order Book</h2>
+          <div className="w-48 h-8 bg-gray-800 rounded"></div>
+        </div>
         <div className="h-64 bg-gray-800 rounded mt-4"></div>
       </div>
     );
   }
+  
+  // Add transition effect when switching exchanges
+  const contentClasses = isExchangeTransitioning
+    ? 'opacity-30 transition-opacity duration-300 ease-in-out'
+    : 'opacity-100 transition-opacity duration-300 ease-in-out';
   
   const { asks, bids, spread } = localOrderBook;
   
@@ -123,12 +161,40 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
     ...asks.map(ask => ask.amount),
     ...bids.map(bid => bid.amount)
   );
+  
+  // Get the current exchange display name
+  const currentExchange = EXCHANGES.find(ex => ex.id === selectedExchange) || EXCHANGES[0];
 
   return (
     <div className="text-white w-full font-sans">
-      <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
-        Order Book
-      </h2>
+      <div className="flex justify-between items-center">
+        <h2 id="halving-title" className="text-xl font-fuji-bold">
+          Order Book
+        </h2>
+        
+        {/* Exchange Selection Tabs */}
+        <div className="flex bg-gray-900 rounded-sm shadow overflow-hidden">
+          {EXCHANGES.map((exchange) => (
+            <button
+              key={exchange.id}
+              onClick={() => handleExchangeChange(exchange.id as Exchange)}
+              className={`
+                px-3 py-1 text-xs font-medium transition-all duration-300 ease-in-out
+                flex items-center justify-center gap-1
+                ${selectedExchange === exchange.id 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800'}
+                ${isExchangeTransitioning ? 'opacity-50 pointer-events-none' : ''}
+              `}
+              disabled={isExchangeTransitioning}
+              aria-pressed={selectedExchange === exchange.id}
+            >
+              <span>{exchange.logo}</span>
+              <span>{exchange.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Enhanced Amount Control */}
       <div className="flex items-center my-3 gap-1">
@@ -254,18 +320,21 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
         </div>
       </div>
       
-      {/* Column Headers */}
-      <div className="grid grid-cols-18 text-xs text-divider py-2 px-1 border-b border-divider">
+      {/* Column Headers with Exchange Indicator */}
+      <div className={`grid grid-cols-18 text-xs py-2 px-1 border-b border-divider ${contentClasses}`}>
         <div className="col-span-1"></div> {/* Bar column */}
         <div className="col-span-5 text-center text-[#8a919e]">Amount (BTC)</div>
-        <div className="col-span-6 text-center text-[#8a919e]">Price (USD)</div>
+        <div className="col-span-6 text-center text-[#8a919e]">
+          Price (USD)
+          <span className="ml-1 text-[10px] text-blue-400">{currentExchange.logo}</span>
+        </div>
         <div className="col-span-6 text-center text-[#8a919e]">
           {viewMode === 'sum' ? 'Sum (BTC)' : 'Total (USD)'}
         </div>
       </div>
 
       {/* Sell Orders (Asks) - Red */}
-      <div className="overflow-y-auto max-h-[150px]">
+      <div className={`overflow-y-auto max-h-[150px] ${contentClasses}`}>
         {asks.map((ask, index) => {
           const volumePercentage = (ask.amount / maxVolume) * 100;
           const selectedAmount = parseFloat(amount);
@@ -327,7 +396,7 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
       </div>
 
       {/* Spread Indicator with current amount value */}
-      <div className="grid grid-cols-18 text-xs py-2 border-t border-b border-divider">
+      <div className={`grid grid-cols-18 text-xs py-2 border-t border-b border-divider ${contentClasses}`}>
         <div className="col-span-1"></div>
         <div className="col-span-5 text-center text-gray-400">USD Spread</div>
         <div className="col-span-6 text-center text-gray-400">{spread.toFixed(2)}</div>
@@ -338,7 +407,7 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
       </div>
 
       {/* Buy Orders (Bids) - Green */}
-      <div className="overflow-y-auto max-h-[150px]">
+      <div className={`overflow-y-auto max-h-[150px] ${contentClasses}`}>
         {bids.map((bid, index) => {
           const volumePercentage = (bid.amount / maxVolume) * 100;
           const selectedAmount = parseFloat(amount);
@@ -400,7 +469,7 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
       </div>
       
       {/* Enhanced amount summary footer */}
-      <div className="mt-3 text-xs border-t border-divider pt-3">
+      <div className={`mt-3 text-xs border-t border-divider pt-3 ${contentClasses}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="mr-1 text-gray-400">Amount:</span>
@@ -433,6 +502,17 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
           <div className="flex items-center">
             <span className="mr-1 text-gray-400">Spread:</span>
             <span className="font-bold text-blue-400">${spread.toFixed(2)} ({((spread / currentPrice) * 100).toFixed(3)}%)</span>
+          </div>
+        </div>
+        
+        {/* Exchange info footer */}
+        <div className="mt-3 pt-2 border-t border-divider flex items-center justify-between text-[10px] text-gray-500">
+          <div className="flex items-center">
+            <span>{currentExchange.logo}</span>
+            <span className="ml-1">Data from {currentExchange.name}</span>
+          </div>
+          <div className="text-right">
+            <span>Last update: {new Date().toLocaleTimeString()}</span>
           </div>
         </div>
       </div>
