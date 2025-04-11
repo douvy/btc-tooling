@@ -11,9 +11,14 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="flex space-x-6">
+        <div className="flex flex-col sm:block space-y-4 sm:space-y-0">
           <p className="text-[#8a919e] text-sm mt-2 font-proxima-nova">
-            Real-time Bitcoin market tools by <a href="https://x.com/douvy_" className="text-primary hover:text-primary/80 transition-colors" target="_blank" rel="noopener noreferrer">@douvy_</a> <span className="mx-3 text-[4px] text-[#d0d2d8] inline-flex items-center"><i className="fa-solid fa-circle align-middle relative -top-[2px]"></i></span> <a href="https://github.com/douvy/btc-tooling" className="text-[#8a919e] hover:text-[#8a919e]/90 transition-colors border-b border-[#8a919e] hover:border-[#8a919e]/90 pb-[1px]" target="_blank" rel="noopener noreferrer">Star on <i className="fa-brands fa-github ml-1"></i></a>
+            <span className="sm:inline">Real-time Bitcoin market tools by <a href="https://x.com/douvy_" className="text-primary hover:text-primary/80 transition-colors" target="_blank" rel="noopener noreferrer">@douvy_</a></span>
+            <span className="hidden sm:inline mx-4 text-[4px] text-[#d0d2d8] inline-flex items-center"><i className="fa-solid fa-circle align-middle relative -top-[2px]"></i></span>
+            <span className="hidden sm:inline"><a href="https://github.com/douvy/btc-tooling" className="text-[#8a919e] hover:text-[#8a919e]/90 transition-colors border-b border-[#8a919e] hover:border-[#8a919e]/90 pb-[1px]" target="_blank" rel="noopener noreferrer">Star on <i className="fa-brands fa-github ml-1"></i></a></span>
+          </p>
+          <p className="text-[#8a919e] text-sm font-proxima-nova mt-4 sm:hidden">
+            <a href="https://github.com/douvy/btc-tooling" className="text-[#8a919e] hover:text-[#8a919e]/90 transition-colors border-b border-[#8a919e] hover:border-[#8a919e]/90 pb-[1px]" target="_blank" rel="noopener noreferrer">Star on <i className="fa-brands fa-github ml-1"></i></a>
           </p>
         </div>
       </div>
