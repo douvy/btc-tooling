@@ -768,8 +768,8 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               <div className="flex items-center">
                 {connectionStatus === 'connected' && (
                   <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full mr-1 bg-green-500" />
-                    <span className="text-green-500">Live</span>
+                    <div className="w-2 h-2 rounded-full mr-1 bg-success" />
+                    <span className="text-success">Live</span>
                   </div>
                 )}
               </div>
@@ -780,24 +780,24 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         {/* Mobile layout - More compact with grid */}
         {isMobile && (
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-transparent p-2 rounded-sm border border-divider flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
               <span className="text-[#81919e] text-[10px]">Amount</span>
               <span className="font-bold text-white">{amount} BTC</span>
               <span className="text-[#8a919e] text-[10px]">${(parseFloat(amount) * currentPrice).toFixed(2)}</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm border border-divider flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
               <span className="text-[#81919e] text-[10px]">Spread</span>
               <span className="font-bold text-white">${spread.toFixed(2)}</span>
               <span className="text-[#8a919e] text-[10px]">({((spread / currentPrice) * 100).toFixed(2)}%)</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm border border-divider flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
               <span className="text-[#81919e] text-[10px]">Best Ask</span>
               <span className="font-bold text-error">${asks[0]?.price.toFixed(2) || '--'}</span>
             </div>
             
-            <div className="bg-transparent p-2 rounded-sm border border-divider flex flex-col items-center">
+            <div className="bg-transparent p-2 rounded-sm flex flex-col items-center">
               <span className="text-[#81919e] text-[10px]">Best Bid</span>
               <span className="font-bold text-success">${bids[0]?.price.toFixed(2) || '--'}</span>
             </div>

@@ -26,7 +26,7 @@ export default function HalvingCountdown({
   };
 
   return (
-    <section className="rounded-lg overflow-hidden" aria-labelledby="halving-title">
+    <section className="rounded-sm overflow-hidden" aria-labelledby="halving-title">
       <div className="flex items-center justify-between mb-4">
         <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
           Halving Countdown
@@ -40,7 +40,7 @@ export default function HalvingCountdown({
         {/* Blockchain-style Countdown Block - Refined */}
         <div className="relative w-[180px] h-[180px] mb-6 sm:mb-0 flex-shrink-0" aria-label="Halving countdown timer">
           {/* Main container with refined styling */}
-          <div className="absolute inset-0 rounded-lg overflow-hidden bg-[#14151A] shadow-inner">
+          <div className="absolute inset-0 rounded-sm overflow-hidden bg-[#14151A] shadow-inner">
             {/* Progress indicators - clean lines */}
             <div className="absolute inset-0">
               {/* Top progress bar */}

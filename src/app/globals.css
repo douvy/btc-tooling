@@ -4,19 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Skip to content link for accessibility */
+/* Skip to content link for accessibility (hidden) */
 .skip-to-content {
   position: absolute;
   top: -40px;
   left: 0;
-  background: #FF6600;
-  color: white;
+  background: transparent;
+  color: transparent;
   padding: 8px;
   z-index: 100;
   transition: top 0.3s;
+  height: 0;
+  width: 0;
+  overflow: hidden;
 }
 .skip-to-content:focus {
-  top: 0;
+  top: -999em;
 }
 
 .timeframe-button:focus,
