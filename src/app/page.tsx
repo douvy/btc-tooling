@@ -3,7 +3,20 @@
 import Footer from '@/components/layout/Footer';
 import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';
-import OrderBook from '@/components/bitcoin/OrderBook';
+// Use dynamic import for OrderBook to ensure it only runs on client-side
+import dynamic from 'next/dynamic';
+const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
+  ssr: false,
+  loading: () => (
+    <div className="text-white w-full font-sans animate-pulse p-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-fuji-bold">Order Book</h2>
+        <div className="w-48 h-8 bg-gray-800 rounded"></div>
+      </div>
+      <div className="h-64 bg-gray-800 rounded mt-4"></div>
+    </div>
+  )
+});
 import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import BTCAnalysis from '@/components/social/BTCAnalysis';
 import { useTimeframe } from '@/hooks/useTimeframe';

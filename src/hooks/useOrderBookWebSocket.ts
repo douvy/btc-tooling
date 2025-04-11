@@ -133,11 +133,20 @@ export function useOrderBookWebSocket(
 
   // Main effect for initializing WebSocket connection or using mock data
   useEffect(() => {
+    // Only run WebSocket code on the client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     console.log(`[OrderBook] Initializing ${exchange} order book data`);
     
     // Clean up any existing connection
     if (socketRef.current) {
-      socketRef.current.close();
+      try {
+        socketRef.current.close();
+      } catch (err) {
+        console.error('[OrderBook] Error closing socket:', err);
+      }
       socketRef.current = null;
     }
     
@@ -147,19 +156,27 @@ export function useOrderBookWebSocket(
     bidMapRef.current.clear();
     channelIdRef.current = null;
     
-    // Use mock data for simplicity
-    const mockData = getMockOrderBook(exchange);
-    setOrderBook(mockData);
-    setConnectionStatus('fallback_mock');
-    setLastUpdated(new Date());
-    setIsLoading(false);
-    
-    // We'll implement a proper WebSocket connection in a future update
+    // Use mock data for simplicity and compatibility with Vercel
+    try {
+      const mockData = getMockOrderBook(exchange);
+      setOrderBook(mockData);
+      setConnectionStatus('fallback_mock');
+      setLastUpdated(new Date());
+      setIsLoading(false);
+      console.log(`[OrderBook] Using mock data for ${exchange}`);
+    } catch (err) {
+      console.error('[OrderBook] Error setting mock data:', err);
+      setError(err instanceof Error ? err : new Error('Failed to initialize order book data'));
+    }
     
     // Clean up function
     return () => {
       if (socketRef.current) {
-        socketRef.current.close();
+        try {
+          socketRef.current.close();
+        } catch (err) {
+          console.error('[OrderBook] Error closing socket on cleanup:', err);
+        }
         socketRef.current = null;
       }
       
@@ -172,6 +189,11 @@ export function useOrderBookWebSocket(
 
   // Update performance metrics occasionally
   useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     const interval = setInterval(() => {
       setPerformanceMetrics({
         fps: Math.floor(Math.random() * 5) + 1,  // Mock FPS value between 1-5

@@ -3,6 +3,7 @@ import { OrderBook as OrderBookType, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
 import OrderBookTooltip from './OrderBookTooltip';
+import dynamic from 'next/dynamic';
 
 interface OrderBookProps {
   orderBook?: OrderBookType;
@@ -43,7 +44,8 @@ const EXCHANGES = [
   { id: 'binance', name: 'Binance', logo: '🟡' },
 ];
 
-export default function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
+// Create a client-side only version of the component
+function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
@@ -754,3 +756,18 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
     </div>
   );
 }
+
+// Export a dynamic version that skips server-side rendering
+// This ensures WebSocket code only runs on the client
+export default dynamic(() => Promise.resolve(OrderBook), { 
+  ssr: false,
+  loading: () => (
+    <div className="text-white w-full font-sans animate-pulse p-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-fuji-bold">Order Book</h2>
+        <div className="w-48 h-8 bg-gray-800 rounded"></div>
+      </div>
+      <div className="h-64 bg-gray-800 rounded mt-4"></div>
+    </div>
+  )
+});
