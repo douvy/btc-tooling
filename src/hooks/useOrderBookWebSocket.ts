@@ -3,6 +3,15 @@ import { OrderBook, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { fetchOrderBook } from '@/lib/api/orderbook';
 
+// Add explicit type declarations to enable strict type checking
+declare global {
+  interface Array<T> {
+    forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+    map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+    sort(compareFn?: (a: T, b: T) => number): this;
+  }
+}
+
 type ConnectionStatus = 
   | 'connected'      // WebSocket is connected and receiving data
   | 'connecting'     // Initial connection attempt
@@ -329,7 +338,7 @@ export function useOrderBookWebSocket(
               });
               
               // Sort asks (lowest price first)
-              newAsks.sort((a, b) => a.price - b.price);
+              newAsks.sort((a: OrderBookEntry, b: OrderBookEntry) => a.price - b.price);
               
               // Process bids
               const newBids = [...(internalOrderBookRef.current?.bids || [])];
@@ -365,7 +374,7 @@ export function useOrderBookWebSocket(
               });
               
               // Sort bids (highest price first)
-              newBids.sort((a, b) => b.price - a.price);
+              newBids.sort((a: OrderBookEntry, b: OrderBookEntry) => b.price - a.price);
               
               // Limit to a reasonable number of entries for display
               const limitedAsks = newAsks.slice(0, 25);
@@ -437,19 +446,19 @@ export function useOrderBookWebSocket(
                 };
               });
               
-              // Sort
-              asks.sort((a, b) => a.price - b.price);
-              bids.sort((a, b) => b.price - a.price);
+              // Sort with proper type annotations
+              asks.sort((a: OrderBookEntry, b: OrderBookEntry) => a.price - b.price);
+              bids.sort((a: OrderBookEntry, b: OrderBookEntry) => b.price - a.price);
               
               // Calculate sums
               let askSum = 0;
-              asks.forEach((ask, i) => {
+              asks.forEach((ask: OrderBookEntry, i: number) => {
                 askSum += ask.amount;
                 asks[i].sum = askSum;
               });
               
               let bidSum = 0;
-              bids.forEach((bid, i) => {
+              bids.forEach((bid: OrderBookEntry, i: number) => {
                 bidSum += bid.amount;
                 bids[i].sum = bidSum;
               });
@@ -502,7 +511,7 @@ export function useOrderBookWebSocket(
                       total: price * amount,
                       sum: 0
                     });
-                    newBids.sort((a, b) => b.price - a.price);
+                    newBids.sort((a: OrderBookEntry, b: OrderBookEntry) => b.price - a.price);
                   }
                 } else {
                   // Update ask
@@ -524,20 +533,20 @@ export function useOrderBookWebSocket(
                       total: price * amount,
                       sum: 0
                     });
-                    newAsks.sort((a, b) => a.price - b.price);
+                    newAsks.sort((a: OrderBookEntry, b: OrderBookEntry) => a.price - b.price);
                   }
                 }
               });
               
               // Recalculate sums
               let askSum = 0;
-              newAsks.forEach((ask, i) => {
+              newAsks.forEach((ask: OrderBookEntry, i: number) => {
                 askSum += ask.amount;
                 newAsks[i].sum = askSum;
               });
               
               let bidSum = 0;
-              newBids.forEach((bid, i) => {
+              newBids.forEach((bid: OrderBookEntry, i: number) => {
                 bidSum += bid.amount;
                 newBids[i].sum = bidSum;
               });
@@ -576,11 +585,13 @@ export function useOrderBookWebSocket(
               if (Array.isArray(data[1])) {
                 if (Array.isArray(data[1][0])) {
                   // Snapshot
-                  const entries: BitfinexOrderBookEntry[] = data[1];
+                  // Cast to correct type with assertion
+                  const entries = data[1] as unknown as BitfinexOrderBookEntry[];
                   processSnapshot(entries);
                 } else {
                   // Single update
-                  const entry: BitfinexOrderBookEntry = data[1];
+                  // Cast to correct type with assertion
+                  const entry = data[1] as unknown as BitfinexOrderBookEntry;
                   processUpdate(entry);
                 }
               }
@@ -675,8 +686,8 @@ export function useOrderBookWebSocket(
     });
     
     // Sort
-    asks.sort((a, b) => a.price - b.price);
-    bids.sort((a, b) => b.price - a.price);
+    asks.sort((a: OrderBookEntry, b: OrderBookEntry) => a.price - b.price);
+    bids.sort((a: OrderBookEntry, b: OrderBookEntry) => b.price - a.price);
     
     // Calculate cumulative sums
     let askSum = 0;
@@ -755,7 +766,7 @@ export function useOrderBookWebSocket(
             total: price * absAmount,
             sum: 0
           });
-          newAsks.sort((a, b) => a.price - b.price);
+          newAsks.sort((a: OrderBookEntry, b: OrderBookEntry) => a.price - b.price);
         }
       } else {
         // Update bid
@@ -776,7 +787,7 @@ export function useOrderBookWebSocket(
             total: price * amount,
             sum: 0
           });
-          newBids.sort((a, b) => b.price - a.price);
+          newBids.sort((a: OrderBookEntry, b: OrderBookEntry) => b.price - a.price);
         }
       }
     }
