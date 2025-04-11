@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { OrderBook } from '@/types';
+import { OrderBook, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { fetchOrderBook } from '@/lib/api/orderbook';
 
@@ -121,14 +121,15 @@ export function useOrderBookWebSocket(
   const cachedOrderBookRef = useRef<OrderBook | null>(null);
   const cacheTimestampRef = useRef<number>(0);
 
-  // Function to use mock data as fallback
-  const useMockFallback = useCallback(() => {
+  // Helper function to apply mock data fallback
+  const setupMockData = useCallback(() => {
     console.log(`[OrderBook] Using mock ${exchange} order book data`);
     setConnectionStatus('fallback_mock');
     const mockData = getMockOrderBook(exchange);
     setOrderBook(mockData);
     setLastUpdated(new Date());
     setIsLoading(false);
+    return mockData;
   }, [exchange]);
 
   // Function to update internal order book with simulated changes
@@ -236,7 +237,8 @@ export function useOrderBookWebSocket(
     } catch (err) {
       console.error('[OrderBook] Error setting mock data:', err);
       setError(err instanceof Error ? err : new Error('Failed to initialize order book data'));
-      useMockFallback();
+      // Use our setupMockData function to handle fallback
+      setupMockData();
     }
     
     // Clean up function
@@ -255,7 +257,7 @@ export function useOrderBookWebSocket(
         updateTimeoutRef.current = null;
       }
     };
-  }, [exchange, symbol, updateInternalOrderBook]);
+  }, [exchange, symbol, updateInternalOrderBook, setupMockData]);
 
   // Track update times for performance metrics
   const updateTimesRef = useRef<number[]>([]);
