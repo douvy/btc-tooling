@@ -1,63 +1,67 @@
 # BTC Tooling
 
-A modern, responsive Bitcoin dashboard providing real-time price data, charts, orderbook visualization, and halving countdown information.
+Bitcoin market analytics dashboard with real-time data visualization, comprehensive market metrics, and trading tools.
 
 ## Features
-- Live Bitcoin price display with multiple timeframes
-- Interactive price chart
-- BTC market analysis summary
-- Real-time orderbook display
-- Halving countdown timer
-- Bitcoin X/Twitter Feed integration
-- Fully responsive design for all devices
 
-## Technology
-Built with modern web technologies:
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS
+- **Live Bitcoin Price Tracking**: Multi-timeframe price data with change indicators
+- **Advanced Charting**: TradingView-powered interactive price charts
+- **Order Book Visualization**: Real-time depth chart and trade execution simulator
+- **Halving Countdown**: Blockchain-accurate timer with historical context
+- **Bitcoin X/Twitter Integration**: Curated feed with engagement metrics
+- **Market Analysis Panel**: Concise BTC fundamentals and macro environment insights
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
-## Getting Started
+## Tech Stack
 
-To run the development server:
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS, Custom Design System
+- **Data**: Blockchain.info API, WebSockets for real-time updates
+- **Performance**: Dynamic imports, client-side rendering for interactive components
+
+## Quick Start
 
 ```bash
 # Install dependencies
 npm install
 
-# Run development server
+# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the dashboard.
+Access the dashboard at [http://localhost:3000](http://localhost:3000)
 
 ## Development
-To contribute to the project:
-1. Clone the repository
-2. Install dependencies with `npm install`
-3. Make your changes
-4. Run tests and linting with `npm run lint`
-5. Build the project with `npm run build` to verify it works in production
-6. Submit a pull request
 
-## Project Structure
-```
-btc-tooling/
-├── src/
-│   ├── app/              # Next.js App Router pages
-│   ├── components/       # React components
-│   │   ├── bitcoin/      # Bitcoin-specific components
-│   │   ├── layout/       # Layout components (Header, Footer)
-│   │   └── social/       # Social media integration
-│   ├── hooks/            # Custom React hooks
-│   ├── styles/           # Global styles and fonts
-│   └── types/            # TypeScript type definitions
-├── public/               # Static assets
-│   └── images/           # Image assets
-└── tailwind.config.js    # Tailwind CSS configuration
+```bash
+# Run linting
+npm run lint
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
 ```
 
-## Roadmap
-- [ ] Connect to real-time price APIs
-- [ ] Implement fully interactive chart
+## Architecture
+
+The application follows a modular component architecture with clear separation of concerns:
+
+```
+src/
+├── app/         # Next.js App Router and API routes
+├── components/  # React components (bitcoin, layout, social)
+├── hooks/       # Custom React hooks for data fetching
+├── lib/         # Utility functions and API clients
+├── styles/      # Global styles and typography
+└── types/       # TypeScript type definitions
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/new-feature`
+3. Commit your changes: `git commit -m 'Add new feature'`
+4. Push to the branch: `git push origin feature/new-feature`
+5. Open a Pull Request
