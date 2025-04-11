@@ -3,6 +3,7 @@ import { OrderBook as OrderBookType, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
 import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
 import OrderBookTooltip from './OrderBookTooltip';
+import dynamic from 'next/dynamic';
 
 interface OrderBookProps {
   orderBook?: OrderBookType;
@@ -43,7 +44,8 @@ const EXCHANGES = [
   { id: 'binance', name: 'Binance', logo: '🟡' },
 ];
 
-export default function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
+// Create a client-side only version of the component
+function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
@@ -126,7 +128,7 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
   // Manage local order book based on props or WebSocket data
   const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
   
-  // Use provided orderBook prop, WebSocket data, or fetch mock data
+  // Use provided orderBook prop, WebSocket data, or fallbacks as appropriate
   useEffect(() => {
     // First priority: Use prop data if available
     if (propOrderBook) {
@@ -134,9 +136,9 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
       return;
     }
     
-    // Second priority: Use WebSocket data for Bitfinex
-    if (selectedExchange === 'bitfinex' && wsOrderBook) {
-      // Handle the exchange transition
+    // Second priority: Use WebSocket or fallback data from the hook
+    if (wsOrderBook) {
+      // Handle the exchange transition with a smooth animation
       setIsExchangeTransitioning(true);
       
       setTimeout(() => {
@@ -146,19 +148,17 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
       return;
     } 
     
-    // Fallback: Use mock data for other exchanges or if WebSocket fails
-    if (selectedExchange !== 'bitfinex' || wsError) {
-      // Handle the exchange transition
+    // If we still don't have any order book data at all, use mock data as a last resort
+    if (!localOrderBook) {
       setIsExchangeTransitioning(true);
       
-      // Add a slight delay to simulate fetching from different exchanges
       setTimeout(() => {
         const newOrderBook = getMockOrderBook(selectedExchange);
         setLocalOrderBook(newOrderBook);
         setIsExchangeTransitioning(false);
       }, 300);
     }
-  }, [propOrderBook, wsOrderBook, selectedExchange, wsError]);
+  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
   
   // Handle exchange selection
   const handleExchangeChange = (exchange: Exchange) => {
@@ -663,34 +663,75 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <span>{currentExchange.logo}</span>
-              <span className="ml-1">Data from {currentExchange.name}</span>
+              <span className="ml-1">
+                Data from {currentExchange.name}
+                {(connectionStatus === 'fallback_rest' || 
+                  connectionStatus === 'fallback_cache' || 
+                  connectionStatus === 'fallback_mock') && (
+                  <span className="ml-1 text-[8px] px-1 py-0.5 bg-gray-700 rounded-sm">
+                    FALLBACK
+                  </span>
+                )}
+              </span>
               
               {/* Connection status for WebSocket */}
               <div className="ml-3 flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-1 ${
                   connectionStatus === 'connected' 
                     ? 'bg-green-500' 
-                    : connectionStatus === 'connecting' 
+                    : connectionStatus === 'connecting' || connectionStatus === 'reconnecting'
                       ? 'bg-yellow-500 animate-pulse' 
-                      : 'bg-red-500'
+                      : connectionStatus === 'fallback_rest'
+                        ? 'bg-blue-500'
+                        : connectionStatus === 'fallback_cache'
+                          ? 'bg-purple-500'
+                          : connectionStatus === 'fallback_mock'
+                            ? 'bg-gray-500'
+                            : 'bg-red-500'
                 }`} />
                 <span className={
                   connectionStatus === 'connected' 
                     ? 'text-green-500' 
-                    : connectionStatus === 'connecting' 
+                    : connectionStatus === 'connecting'
                       ? 'text-yellow-500' 
-                      : 'text-red-500'
+                      : connectionStatus === 'reconnecting'
+                        ? 'text-yellow-500'
+                        : connectionStatus === 'fallback_rest'
+                          ? 'text-blue-500'
+                          : connectionStatus === 'fallback_cache'
+                            ? 'text-purple-500'
+                            : connectionStatus === 'fallback_mock'
+                              ? 'text-gray-500'
+                              : 'text-red-500'
                 }>
                   {connectionStatus === 'connected' 
                     ? 'Live' 
                     : connectionStatus === 'connecting' 
-                      ? 'Connecting...' 
-                      : 'Offline (using cached data)'}
+                      ? 'Connecting...'
+                      : connectionStatus === 'reconnecting'
+                        ? 'Reconnecting...'
+                        : connectionStatus === 'error'
+                          ? 'Connection Error'
+                        : connectionStatus === 'fallback_rest'
+                          ? 'REST API Fallback'
+                          : connectionStatus === 'fallback_cache'
+                            ? 'Using Cached Data'
+                            : connectionStatus === 'fallback_mock'
+                              ? 'Using Mock Data'
+                              : 'Disconnected'
+                  }
                 </span>
               </div>}
             </div>
             <div className="text-right">
-              <span>Last update: {connectionStatus === 'connected' && !wsError ? lastUpdated.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+              <span>
+                Last update: {lastUpdated.toLocaleTimeString()}
+                {connectionStatus === 'fallback_cache' && (
+                  <span className="ml-1 text-yellow-400">
+                    ({Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago)
+                  </span>
+                )}
+              </span>
             </div>
           </div>
           
@@ -715,3 +756,18 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
     </div>
   );
 }
+
+// Export a dynamic version that skips server-side rendering
+// This ensures WebSocket code only runs on the client
+export default dynamic(() => Promise.resolve(OrderBook), { 
+  ssr: false,
+  loading: () => (
+    <div className="text-white w-full font-sans animate-pulse p-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-fuji-bold">Order Book</h2>
+        <div className="w-48 h-8 bg-gray-800 rounded"></div>
+      </div>
+      <div className="h-64 bg-gray-800 rounded mt-4"></div>
+    </div>
+  )
+});
