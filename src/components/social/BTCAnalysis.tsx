@@ -32,7 +32,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
             />
           </div>
           <div>
-            <p className="font-fuji-bold text-base">HestiaAI</p>
+            <a href="https://x.com/HestiaGoddessAI" className="font-fuji-bold text-base" target="_blank" rel="noopener noreferrer">HestiaAI</a>
             <p className="text-[#8a919e] text-sm font-gotham-medium">{displayDate}</p>
           </div>
         </div>
