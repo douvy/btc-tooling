@@ -5,10 +5,50 @@ import { getMockOrderBook } from '@/lib/mockData';
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
 type Exchange = 'bitfinex' | 'coinbase' | 'binance';
 
+// WebSocket URLs for different exchanges
 const BITFINEX_WEBSOCKET_URL = 'wss://api-pub.bitfinex.com/ws/2';
+const COINBASE_WEBSOCKET_URL = 'wss://ws-feed.exchange.coinbase.com';
+const BINANCE_WEBSOCKET_URL = 'wss://stream.binance.com:9443/ws';
 
 // Structure for Bitfinex order book entry [price, count, amount]
 type BitfinexOrderBookEntry = [number, number, number];
+
+// Structure for Coinbase order book - different format
+interface CoinbaseOrderBookEntry {
+  price: string;
+  size: string;
+  side: 'buy' | 'sell';
+}
+
+interface CoinbaseOrderBookSnapshot {
+  type: string;
+  product_id: string;
+  asks: string[][];
+  bids: string[][];
+}
+
+interface CoinbaseOrderBookDelta {
+  type: string;
+  product_id: string;
+  changes: string[][];
+}
+
+// Structure for Binance order book - different format
+interface BinanceOrderBookSnapshot {
+  lastUpdateId: number;
+  bids: string[][];
+  asks: string[][];
+}
+
+interface BinanceOrderBookDelta {
+  e: string; // Event type
+  E: number; // Event time
+  s: string; // Symbol
+  U: number; // First update ID in event
+  u: number; // Final update ID in event
+  b: string[][]; // Bids to be updated
+  a: string[][]; // Asks to be updated
+}
 
 interface PerformanceMetrics {
   fps: number;
@@ -221,19 +261,168 @@ export function useOrderBookWebSocket(
     }
   }, [updateInternalOrderBook]);
 
-  // Initialize Bitfinex WebSocket
-  const initWebSocket = useCallback(() => {
-    // Only implement Bitfinex for now, add others later
-    if (exchange !== 'bitfinex') {
-      // Use mock data for non-Bitfinex exchanges
-      const mockData = getMockOrderBook(exchange);
-      setOrderBook(mockData);
-      setConnectionStatus('disconnected');
-      setIsLoading(false);
-      setError(new Error(`Live data not yet available for ${exchange}. Using mock data.`));
-      return;
+  // Process Coinbase order book data
+  const processCoinbaseOrderBookData = useCallback((data: CoinbaseOrderBookSnapshot | CoinbaseOrderBookDelta) => {
+    let hasChanges = false;
+    
+    // Handle snapshot message
+    if (data.type === 'snapshot') {
+      const snapshot = data as CoinbaseOrderBookSnapshot;
+      
+      // Clear current maps
+      askMapRef.current.clear();
+      bidMapRef.current.clear();
+      
+      // Process asks
+      snapshot.asks.forEach(([priceStr, sizeStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(sizeStr);
+        if (amount > 0) {
+          askMapRef.current.set(price, { price, count: 1, amount });
+          hasChanges = true;
+        }
+      });
+      
+      // Process bids
+      snapshot.bids.forEach(([priceStr, sizeStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(sizeStr);
+        if (amount > 0) {
+          bidMapRef.current.set(price, { price, count: 1, amount });
+          hasChanges = true;
+        }
+      });
     }
+    // Handle update message (l2update)
+    else if (data.type === 'l2update') {
+      const delta = data as CoinbaseOrderBookDelta;
+      
+      // Process changes
+      delta.changes.forEach(([side, priceStr, sizeStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(sizeStr);
+        
+        if (side === 'buy') {
+          // Update bids
+          if (amount === 0) {
+            if (bidMapRef.current.has(price)) {
+              bidMapRef.current.delete(price);
+              hasChanges = true;
+            }
+          } else {
+            const existingBid = bidMapRef.current.get(price);
+            if (!existingBid || existingBid.amount !== amount) {
+              bidMapRef.current.set(price, { price, count: 1, amount });
+              hasChanges = true;
+            }
+          }
+        } else if (side === 'sell') {
+          // Update asks
+          if (amount === 0) {
+            if (askMapRef.current.has(price)) {
+              askMapRef.current.delete(price);
+              hasChanges = true;
+            }
+          } else {
+            const existingAsk = askMapRef.current.get(price);
+            if (!existingAsk || existingAsk.amount !== amount) {
+              askMapRef.current.set(price, { price, count: 1, amount });
+              hasChanges = true;
+            }
+          }
+        }
+      });
+    }
+    
+    // Update internal book if any changes were made
+    if (hasChanges) {
+      updateInternalOrderBook();
+    }
+  }, [updateInternalOrderBook]);
+  
+  // Process Binance order book data
+  const processBinanceOrderBookData = useCallback((data: BinanceOrderBookSnapshot | BinanceOrderBookDelta) => {
+    let hasChanges = false;
+    
+    // Handle snapshot message
+    if ('lastUpdateId' in data) {
+      const snapshot = data as BinanceOrderBookSnapshot;
+      
+      // Clear current maps
+      askMapRef.current.clear();
+      bidMapRef.current.clear();
+      
+      // Process asks
+      snapshot.asks.forEach(([priceStr, amountStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(amountStr);
+        if (amount > 0) {
+          askMapRef.current.set(price, { price, count: 1, amount });
+          hasChanges = true;
+        }
+      });
+      
+      // Process bids
+      snapshot.bids.forEach(([priceStr, amountStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(amountStr);
+        if (amount > 0) {
+          bidMapRef.current.set(price, { price, count: 1, amount });
+          hasChanges = true;
+        }
+      });
+    }
+    // Handle update message (depth update)
+    else if ('e' in data && data.e === 'depthUpdate') {
+      const delta = data as BinanceOrderBookDelta;
+      
+      // Process asks
+      delta.a.forEach(([priceStr, amountStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(amountStr);
+        
+        if (amount === 0) {
+          if (askMapRef.current.has(price)) {
+            askMapRef.current.delete(price);
+            hasChanges = true;
+          }
+        } else {
+          const existingAsk = askMapRef.current.get(price);
+          if (!existingAsk || existingAsk.amount !== amount) {
+            askMapRef.current.set(price, { price, count: 1, amount });
+            hasChanges = true;
+          }
+        }
+      });
+      
+      // Process bids
+      delta.b.forEach(([priceStr, amountStr]) => {
+        const price = parseFloat(priceStr);
+        const amount = parseFloat(amountStr);
+        
+        if (amount === 0) {
+          if (bidMapRef.current.has(price)) {
+            bidMapRef.current.delete(price);
+            hasChanges = true;
+          }
+        } else {
+          const existingBid = bidMapRef.current.get(price);
+          if (!existingBid || existingBid.amount !== amount) {
+            bidMapRef.current.set(price, { price, count: 1, amount });
+            hasChanges = true;
+          }
+        }
+      });
+    }
+    
+    // Update internal book if any changes were made
+    if (hasChanges) {
+      updateInternalOrderBook();
+    }
+  }, [updateInternalOrderBook]);
 
+  // Initialize WebSocket for the selected exchange
+  const initWebSocket = useCallback(() => {
     // Clear previous connection if exists
     if (socketRef.current) {
       socketRef.current.close();
@@ -245,6 +434,40 @@ export function useOrderBookWebSocket(
     bidMapRef.current.clear();
     channelIdRef.current = null;
 
+    try {
+      // Initialize WebSocket based on selected exchange
+      switch (exchange) {
+        case 'bitfinex':
+          initBitfinexWebSocket();
+          break;
+        case 'coinbase':
+          initCoinbaseWebSocket();
+          break;
+        case 'binance':
+          initBinanceWebSocket();
+          break;
+        default:
+          // Use mock data as fallback
+          const mockData = getMockOrderBook(exchange);
+          setOrderBook(mockData);
+          setConnectionStatus('disconnected');
+          setIsLoading(false);
+          setError(new Error(`Exchange ${exchange} not supported. Using mock data.`));
+      }
+    } catch (err) {
+      console.error(`[OrderBook WebSocket] Failed to initialize ${exchange} WebSocket:`, err);
+      setError(err instanceof Error ? err : new Error(`Failed to initialize ${exchange} WebSocket`));
+      setConnectionStatus('disconnected');
+      
+      // Use mock data as fallback
+      const mockData = getMockOrderBook(exchange);
+      setOrderBook(mockData);
+      setIsLoading(false);
+    }
+  }, [exchange, symbol, precision, frequency, processOrderBookData]);
+  
+  // Initialize Bitfinex WebSocket
+  const initBitfinexWebSocket = useCallback(() => {
     try {
       // Create new WebSocket connection
       socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
@@ -270,21 +493,21 @@ export function useOrderBookWebSocket(
       };
 
       socketRef.current.onclose = (event) => {
-        console.log(`[OrderBook WebSocket] Closed (${event.code}): ${event.reason}`);
+        console.log(`[OrderBook WebSocket] Bitfinex connection closed (${event.code}): ${event.reason}`);
         setConnectionStatus('disconnected');
         
         // Attempt to reconnect after a delay
         if (!event.wasClean) {
           reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('[OrderBook WebSocket] Attempting to reconnect...');
+            console.log('[OrderBook WebSocket] Attempting to reconnect to Bitfinex...');
             initWebSocket();
           }, 5000);
         }
       };
 
       socketRef.current.onerror = (event) => {
-        console.error('[OrderBook WebSocket] Error:', event);
-        setError(new Error('WebSocket connection error'));
+        console.error('[OrderBook WebSocket] Bitfinex error:', event);
+        setError(new Error('Bitfinex WebSocket connection error'));
       };
 
       socketRef.current.onmessage = (event) => {
@@ -293,14 +516,14 @@ export function useOrderBookWebSocket(
           
           // Handle different message types
           if (data.event === 'subscribed' && data.channel === 'book') {
-            console.log('[OrderBook WebSocket] Subscribed to order book:', data);
+            console.log('[OrderBook WebSocket] Subscribed to Bitfinex order book:', data);
             channelIdRef.current = data.chanId;
           } 
           // Handle snapshot (initial data)
           else if (Array.isArray(data) && data[0] === channelIdRef.current && Array.isArray(data[1])) {
             // Check if it's a snapshot (array of arrays)
             if (Array.isArray(data[1][0])) {
-              console.log('[OrderBook WebSocket] Received order book snapshot');
+              console.log('[OrderBook WebSocket] Received Bitfinex order book snapshot');
               processOrderBookData(data[1]);
             } 
             // Handle update (single order book entry)
@@ -309,21 +532,146 @@ export function useOrderBookWebSocket(
             }
           }
         } catch (err) {
-          console.error('[OrderBook WebSocket] Failed to process message:', err, event.data);
-          setError(err instanceof Error ? err : new Error('Failed to process WebSocket message'));
+          console.error('[OrderBook WebSocket] Failed to process Bitfinex message:', err, event.data);
+          setError(err instanceof Error ? err : new Error('Failed to process Bitfinex WebSocket message'));
         }
       };
     } catch (err) {
-      console.error('[OrderBook WebSocket] Failed to initialize WebSocket:', err);
-      setError(err instanceof Error ? err : new Error('Failed to initialize WebSocket'));
-      setConnectionStatus('disconnected');
-      
-      // Use mock data as fallback
-      const mockData = getMockOrderBook(exchange);
-      setOrderBook(mockData);
-      setIsLoading(false);
+      console.error('[OrderBook WebSocket] Failed to initialize Bitfinex WebSocket:', err);
+      throw err;
     }
-  }, [exchange, symbol, precision, frequency, processOrderBookData]);
+  }, [symbol, precision, frequency, processOrderBookData]);
+  
+  // Initialize Coinbase WebSocket
+  const initCoinbaseWebSocket = useCallback(() => {
+    try {
+      // Create new WebSocket connection
+      socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
+
+      // Handle WebSocket events
+      socketRef.current.onopen = () => {
+        console.log('[OrderBook WebSocket] Connected to Coinbase');
+        setConnectionStatus('connected');
+        setError(null);
+
+        // Subscribe to order book
+        if (socketRef.current) {
+          const subscribeMsg = JSON.stringify({
+            type: 'subscribe',
+            product_ids: [`${symbol.slice(0, 3)}-${symbol.slice(3)}`], // Format: BTC-USD
+            channels: ['level2']
+          });
+          socketRef.current.send(subscribeMsg);
+        }
+      };
+
+      socketRef.current.onclose = (event) => {
+        console.log(`[OrderBook WebSocket] Coinbase connection closed (${event.code}): ${event.reason}`);
+        setConnectionStatus('disconnected');
+        
+        // Attempt to reconnect after a delay
+        if (!event.wasClean) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log('[OrderBook WebSocket] Attempting to reconnect to Coinbase...');
+            initWebSocket();
+          }, 5000);
+        }
+      };
+
+      socketRef.current.onerror = (event) => {
+        console.error('[OrderBook WebSocket] Coinbase error:', event);
+        setError(new Error('Coinbase WebSocket connection error'));
+      };
+
+      socketRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Only process messages for the current symbol
+          const formattedSymbol = `${symbol.slice(0, 3)}-${symbol.slice(3)}`;
+          if (data.product_id && data.product_id !== formattedSymbol) {
+            return;
+          }
+          
+          // Handle different message types
+          if (data.type === 'snapshot' || data.type === 'l2update') {
+            processCoinbaseOrderBookData(data);
+          }
+        } catch (err) {
+          console.error('[OrderBook WebSocket] Failed to process Coinbase message:', err, event.data);
+          setError(err instanceof Error ? err : new Error('Failed to process Coinbase WebSocket message'));
+        }
+      };
+    } catch (err) {
+      console.error('[OrderBook WebSocket] Failed to initialize Coinbase WebSocket:', err);
+      throw err;
+    }
+  }, [symbol, processCoinbaseOrderBookData]);
+  
+  // Initialize Binance WebSocket
+  const initBinanceWebSocket = useCallback(() => {
+    try {
+      // Format symbol for Binance (lowercase)
+      const binanceSymbol = symbol.toLowerCase();
+      
+      // Create new WebSocket connection (depth stream)
+      socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/${binanceSymbol}@depth`);
+
+      // Handle WebSocket events
+      socketRef.current.onopen = () => {
+        console.log('[OrderBook WebSocket] Connected to Binance');
+        setConnectionStatus('connected');
+        setError(null);
+        
+        // For Binance, we need to get the initial snapshot through REST API
+        fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol.toUpperCase()}&limit=100`)
+          .then(response => response.json())
+          .then(data => {
+            console.log('[OrderBook WebSocket] Received Binance order book snapshot');
+            processBinanceOrderBookData(data);
+          })
+          .catch(err => {
+            console.error('[OrderBook WebSocket] Failed to fetch Binance snapshot:', err);
+            setError(new Error('Failed to fetch Binance order book snapshot'));
+          });
+      };
+
+      socketRef.current.onclose = (event) => {
+        console.log(`[OrderBook WebSocket] Binance connection closed (${event.code}): ${event.reason}`);
+        setConnectionStatus('disconnected');
+        
+        // Attempt to reconnect after a delay
+        if (!event.wasClean) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log('[OrderBook WebSocket] Attempting to reconnect to Binance...');
+            initWebSocket();
+          }, 5000);
+        }
+      };
+
+      socketRef.current.onerror = (event) => {
+        console.error('[OrderBook WebSocket] Binance error:', event);
+        setError(new Error('Binance WebSocket connection error'));
+      };
+
+      socketRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Handle depth update
+          if (data.e === 'depthUpdate') {
+            processBinanceOrderBookData(data);
+          }
+        } catch (err) {
+          console.error('[OrderBook WebSocket] Failed to process Binance message:', err, event.data);
+          setError(err instanceof Error ? err : new Error('Failed to process Binance WebSocket message'));
+        }
+      };
+    } catch (err) {
+      console.error('[OrderBook WebSocket] Failed to initialize Binance WebSocket:', err);
+      throw err;
+    }
+  }, [symbol, processBinanceOrderBookData]);
 
   // Set up performance metrics calculation
   useEffect(() => {
