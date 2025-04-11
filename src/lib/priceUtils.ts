@@ -6,6 +6,23 @@ const PERCENT_DECIMAL_PLACES = 2;
 const CHANGE_DECIMAL_PLACES = 2;
 
 /**
+ * Format number with K/M/B suffix for social media metrics
+ * e.g. 1500 -> 1.5K, 1400000 -> 1.4M
+ */
+export function formatCompactNumber(value: number): string {
+  if (value >= 1000000000) {
+    return (value / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+  }
+  if (value >= 1000000) {
+    return (value / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return value.toString();
+}
+
+/**
  * Normalize decimal places for consistent display
  */
 export function normalizeDecimalPlaces(value: number, decimalPlaces = PRICE_DECIMAL_PLACES): number {

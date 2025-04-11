@@ -22,6 +22,7 @@ import BTCAnalysis from '@/components/social/BTCAnalysis';
 import { useTimeframe } from '@/hooks/useTimeframe';
 import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
 import { useHalvingData } from '@/hooks/useHalvingData';
+import { formatCompactNumber } from '@/lib/priceUtils';
 import Image from 'next/image';
 
 // Import mock data generator
@@ -47,52 +48,40 @@ const fallbackAnalysisContent = `
 const tweets = [
   {
     id: '1',
-    username: 'Ansem',
-    handle: 'blknoiz06',
-    profileImage: 'ansem.jpg',
-    text: 'i really dont think you can conjure up a better scenario for when it makes a ton of sense to have a portion of your long term savings in bitcoin.',
-    time: '1:59 PM · APR 5, 2025',
-    comments: 177,
-    retweets: 141,
-    likes: 2500,
-    views: 34000
+    username: 'Michael Saylor',
+    handle: 'saylor',
+    profileImage: 'saylor.jpg',
+    text: 'Bitcoin is powered by Chaos.',
+    time: '1:00 PM · APR 10, 2025',
+    comments: 1500,
+    retweets: 1400,
+    likes: 14000,
+    views: 756500
   },
   {
     id: '2',
-    username: 'Fapital',
-    handle: 'Fapital3',
-    profileImage: 'fapital.jpg',
-    text: 'bitcoin is decoupling from old people assets',
-    time: '12:10 PM · APR 4, 2025',
-    comments: 33,
-    retweets: 68,
-    likes: 698,
-    views: 24000
+    username: 'SalsaTekila',
+    handle: 'SalsaTekila',
+    profileImage: 'salsa.jpg',
+    text: 'The juciest, and most accessible opportunity of the next decade, is buying spot BTC below 100k USD. It will trade above 500K by 2035, probably much higher than current prices by the end of Trump’s term. Don’t get spooked out by Saylor, he can’t be liquidated and likely wins.',
+    time: '11:39 AM · APR 10, 2025',
+    comments: 26,
+    retweets: 5,
+    likes: 131,
+    views: 8890
   },
   {
     id: '3',
-    username: 'Nikita Bier',
-    handle: 'nikitabier',
-    profileImage: 'nikita.jpg',
-    text: 'I think there\'s a non-zero chance we piss off enough countries, decimate foreign demand for treasuries, obliterate the dollar, and everyone realizes that this style of negotiation was a one-way door—and we all switch to Bitcoin.',
-    time: '4:28 PM · APR 4, 2025',
-    comments: 177,
-    retweets: 141,
-    likes: 2500,
-    views: 229000
+    username: 'Adam Back',
+    handle: 'adam3us',
+    profileImage: 'back.jpg',
+    text: 'The future of finance runs on Bitcoin.',
+    time: '7:13 PM · APR 9, 2025',
+    comments: 321,
+    retweets: 669,
+    likes: 5000,
+    views: 170000
   },
-  {
-    id: '4',
-    username: 'Paolo Ardoino 🤖',
-    handle: 'paoloardoino',
-    profileImage: 'paolo.jpg',
-    text: 'Bitcoin is the hedge.',
-    time: '9:08 AM · APR 4, 2025',
-    comments: 206,
-    retweets: 586,
-    likes: 4700,
-    views: 1100000
-  }
 ];
 
 export default function Home() {
@@ -277,18 +266,18 @@ export default function Home() {
                       <div>
                         <p className="font-fuji-bold text-base">
                           {tweet.username}
-                          <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
+                          <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
                         </p>
-                        <p className="text-[#8a919e] text-sm font-gotham-medium">{tweet.time}</p>
+                        <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
                       </div>
                     </div>
-                    <p className="text-sm mb-2">{tweet.text}</p>
-                    <div className="flex items-center text-[#8a919e] text-sm font-gotham-medium">
+                    <p className="text-base mb-2 text-[#b4b8c1]">{tweet.text}</p>
+                    <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
                       <div className="flex space-x-4">
-                        <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {tweet.comments}</span>
-                        <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {tweet.retweets}</span>
-                        <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {tweet.likes}</span>
-                        <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {tweet.views}</span>
+                        <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.comments)}</span>
+                        <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.retweets)}</span>
+                        <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.likes)}</span>
+                        <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.views)}</span>
                       </div>
                     </div>
                   </article>
