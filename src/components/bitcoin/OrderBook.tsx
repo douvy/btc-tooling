@@ -219,6 +219,10 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
     performanceMetrics
   } = useOrderBookWebSocket('BTCUSD', selectedExchange);
   
+  // Track updated orders to animate them
+  const [animatingAsks, setAnimatingAsks] = useState<Record<number, boolean>>({});
+  const [animatingBids, setAnimatingBids] = useState<Record<number, boolean>>({});
+  
   // Manage local order book based on props or WebSocket data
   const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
   
@@ -260,19 +264,87 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
   useEffect(() => {
     // First priority: Use prop data if available
     if (propOrderBook) {
+      // Track which orders have changed to animate them
+      const newAnimatingAsks: Record<number, boolean> = {};
+      const newAnimatingBids: Record<number, boolean> = {};
+      
+      if (localOrderBook) {
+        // Find changed asks
+        propOrderBook.asks.forEach(ask => {
+          const existingAsk = localOrderBook.asks.find(a => a.price === ask.price);
+          if (!existingAsk || existingAsk.amount !== ask.amount) {
+            newAnimatingAsks[ask.price] = true;
+          }
+        });
+        
+        // Find changed bids
+        propOrderBook.bids.forEach(bid => {
+          const existingBid = localOrderBook.bids.find(b => b.price === bid.price);
+          if (!existingBid || existingBid.amount !== bid.amount) {
+            newAnimatingBids[bid.price] = true;
+          }
+        });
+      }
+      
+      setAnimatingAsks(newAnimatingAsks);
+      setAnimatingBids(newAnimatingBids);
       setLocalOrderBook(propOrderBook);
+      
+      // Clear animations after a delay
+      setTimeout(() => {
+        setAnimatingAsks({});
+        setAnimatingBids({});
+      }, 300);
+      
       return;
     }
     
     // Second priority: Use WebSocket or fallback data from the hook
     if (wsOrderBook) {
-      // Handle the exchange transition with a smooth animation
-      setIsExchangeTransitioning(true);
+      // Track which orders have changed to animate them
+      const newAnimatingAsks: Record<number, boolean> = {};
+      const newAnimatingBids: Record<number, boolean> = {};
       
-      setTimeout(() => {
+      if (localOrderBook) {
+        // Only animate changes if not changing exchange
+        if (!isExchangeTransitioning) {
+          // Find changed asks
+          wsOrderBook.asks.forEach(ask => {
+            const existingAsk = localOrderBook.asks.find(a => a.price === ask.price);
+            if (!existingAsk || existingAsk.amount !== ask.amount) {
+              newAnimatingAsks[ask.price] = true;
+            }
+          });
+          
+          // Find changed bids
+          wsOrderBook.bids.forEach(bid => {
+            const existingBid = localOrderBook.bids.find(b => b.price === bid.price);
+            if (!existingBid || existingBid.amount !== bid.amount) {
+              newAnimatingBids[bid.price] = true;
+            }
+          });
+        }
+      }
+      
+      // Handle the exchange transition with a smooth animation
+      if (selectedExchange !== localOrderBook?.exchange) {
+        setIsExchangeTransitioning(true);
+        setTimeout(() => {
+          setLocalOrderBook(wsOrderBook);
+          setIsExchangeTransitioning(false);
+        }, 300);
+      } else {
+        // Regular update - set animations and update the book
+        setAnimatingAsks(newAnimatingAsks);
+        setAnimatingBids(newAnimatingBids);
         setLocalOrderBook(wsOrderBook);
-        setIsExchangeTransitioning(false);
-      }, 300);
+        
+        // Clear animations after a delay
+        setTimeout(() => {
+          setAnimatingAsks({});
+          setAnimatingBids({});
+        }, 300);
+      }
       return;
     } 
     
@@ -286,7 +358,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         setIsExchangeTransitioning(false);
       }, 300);
     }
-  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
+  }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook, isExchangeTransitioning]);
   
   // Handle exchange selection
   const handleExchangeChange = (exchange: Exchange) => {
@@ -599,6 +671,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-error' : ''}
                 ${hoveredRowId === `ask-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
+                ${animatingAsks[ask.price] ? 'animate-orderbook-flash-red' : ''}
               `}
               onMouseEnter={(e) => handleOrderRowMouseEnter(
                 e, 
@@ -625,21 +698,33 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               {/* Red bar column */}
               <div className="col-span-1 h-full flex items-center">
                 <div 
-                  className={`h-3/5 ${isInOrderRange && isHighlighted ? 'bg-error opacity-70' : 'bg-error opacity-50'}`}
+                  className={`h-3/5 ${
+                    isInOrderRange && isHighlighted ? 'bg-error opacity-70' : 'bg-error opacity-50'
+                  } transition-all duration-300 ${
+                    animatingAsks[ask.price] ? 'animate-pulse' : ''
+                  }`}
                   style={{ width: `${volumePercentage}%` }}
                 ></div>
               </div>
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                {isMobile ? ask.amount.toFixed(4) : ask.amount.toFixed(8)}
+                <span className={animatingAsks[ask.price] ? 'font-bold' : ''}>
+                  {isMobile ? ask.amount.toFixed(4) : ask.amount.toFixed(8)}
+                </span>
                 {isInOrderRange && isHighlighted && (
                   <span className="ml-1 text-[10px] text-error">✓</span>
                 )}
               </div>
               
               {/* Price column */}
-              <div className={`col-span-6 text-center ${isInOrderRange && isHighlighted ? 'text-error font-bold' : 'text-error'}`}>
+              <div className={`col-span-6 text-center ${
+                isInOrderRange && isHighlighted 
+                  ? 'text-error font-bold' 
+                  : animatingAsks[ask.price]
+                    ? 'text-error font-bold' 
+                    : 'text-error'
+              }`}>
                 {ask.price.toFixed(2)}
                 {!isMobile && isInOrderRange && isHighlighted && selectedAmount >= ask.amount * 0.8 && (
                   <span className="ml-1 text-xs">${(ask.price * ask.amount).toFixed(2)}</span>
@@ -705,7 +790,11 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 ${isHighlighted ? 'bg-gray-900' : ''}
                 ${isInOrderRange && isHighlighted ? 'border-l-2 border-success' : ''}
                 ${hoveredRowId === `bid-${index}` ? 'bg-gray-800 shadow-md' : 'hover:bg-gray-800'}
+<<<<<<< Updated upstream
                 ${isMobile ? 'cursor-pointer active:bg-gray-700' : ''}
+=======
+                ${animatingBids[bid.price] ? 'animate-orderbook-flash-green' : ''}
+>>>>>>> Stashed changes
               `}
               onMouseEnter={(e) => handleOrderRowMouseEnter(
                 e, 
@@ -732,21 +821,33 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
               {/* Green bar column */}
               <div className="col-span-1 h-full flex items-center">
                 <div 
-                  className={`h-3/5 ${isInOrderRange && isHighlighted ? 'bg-success opacity-70' : 'bg-success opacity-50'}`}
+                  className={`h-3/5 ${
+                    isInOrderRange && isHighlighted ? 'bg-success opacity-70' : 'bg-success opacity-50'
+                  } transition-all duration-300 ${
+                    animatingBids[bid.price] ? 'animate-pulse' : ''
+                  }`}
                   style={{ width: `${volumePercentage}%` }}
                 ></div>
               </div>
               
               {/* Amount column */}
               <div className="col-span-5 text-center text-gray-300">
-                {isMobile ? bid.amount.toFixed(4) : bid.amount.toFixed(8)}
+                <span className={animatingBids[bid.price] ? 'font-bold' : ''}>
+                  {isMobile ? bid.amount.toFixed(4) : bid.amount.toFixed(8)}
+                </span>
                 {isInOrderRange && isHighlighted && (
                   <span className="ml-1 text-[10px] text-success">✓</span>
                 )}
               </div>
               
               {/* Price column */}
-              <div className={`col-span-6 text-center ${isInOrderRange && isHighlighted ? 'text-success font-bold' : 'text-success'}`}>
+              <div className={`col-span-6 text-center ${
+                isInOrderRange && isHighlighted 
+                  ? 'text-success font-bold' 
+                  : animatingBids[bid.price]
+                    ? 'text-success font-bold' 
+                    : 'text-success'
+              }`}>
                 {bid.price.toFixed(2)}
                 {!isMobile && isInOrderRange && isHighlighted && selectedAmount >= bid.amount * 0.8 && (
                   <span className="ml-1 text-xs">${(bid.price * bid.amount).toFixed(2)}</span>

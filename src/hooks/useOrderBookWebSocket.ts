@@ -263,37 +263,119 @@ export function useOrderBookWebSocket(
   const updateTimesRef = useRef<number[]>([]);
   const lastMetricsTimeRef = useRef<number>(0);
   
-  // Update performance metrics with actual measurements
+  // Simulate real-time order book updates and track performance measurements
   useEffect(() => {
     // Only run on client
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || connectionStatus !== 'fallback_mock') {
       return;
     }
     
-    // Record start time when order book updates
-    if (orderBook && orderBook !== internalOrderBookRef.current) {
-      const now = performance.now();
-      // Record update duration (simulate processing time)
-      const updateDuration = Math.random() * 10 + 3; // 3-13ms
+    // Generate random updates to the orderbook every 1-2 seconds
+    const updateInterval = setInterval(() => {
+      if (!internalOrderBookRef.current) {
+        return;
+      }
+      
+      // Record start time for performance metrics
+      const startTime = performance.now();
+      
+      // Create a copy of the current order book
+      const currentBook = { ...internalOrderBookRef.current };
+      const newAsks = [...currentBook.asks];
+      const newBids = [...currentBook.bids];
+      
+      // Randomly modify 1-3 orders
+      const numChanges = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < numChanges; i++) {
+        // 50% chance to modify an ask, 50% to modify a bid
+        if (Math.random() > 0.5) {
+          // Modify an ask
+          const askIndex = Math.floor(Math.random() * newAsks.length);
+          const ask = { ...newAsks[askIndex] };
+          
+          // 70% chance to change amount, 30% chance to change price
+          if (Math.random() > 0.3) {
+            // Change amount by +/- 10-30%
+            const changeFactor = 0.7 + (Math.random() * 0.6);
+            ask.amount = ask.amount * changeFactor;
+            ask.total = ask.price * ask.amount;
+          } else {
+            // Change price slightly
+            const priceChange = (Math.random() * 10) - 5; // +/- $5
+            ask.price = ask.price + priceChange;
+            ask.total = ask.price * ask.amount;
+          }
+          
+          newAsks[askIndex] = ask;
+        } else {
+          // Modify a bid
+          const bidIndex = Math.floor(Math.random() * newBids.length);
+          const bid = { ...newBids[bidIndex] };
+          
+          // 70% chance to change amount, 30% chance to change price
+          if (Math.random() > 0.3) {
+            // Change amount by +/- 10-30%
+            const changeFactor = 0.7 + (Math.random() * 0.6);
+            bid.amount = bid.amount * changeFactor;
+            bid.total = bid.price * bid.amount;
+          } else {
+            // Change price slightly
+            const priceChange = (Math.random() * 10) - 5; // +/- $5
+            bid.price = bid.price + priceChange;
+            bid.total = bid.price * bid.amount;
+          }
+          
+          newBids[bidIndex] = bid;
+        }
+      }
+      
+      // Recalculate sums
+      let askSum = 0;
+      newAsks.forEach((ask, i) => {
+        askSum += ask.amount;
+        newAsks[i].sum = askSum;
+      });
+      
+      let bidSum = 0;
+      newBids.forEach((bid, i) => {
+        bidSum += bid.amount;
+        newBids[i].sum = bidSum;
+      });
+      
+      // Update spread
+      const spread = newAsks.length > 0 && newBids.length > 0 
+        ? newAsks[0].price - newBids[0].price
+        : 0;
+      
+      // Create updated orderbook
+      const updatedOrderBook = {
+        asks: newAsks,
+        bids: newBids,
+        spread,
+        exchange: currentBook.exchange
+      };
+      
+      // Update state
+      internalOrderBookRef.current = updatedOrderBook;
+      setOrderBook(updatedOrderBook);
+      setLastUpdated(new Date());
+      
+      // Record update duration for performance metrics
+      const updateDuration = performance.now() - startTime;
       updateTimesRef.current.push(updateDuration);
       
       // Keep only the last 60 updates
       if (updateTimesRef.current.length > 60) {
         updateTimesRef.current.shift();
       }
-    }
-    
-    // Update metrics once per second
-    const interval = setInterval(() => {
-      const now = performance.now();
-      const oneSecondAgo = now - 1000;
       
       // Count updates in the last second (approximate FPS)
+      const now = performance.now();
       const timeSinceLastUpdate = now - lastMetricsTimeRef.current;
       lastMetricsTimeRef.current = now;
       
       // Calculate FPS based on the number of updates in the last second
-      // or use the update interval to estimate
       const estimatedFps = updateTimesRef.current.length > 0 
         ? Math.min(5, Math.ceil(updateTimesRef.current.length / (timeSinceLastUpdate / 1000)))
         : Math.floor(1000 / (1000 + Math.random() * 1000));
@@ -303,15 +385,16 @@ export function useOrderBookWebSocket(
         ? updateTimesRef.current.reduce((sum, time) => sum + time, 0) / updateTimesRef.current.length
         : 8 + Math.random() * 4;
       
+      // Update performance metrics
       setPerformanceMetrics({
         fps: estimatedFps,
         updateCount: performanceMetrics.updateCount + 1,
         averageUpdateTime: avgUpdateTime
       });
-    }, 1000);
+    }, 1000 + Math.random() * 1000); // Random interval between 1-2 seconds
     
-    return () => clearInterval(interval);
-  }, [orderBook, performanceMetrics.updateCount]);
+    return () => clearInterval(updateInterval);
+  }, [connectionStatus, orderBook, performanceMetrics.updateCount]);
 
   return {
     orderBook,
