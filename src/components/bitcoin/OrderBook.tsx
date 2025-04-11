@@ -769,7 +769,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 {connectionStatus === 'connected' && (
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-1 bg-success" />
-                    <span className="text-success">Live</span>
+                    <span className="text-[#8a919e]">Live</span>
                   </div>
                 )}
               </div>
