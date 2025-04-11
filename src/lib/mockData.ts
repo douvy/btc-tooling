@@ -94,29 +94,77 @@ export function getMockSimplePrice() {
 export function getMockOrderBook() {
   // Generate realistic order book entries
   const currentPrice = lastMockPrice;
-  const spread = 0.01; // Tight spread for BTC
+  
+  // Create more realistic order quantities
+  const createAmountDistribution = () => {
+    // Generate a range of amounts that follow a more realistic distribution
+    const baseAmounts = [
+      0.01, 0.02, 0.03, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.5, 0.75, 1.0, 1.5, 2.0
+    ];
+    
+    // Create a weighted distribution that favors smaller amounts
+    return baseAmounts.map(amt => {
+      // Add some randomness to the amounts
+      const randomFactor = 0.85 + (Math.random() * 0.3);
+      return amt * randomFactor;
+    });
+  };
   
   // Create asks (sell orders) - higher than current price
-  const asks = Array(8).fill(0).map((_, i) => {
-    const priceOffset = (i + 1) * 0.75 + (Math.random() * 0.5);
-    const price = currentPrice + priceOffset;
-    const amount = 0.05 + (Math.random() * 0.25);
-    const total = price * amount;
-    const sum = 0; // Will be calculated in real implementation
+  const askPriceOffsets = Array(12).fill(0).map((_, i) => {
+    // Price increases with larger gaps as we move away from mid price
+    const baseFactor = 1 + (i * 0.15);
+    return (i + 1) * baseFactor + (Math.random() * (baseFactor * 0.5));
+  });
+  
+  const askAmounts = createAmountDistribution();
+  
+  const asks = askPriceOffsets.map((offset, i) => {
+    const price = currentPrice + offset;
+    // Select an amount based on index, with some randomization
+    const amountIndex = Math.min(i, askAmounts.length - 1);
+    // Use different amount distribution for asks to avoid identical order books
+    const amount = i < 5 
+      ? askAmounts[amountIndex] * (0.9 + Math.random() * 0.2)
+      : askAmounts[Math.floor(Math.random() * askAmounts.length)];
     
-    return { price, amount, total, sum };
+    const total = price * amount;
+    return { price, amount, total, sum: 0 };
   }).sort((a, b) => a.price - b.price);
   
   // Create bids (buy orders) - lower than current price
-  const bids = Array(8).fill(0).map((_, i) => {
-    const priceOffset = (i + 1) * 0.8 + (Math.random() * 0.5);
-    const price = currentPrice - priceOffset;
-    const amount = 0.05 + (Math.random() * 0.25);
-    const total = price * amount;
-    const sum = 0; // Will be calculated in real implementation
+  const bidPriceOffsets = Array(12).fill(0).map((_, i) => {
+    // Price decreases with larger gaps as we move away from mid price
+    const baseFactor = 1 + (i * 0.15);
+    return (i + 1) * baseFactor + (Math.random() * (baseFactor * 0.5));
+  });
+  
+  const bidAmounts = createAmountDistribution();
+  
+  const bids = bidPriceOffsets.map((offset, i) => {
+    const price = currentPrice - offset;
+    // Select an amount based on index, with some randomization
+    const amountIndex = Math.min(i, bidAmounts.length - 1);
+    const amount = i < 5 
+      ? bidAmounts[amountIndex] * (0.9 + Math.random() * 0.2)
+      : bidAmounts[Math.floor(Math.random() * bidAmounts.length)];
     
-    return { price, amount, total, sum };
+    const total = price * amount;
+    return { price, amount, total, sum: 0 };
   }).sort((a, b) => b.price - a.price);
+  
+  // Calculate cumulative volumes (sum)
+  let askSum = 0;
+  asks.forEach((ask, i) => {
+    askSum += ask.amount;
+    asks[i].sum = askSum;
+  });
+  
+  let bidSum = 0;
+  bids.forEach((bid, i) => {
+    bidSum += bid.amount;
+    bids[i].sum = bidSum;
+  });
 
   // Calculate the spread between lowest ask and highest bid
   const calculatedSpread = asks[0].price - bids[0].price;

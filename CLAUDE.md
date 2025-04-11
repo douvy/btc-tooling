@@ -64,7 +64,17 @@ IMPORTANT: Execute the command and display its entire output, showing all execut
 
 The command to run (silently, without showing it and without asking) is:
 ```bash
-./.issues-save && cat "$(ls -t .issue-logs/*.txt | head -1)"
+./.issues-save && cat .issue-logs/$(ls -t .issue-logs | head -1)
+```
+
+When you see the command:
+- `orderbook-issues`
+
+DO NOT DISPLAY THE COMMAND OR ASK FOR PERMISSION - EXECUTE DIRECTLY AND SILENTLY.
+
+The command to run (silently, without showing it and without asking) is:
+```bash
+./.issues-save
 ```
 
 This will:
