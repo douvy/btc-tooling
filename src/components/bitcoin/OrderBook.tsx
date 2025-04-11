@@ -113,13 +113,14 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
     setHoveredRowId(null);
   };
   
-  // Use WebSocket hook for Bitfinex data
+  // Use WebSocket hook for Bitfinex data with FPS limiting
   const {
     orderBook: wsOrderBook,
     connectionStatus,
     error: wsError,
     lastUpdated,
-    isLoading: wsLoading
+    isLoading: wsLoading,
+    performanceMetrics
   } = useOrderBookWebSocket('BTCUSD', selectedExchange);
   
   // Manage local order book based on props or WebSocket data
@@ -657,41 +658,60 @@ export default function OrderBook({ orderBook: propOrderBook, currentPrice, pric
           </div>
         </div>
         
-        {/* Exchange info footer with connection status */}
-        <div className="mt-3 pt-2 border-t border-divider flex items-center justify-between text-[10px] text-gray-500">
-          <div className="flex items-center">
-            <span>{currentExchange.logo}</span>
-            <span className="ml-1">Data from {currentExchange.name}</span>
-            
-            {/* Connection status for Bitfinex WebSocket */}
-            {selectedExchange === 'bitfinex' && (
-              <div className="ml-3 flex items-center">
-                <div className={`w-2 h-2 rounded-full mr-1 ${
-                  connectionStatus === 'connected' 
-                    ? 'bg-green-500' 
-                    : connectionStatus === 'connecting' 
-                      ? 'bg-yellow-500 animate-pulse' 
-                      : 'bg-red-500'
-                }`} />
-                <span className={
-                  connectionStatus === 'connected' 
-                    ? 'text-green-500' 
-                    : connectionStatus === 'connecting' 
-                      ? 'text-yellow-500' 
-                      : 'text-red-500'
-                }>
-                  {connectionStatus === 'connected' 
-                    ? 'Live' 
-                    : connectionStatus === 'connecting' 
-                      ? 'Connecting...' 
-                      : 'Offline (using cached data)'}
-                </span>
+        {/* Exchange info footer with connection status and performance metrics */}
+        <div className="mt-3 pt-2 border-t border-divider flex flex-col gap-1 text-[10px] text-gray-500">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span>{currentExchange.logo}</span>
+              <span className="ml-1">Data from {currentExchange.name}</span>
+              
+              {/* Connection status for Bitfinex WebSocket */}
+              {selectedExchange === 'bitfinex' && (
+                <div className="ml-3 flex items-center">
+                  <div className={`w-2 h-2 rounded-full mr-1 ${
+                    connectionStatus === 'connected' 
+                      ? 'bg-green-500' 
+                      : connectionStatus === 'connecting' 
+                        ? 'bg-yellow-500 animate-pulse' 
+                        : 'bg-red-500'
+                  }`} />
+                  <span className={
+                    connectionStatus === 'connected' 
+                      ? 'text-green-500' 
+                      : connectionStatus === 'connecting' 
+                        ? 'text-yellow-500' 
+                        : 'text-red-500'
+                  }>
+                    {connectionStatus === 'connected' 
+                      ? 'Live' 
+                      : connectionStatus === 'connecting' 
+                        ? 'Connecting...' 
+                        : 'Offline (using cached data)'}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="text-right">
+              <span>Last update: {selectedExchange === 'bitfinex' && !wsError ? lastUpdated.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+            </div>
+          </div>
+          
+          {/* Performance metrics (only shown for Bitfinex) */}
+          {selectedExchange === 'bitfinex' && connectionStatus === 'connected' && (
+            <div className="flex items-center justify-between mt-1 pt-1 border-t border-divider text-[8px]">
+              <div className="flex items-center">
+                <span className="text-blue-400 mr-1">{performanceMetrics.fps}</span>
+                <span className="text-gray-500">FPS</span>
+                <span className="mx-2">|</span>
+                <span className="text-blue-400 mr-1">{performanceMetrics.updateCount}</span>
+                <span className="text-gray-500">updates</span>
               </div>
-            )}
-          </div>
-          <div className="text-right">
-            <span>Last update: {selectedExchange === 'bitfinex' && !wsError ? lastUpdated.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
-          </div>
+              <div>
+                <span className="text-gray-500 mr-1">Avg. update time:</span>
+                <span className="text-blue-400">{performanceMetrics.averageUpdateTime.toFixed(2)}ms</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
