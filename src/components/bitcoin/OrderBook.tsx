@@ -441,9 +441,8 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
           </h2>
           
           {/* Exchange indicator */}
-          <div className="text-right text-sm text-[#81919e] flex items-center">
-            <span>💱</span>
-            <span className="ml-1">Bitfinex</span>
+          <div className="text-right text-sm text-[#d0d2d8] flex items-center">
+            <span className="ml-1 font-fuji-bold text-lg">Bitfinex</span>
           </div>
         </div>
       </div>
@@ -503,7 +502,6 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         </div>
         <div className="col-span-6 text-center text-[#8a919e]">
           Price (USD)
-          <span className="ml-1 text-[10px] text-blue-400">{currentExchange.logo}</span>
         </div>
         <div className="col-span-6 text-center text-[#8a919e]">
           {viewMode === 'sum' 
@@ -623,7 +621,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
         <div className="col-span-1"></div>
         <div className="col-span-5 text-center text-[#81919e]">USD Spread</div>
         <div className="col-span-6 text-center text-[#81919e]">{spread.toFixed(2)}</div>
-        <div className="col-span-6 text-center text-blue-400">
+        <div className="col-span-6 text-center text-white">
           <span className="text-[#81919e] mr-1">≈</span>
           ${(parseFloat(amount) * currentPrice).toFixed(2)}
         </div>
