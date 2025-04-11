@@ -247,7 +247,7 @@ export default function Home() {
             </div>
           </div>
           
-          <aside className="md:w-[330px] block border-l border-divider " role="complementary"> 
+          <aside className="md:w-[375px] block border-l border-divider " role="complementary"> 
             <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 md:pb-8">
               <BTCAnalysis 
                 date="APR 7, 2025"
