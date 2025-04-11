@@ -211,6 +211,32 @@ export function getMockOrderBook(exchange = 'bitfinex') {
 /**
  * Get mock API data for detailed endpoint
  */
+/**
+ * Generate mock Bitcoin price data that matches the BitcoinPrice type
+ * Used for testing and development
+ */
+export function getMockBitcoinPrice(timeframe: TimeFrame = '1D') {
+  // Use the current mock price
+  const price = lastMockPrice;
+  
+  // Get historical data for the timeframe
+  const historicalData = HISTORICAL_DATA[timeframe] || HISTORICAL_DATA['1D'];
+  const percentChange = historicalData.direction === 'up'
+    ? historicalData.changePercent
+    : -historicalData.changePercent;
+  
+  // Calculate the change amount
+  const change = calculateChange(price, percentChange);
+  
+  return {
+    price,
+    change,
+    changePercent: Math.abs(percentChange),
+    direction: historicalData.direction,
+    timeframe
+  };
+}
+
 export function getMockDetailedPrice() {
   // Generate price with realistic movement
   const currentPrice = lastMockPrice;

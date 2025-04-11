@@ -51,8 +51,8 @@ const EXCHANGES = [
   { id: 'binance', name: 'Binance', logo: '🟡' },
 ];
 
-// Create a client-side only version of the component
-function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
+// Create a client-side only version of the component - export the function for testing
+export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
