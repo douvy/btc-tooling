@@ -15,15 +15,43 @@ jobs:
 
       - name: Get commit info
         id: commit-info
+        shell: bash
         run: |
-          echo "message=$(git log --format=%B -n 1 ${{ github.sha }})" >> $GITHUB_OUTPUT
-          echo "author_name=$(git log --format=%an -n 1 ${{ github.sha }})" >> $GITHUB_OUTPUT
-          echo "files_changed=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | tr '\n' ', ')" >> $GITHUB_OUTPUT
+          # Handle multiline commit messages with proper escaping
+          MSG=$(git log --format=%B -n 1 ${{ github.sha }})
+          # Replace newlines with \n for proper output formatting
+          MSG_ESCAPED="${MSG//$'\n'/\\n}"
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MSG_ESCAPED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
-          # Extract issue numbers from commit message
-          ISSUE_PATTERN='(fix|close|resolve|fixes|closes|resolves|fixed|closed|resolved) #([0-9]+)'
-          ISSUE_NUMBERS=$(echo "${{ github.event.head_commit.message }}" | grep -oE "$ISSUE_PATTERN" | grep -oE '#[0-9]+' | tr -d '#' || echo "")
+          # Get author name
+          AUTHOR=$(git log --format=%an -n 1 ${{ github.sha }})
+          echo "author_name=$AUTHOR" >> $GITHUB_OUTPUT
+          
+          # Get files changed
+          FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | tr '\n' ', ')
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          
+          # Extract issue numbers from commit message with error handling
+          ISSUE_PATTERN='(fix|close|resolve|fixes|closes|resolves|fixed|closed|resolved)[[:space:]]*#([0-9]+)'
+          ISSUE_NUMBERS=$(echo "$MSG" | grep -oE "$ISSUE_PATTERN" | grep -oE '#[0-9]+' | tr -d '#' || echo "")
+          
+          # If no issues found, check for PR references (e.g. Merge pull request #23)
+          if [ -z "$ISSUE_NUMBERS" ]; then
+            PR_PATTERN='pull request #([0-9]+)'
+            PR_NUMBER=$(echo "$MSG" | grep -oE "$PR_PATTERN" | grep -oE '#[0-9]+' | tr -d '#' || echo "")
+            
+            if [ ! -z "$PR_NUMBER" ]; then
+              echo "Found PR #$PR_NUMBER, but no direct issue references"
+              # You could look up issues referenced by the PR here if needed
+            fi
+          fi
+          
           echo "issue_numbers=$ISSUE_NUMBERS" >> $GITHUB_OUTPUT
+          
+          # Successfully completed the step even if no issues were found
+          echo "✅ Commit info processing complete"
 
       - name: Send GitHub app notification
         run: |
@@ -31,7 +59,6 @@ jobs:
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
           echo "Author: ${{ steps.commit-info.outputs.author_name }}"
-          echo "Message: ${{ steps.commit-info.outputs.message }}"
           
           # Create a repository dispatch event for external notification systems
           # This allows other systems to react to all pushes
