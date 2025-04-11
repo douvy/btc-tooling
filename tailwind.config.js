@@ -50,12 +50,12 @@ module.exports = {
         },
         'price-flicker-red': {
           '0%': { color: 'rgb(255, 255, 255)' },
-          '50%': { color: 'rgb(255, 120, 130)' },
+          '20%': { color: 'rgb(255, 160, 170)' },
           '100%': { color: 'rgb(240, 97, 109)' }
         },
         'price-flicker-green': {
           '0%': { color: 'rgb(255, 255, 255)' },
-          '50%': { color: 'rgb(120, 255, 130)' },
+          '20%': { color: 'rgb(160, 255, 170)' },
           '100%': { color: 'rgb(39, 173, 117)' }
         }
       },

@@ -5,8 +5,8 @@ import { TimeFrame } from '@/types';
  * This creates realistic price movements for testing in development
  */
 
-// Base price range (updated realistic BTC price as of April 2025)
-const BASE_PRICE = 82151;
+// Base price range (updated realistic BTC price as of June 2024)
+const BASE_PRICE = 66850;
 const VOLATILITY = 0.015; // 1.5% volatility for realistic movements
 
 // Historical mock data for different timeframes

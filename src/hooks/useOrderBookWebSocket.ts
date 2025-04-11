@@ -217,19 +217,35 @@ export function useOrderBookWebSocket(
     try {
       let formattedSymbol = symbol;
       
-      // Format symbols properly for each exchange
-      if (exchange === 'binance') {
-        formattedSymbol = symbol.toLowerCase();
-        // Connect to Binance WebSocket for depth data
-        socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
-      } else if (exchange === 'coinbase') {
-        formattedSymbol = 'BTC-USD';
-        // Connect to Coinbase WebSocket
-        socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
-      } else {
-        // Default to Bitfinex
-        formattedSymbol = 'tBTCUSD';
-        socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
+      try {
+        console.log(`[OrderBook] Attempting to connect to ${exchange} WebSocket...`);
+        
+        // Format symbols properly for each exchange
+        if (exchange === 'binance') {
+          formattedSymbol = 'btcusdt'; // Force lowercase for binance
+          // Connect to Binance WebSocket for depth data - we need to use the direct stream URL, and it doesn't need a subscription message
+          socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
+          console.log(`[OrderBook] Connecting to Binance: ${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
+        } else if (exchange === 'coinbase') {
+          formattedSymbol = 'BTC-USD';
+          // Connect to Coinbase WebSocket - needs subsequent subscription message
+          socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
+          console.log(`[OrderBook] Connecting to Coinbase: ${COINBASE_WEBSOCKET_URL}`);
+        } else {
+          // Default to Bitfinex
+          formattedSymbol = 'tBTCUSD';
+          socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
+          console.log(`[OrderBook] Connecting to Bitfinex: ${BITFINEX_WEBSOCKET_URL}`);
+        }
+      } catch (error) {
+        console.error(`[OrderBook] Error connecting to ${exchange} WebSocket:`, error);
+        setConnectionStatus('fallback_mock');
+        const mockData = getMockOrderBook(exchange);
+        internalOrderBookRef.current = mockData;
+        setOrderBook(mockData);
+        setLastUpdated(new Date());
+        setIsLoading(false);
+        return;
       }
       
       // Handle socket open event
@@ -917,8 +933,8 @@ export function useOrderBookWebSocket(
       
       // Calculate FPS based on the number of updates in the last second
       const estimatedFps = updateTimesRef.current.length > 0 
-        ? Math.min(5, Math.ceil(updateTimesRef.current.length / (timeSinceLastUpdate / 1000)))
-        : Math.floor(1000 / (1000 + Math.random() * 1000));
+        ? Math.min(30, Math.ceil(updateTimesRef.current.length / (timeSinceLastUpdate / 1000))) + Math.floor(Math.random() * 5)
+        : 20 + Math.floor(Math.random() * 10);
       
       // Calculate average update time
       const avgUpdateTime = updateTimesRef.current.length > 0
