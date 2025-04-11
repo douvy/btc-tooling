@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { OrderBook as OrderBookType, OrderBookEntry } from '@/types';
 import { getMockOrderBook } from '@/lib/mockData';
+import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
 
 interface OrderBookProps {
   orderBook?: OrderBookType;
@@ -27,9 +28,8 @@ const EXCHANGES = [
   { id: 'binance', name: 'Binance', logo: '🟡' },
 ];
 
-export default function OrderBook({ orderBook, currentPrice, priceChange }: OrderBookProps) {
+export default function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange }: OrderBookProps) {
   const [amount, setAmount] = useState("0.05");
-  const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('sell');
@@ -38,26 +38,51 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
   const [isExchangeTransitioning, setIsExchangeTransitioning] = useState(false);
   const presetsRef = useRef<HTMLDivElement>(null);
   
-  // Use provided orderBook or fetch mock data
+  // Use WebSocket hook for Bitfinex data
+  const {
+    orderBook: wsOrderBook,
+    connectionStatus,
+    error: wsError,
+    lastUpdated,
+    isLoading: wsLoading
+  } = useOrderBookWebSocket('BTCUSD', selectedExchange);
+  
+  // Manage local order book based on props or WebSocket data
+  const [localOrderBook, setLocalOrderBook] = useState<OrderBookType | null>(null);
+  
+  // Use provided orderBook prop, WebSocket data, or fetch mock data
   useEffect(() => {
-    if (orderBook) {
-      setLocalOrderBook(orderBook);
-    } else {
-      // For now, we're using mock data for all exchanges
-      // In the future, this would fetch from different API endpoints based on selectedExchange
-      const newOrderBook = getMockOrderBook(selectedExchange);
+    // First priority: Use prop data if available
+    if (propOrderBook) {
+      setLocalOrderBook(propOrderBook);
+      return;
+    }
+    
+    // Second priority: Use WebSocket data for Bitfinex
+    if (selectedExchange === 'bitfinex' && wsOrderBook) {
+      // Handle the exchange transition
+      setIsExchangeTransitioning(true);
       
+      setTimeout(() => {
+        setLocalOrderBook(wsOrderBook);
+        setIsExchangeTransitioning(false);
+      }, 300);
+      return;
+    } 
+    
+    // Fallback: Use mock data for other exchanges or if WebSocket fails
+    if (selectedExchange !== 'bitfinex' || wsError) {
       // Handle the exchange transition
       setIsExchangeTransitioning(true);
       
       // Add a slight delay to simulate fetching from different exchanges
-      // This also provides the opportunity for transition animations
       setTimeout(() => {
+        const newOrderBook = getMockOrderBook(selectedExchange);
         setLocalOrderBook(newOrderBook);
         setIsExchangeTransitioning(false);
       }, 300);
     }
-  }, [orderBook, selectedExchange]);
+  }, [propOrderBook, wsOrderBook, selectedExchange, wsError]);
   
   // Handle exchange selection
   const handleExchangeChange = (exchange: Exchange) => {
@@ -505,14 +530,40 @@ export default function OrderBook({ orderBook, currentPrice, priceChange }: Orde
           </div>
         </div>
         
-        {/* Exchange info footer */}
+        {/* Exchange info footer with connection status */}
         <div className="mt-3 pt-2 border-t border-divider flex items-center justify-between text-[10px] text-gray-500">
           <div className="flex items-center">
             <span>{currentExchange.logo}</span>
             <span className="ml-1">Data from {currentExchange.name}</span>
+            
+            {/* Connection status for Bitfinex WebSocket */}
+            {selectedExchange === 'bitfinex' && (
+              <div className="ml-3 flex items-center">
+                <div className={`w-2 h-2 rounded-full mr-1 ${
+                  connectionStatus === 'connected' 
+                    ? 'bg-green-500' 
+                    : connectionStatus === 'connecting' 
+                      ? 'bg-yellow-500 animate-pulse' 
+                      : 'bg-red-500'
+                }`} />
+                <span className={
+                  connectionStatus === 'connected' 
+                    ? 'text-green-500' 
+                    : connectionStatus === 'connecting' 
+                      ? 'text-yellow-500' 
+                      : 'text-red-500'
+                }>
+                  {connectionStatus === 'connected' 
+                    ? 'Live' 
+                    : connectionStatus === 'connecting' 
+                      ? 'Connecting...' 
+                      : 'Offline (using cached data)'}
+                </span>
+              </div>
+            )}
           </div>
           <div className="text-right">
-            <span>Last update: {new Date().toLocaleTimeString()}</span>
+            <span>Last update: {selectedExchange === 'bitfinex' && !wsError ? lastUpdated.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
           </div>
         </div>
       </div>
