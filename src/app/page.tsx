@@ -5,7 +5,7 @@ import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
 import PriceChart from '@/components/bitcoin/PriceChart';
 // Use dynamic import for OrderBook to ensure it only runs on client-side
 import dynamic from 'next/dynamic';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
   ssr: false,
   loading: () => (
@@ -49,41 +49,131 @@ const fallbackAnalysisContent = `
 const tweets = [
   {
     id: '1',
-    username: 'Michael Saylor',
-    handle: 'saylor',
-    profileImage: 'saylor.jpg',
-    text: 'Bitcoin is powered by Chaos.',
-    time: '1:00 PM · APR 10, 2025',
-    comments: 1500,
-    retweets: 1400,
-    likes: 14000,
-    views: 756500
+    username: 'Arthur Hayes',
+    handle: 'CryptoHayes',
+    profileImage: 'arthur.png',
+    text: 'It’s on like donkey kong. We will be getting more policy response this weekend if this keeps up. We are about to enter UP ONLY mode for $BTC.',
+    time: '10:54 AM · APR 11, 2025',
+    comments: 215,
+    retweets: 583,
+    likes: 3800,
+    views: 244200
   },
   {
     id: '2',
-    username: 'SalsaTekila',
-    handle: 'SalsaTekila',
-    profileImage: 'salsa.jpg',
-    text: 'The juciest, and most accessible opportunity of the next decade, is buying spot BTC below 100k USD. It will trade above 500K by 2035, probably much higher than current prices by the end of Trump’s term. Don’t get spooked out by Saylor, he can’t be liquidated and likely wins.',
-    time: '11:39 AM · APR 10, 2025',
-    comments: 26,
-    retweets: 5,
-    likes: 131,
-    views: 8890
+    username: 'ً ',
+    handle: 'tradingaxe',
+    profileImage: 'axe.jpg',
+    text: 'This price action on BTC isn\'t PvP.\n\nIt isn\'t just us in here anymore buying and selling intraday to win or lose on perps.\n\nIt isn\'t just Saylor randomly bidding.\n\nIt\'s the beginning and first taste of real PvE.\n\n"Smart money" frontrunning the fed pivot and creating a real bottom.\n\nYou either recognize this with raw intuition or remain sidelined and cope about recession.\n\n~ Dr. Axius. Retar Dio.',
+    time: '2:14 PM · APR 11, 2025',
+    comments: 80,
+    retweets: 81,
+    likes: 1100,
+    views: 56400
   },
   {
     id: '3',
-    username: 'Adam Back',
-    handle: 'adam3us',
-    profileImage: 'back.jpg',
-    text: 'The future of finance runs on Bitcoin.',
+    username: 'Will',
+    handle: 'WClementeIII',
+    profileImage: 'will.jpg',
+    text: 'Bitcoin breaking out of a downtrend going back to January\n\nUp',
     time: '7:13 PM · APR 9, 2025',
-    comments: 321,
-    retweets: 669,
-    likes: 5000,
-    views: 170000
+    comments: 116,
+    retweets: 134,
+    likes: 1400,
+    views: 87100
   },
 ];
+
+// Tweet Card Component for inline use
+interface TweetCardProps {
+  tweet: any;
+  isLast: boolean;
+}
+
+function TweetCard({ tweet, isLast }: TweetCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  
+  // Check if this is a long tweet that needs truncation
+  const isLongTweet = tweet.text.length > 280;
+  
+  // For long tweets, truncate at a reasonable breakpoint
+  const truncatePhrase = '"Smart money"';
+  const truncateAt = tweet.text.indexOf(truncatePhrase);
+  const shouldTruncate = isLongTweet && truncateAt > 0;
+  
+  // Only truncate specific tweets that have the "Smart money" phrase
+  // Include the first few words of the truncated section for better UX
+  const initialText = shouldTruncate 
+    ? tweet.text.substring(0, truncateAt) + truncatePhrase + ' frontrunning' 
+    : tweet.text;
+    
+  // Skip the words we already included in initialText
+  const remainingText = shouldTruncate
+    ? tweet.text.substring(truncateAt + truncatePhrase.length + ' frontrunning'.length)
+    : '';
+
+  return (
+    <article className={`${isLast ? 'pb-0' : 'border-b border-divider pb-4'}`}>
+      <div className="flex items-start mb-2">
+        <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+          <Image 
+            src={`/images/${tweet.profileImage}`} 
+            alt={`Profile picture of ${tweet.username}`}
+            width={40}
+            height={40}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <p className="font-fuji-bold text-base">
+            {tweet.username}
+            <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+          </p>
+          <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
+        </div>
+      </div>
+      
+      <div className="text-base mb-2 text-[#b4b8c1]">
+        <p className="whitespace-pre-line">
+          {initialText}
+          <span 
+            className={`transition-opacity duration-300 ease-in-out whitespace-pre-line ${expanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden inline-block'}`}
+          >
+            {expanded && remainingText}
+          </span>
+          {shouldTruncate && !expanded && '...'}
+          {shouldTruncate && !expanded && (
+            <button 
+              onClick={() => setExpanded(true)}
+              className="ml-1 text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
+            >
+              Show More
+            </button>
+          )}
+        </p>
+        
+        {shouldTruncate && expanded && (
+          <button 
+            onClick={() => setExpanded(false)}
+            className="text-primary hover:text-primary/90 font-medium transition-colors duration-1000 mt-2"
+          >
+            Show Less
+          </button>
+        )}
+      </div>
+      
+      <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
+        <div className="flex space-x-4">
+          <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.comments)}</span>
+          <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.retweets)}</span>
+          <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.likes)}</span>
+          <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.views)}</span>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function Home() {
   // Use the original hook with Bitcoin price data and real-time 5-second updates
@@ -149,7 +239,7 @@ export default function Home() {
         <div className="hidden lg:flex items-center px-6 h-[80px]">
           {/* Left side with logo */}
           <div className="flex items-center flex-shrink-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3">
               <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
             </div>
           </div>
@@ -181,7 +271,7 @@ export default function Home() {
           <div className="flex items-center justify-between h-[72px]">
             <div className="flex items-center">
               <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3">
                   <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
                 </div>
                 <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
@@ -207,12 +297,12 @@ export default function Home() {
         {/* Mobile layout (sm and below) */}
         <div className="md:hidden px-6">
           {/* Top row with logo only */}
-          <div className="flex items-center h-[55px]">
+          <div className="flex items-center h-[60px]">
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
                 <Image src="/images/logo.png" alt="BTC Tooling Logo" width={40} height={40} className="w-full object-cover" />
               </div>
-              <h1 className="text-xl font-fuji-bold">BTC Tooling</h1>
+              <h1 className="text-2xl font-fuji-bold">BTC Tooling</h1>
             </div>
           </div>
         </div>
@@ -262,7 +352,7 @@ export default function Home() {
             </div>
           </div>
           
-          <aside className="md:w-[375px] block border-l border-divider " role="complementary"> 
+          <aside className="md:w-[385px] block border-l border-divider" role="complementary"> 
             <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 md:pb-8">
               <BTCAnalysis 
                 date="APR 7, 2025"
@@ -272,35 +362,11 @@ export default function Home() {
               <h2 className="text-xl font-fuji-bold mb-6">BTC X Insights</h2>
               <div className="space-y-4">
                 {tweets.map((tweet, index) => (
-                  <article key={tweet.id} className={`${index === tweets.length - 1 ? 'pb-0' : 'border-b border-divider pb-4'}`}>
-                    <div className="flex items-start mb-2">
-                      <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-                        <Image 
-                          src={`/images/${tweet.profileImage}`} 
-                          alt={`Profile picture of ${tweet.username}`}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-fuji-bold text-base">
-                          {tweet.username}
-                          <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
-                        </p>
-                        <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
-                      </div>
-                    </div>
-                    <p className="text-base mb-2 text-[#b4b8c1]">{tweet.text}</p>
-                    <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
-                      <div className="flex space-x-4">
-                        <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.comments)}</span>
-                        <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.retweets)}</span>
-                        <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.likes)}</span>
-                        <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.views)}</span>
-                      </div>
-                    </div>
-                  </article>
+                  <TweetCard 
+                    key={tweet.id} 
+                    tweet={tweet} 
+                    isLast={index === tweets.length - 1} 
+                  />
                 ))}
               </div>
               

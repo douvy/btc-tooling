@@ -6,8 +6,8 @@ export default function Footer() {
       <div className="flex flex-col md:flex-row justify-between md:items-center items-start">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center">
-            <Image src="/images/logo.png" alt="BTC Tooling Logo" width={32} height={32} className="w-8 h-8 mr-3" />
-            <span className="text-xl font-fuji-bold">BTC Tooling</span>
+            <Image src="/images/logo.png" alt="BTC Tooling Logo" width={32} height={32} className="w-10 h-10 mr-3" />
+            <span className="text-2xl font-fuji-bold">BTC Tooling</span>
           </div>
         </div>
         

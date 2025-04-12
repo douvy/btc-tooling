@@ -11,11 +11,11 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
   const displayDate = date || 'APR 7, 2025';
   const [expanded, setExpanded] = useState(false);
   
-  // First half of assessment to always show - shortened by 4 lines
-  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm triggered by aggressive US trade policies.";
+  // First half of assessment - shortened to move the Show More link 4 lines higher
+  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm";
   
   // Rest of assessment to show when expanded - includes the content that was removed from initial
-  const fullAssessment = " While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
+  const fullAssessment = " triggered by aggressive US trade policies. While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
   
   return (
     <div>
@@ -59,7 +59,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
                 onClick={() => setExpanded(true)}
                 className="ml-1 text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
               >
-                Read More
+                Show More
               </button>
             )}
           </p>
