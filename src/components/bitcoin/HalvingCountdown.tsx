@@ -125,14 +125,6 @@ export default function HalvingCountdown({
         </div>
       )}
       
-      {/* Live data indicator */}
-      {!error && !isLoading && (
-        <div className="mt-4 flex items-center">
-          <span className="h-2 w-2 rounded-full bg-success animate-pulse mr-2"></span>
-          <span className="text-xs text-[#8a919e]">Live data from blockchain.info</span>
-        </div>
-      )}
-      
       {/* Historical data table */}
       <div className="mt-4 pt-4">
         <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
