@@ -53,8 +53,7 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
     : '';
     
   // Specific custom spacing for each tweet using inline styles
-  const customStyle = {};
-  let customClasses = 'relative';
+  const customStyle: { [key: string]: string } = {};
   
   if (tweet.id === '1') {
     // First tweet - 4px more space at bottom
