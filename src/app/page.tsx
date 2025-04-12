@@ -233,6 +233,9 @@ export default function Home() {
   // Refresh function for manual refresh
   const refreshHalvingData = async () => {
     try {
+      // Clear the cached data to force a fresh load
+      localStorage.removeItem('halvingData');
+      
       const response = await fetch('/api/halving', { 
         cache: 'no-store',
         headers: { 'pragma': 'no-cache', 'cache-control': 'no-cache' }
@@ -241,9 +244,6 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(`Failed to refresh halving data: ${response.status}`);
       }
-      
-      // Clear the cached data to force a fresh load
-      localStorage.removeItem('halvingData');
       
       // The useHalvingData hook will automatically update on the next render
       window.location.reload(); // Simple refresh to update the UI

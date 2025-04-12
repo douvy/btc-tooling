@@ -19,6 +19,8 @@ export default function HalvingCountdown({
   const handleRefresh = async () => {
     if (onRefresh && !isRefreshing) {
       setIsRefreshing(true);
+      // Clear localStorage cache for halvingData
+      localStorage.removeItem('halvingData');
       await onRefresh();
       // Add small delay to ensure visual feedback of refresh action
       setTimeout(() => setIsRefreshing(false), 500);

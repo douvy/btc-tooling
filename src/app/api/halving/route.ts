@@ -31,7 +31,7 @@ function calculateNextHalvingBlock(currentHeight: number): number {
 function calculateDaysRemaining(blocksRemaining: number): number {
   const avgBlockTimeMinutes = 10;
   const minutesPerDay = 24 * 60;
-  return Math.ceil((blocksRemaining * avgBlockTimeMinutes) / minutesPerDay);
+  return Math.floor((blocksRemaining * avgBlockTimeMinutes) / minutesPerDay);
 }
 
 /**
