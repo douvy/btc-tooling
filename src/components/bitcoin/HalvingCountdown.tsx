@@ -134,7 +134,7 @@ export default function HalvingCountdown({
       )}
       
       {/* Historical data table */}
-      <div className="mt-4 pt-4 border-t border-divider">
+      <div className="mt-4 pt-4">
         <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
         <div className="grid grid-cols-4 gap-2 text-xs">
           <div className="bg-[#141519] rounded p-2 text-center">
