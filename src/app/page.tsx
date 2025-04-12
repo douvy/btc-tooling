@@ -54,10 +54,10 @@ const tweets = [
     profileImage: 'arthur.png',
     text: 'It’s on like donkey kong. We will be getting more policy response this weekend if this keeps up. We are about to enter UP ONLY mode for $BTC.',
     time: '10:54 AM · APR 11, 2025',
-    comments: 215,
-    retweets: 583,
-    likes: 3800,
-    views: 244200
+    comments: 237,
+    retweets: 698,
+    likes: 4300,
+    views: 328000
   },
   {
     id: '2',
@@ -66,10 +66,10 @@ const tweets = [
     profileImage: 'axe.jpg',
     text: 'This price action on BTC isn\'t PvP.\n\nIt isn\'t just us in here anymore buying and selling intraday to win or lose on perps.\n\nIt isn\'t just Saylor randomly bidding.\n\nIt\'s the beginning and first taste of real PvE.\n\n"Smart money" frontrunning the fed pivot and creating a real bottom.\n\nYou either recognize this with raw intuition or remain sidelined and cope about recession.\n\n~ Dr. Axius. Retar Dio.',
     time: '2:14 PM · APR 11, 2025',
-    comments: 80,
-    retweets: 81,
-    likes: 1100,
-    views: 56400
+    comments: 86,
+    retweets: 102,
+    likes: 1500,
+    views: 78000
   },
   {
     id: '3',
@@ -78,10 +78,10 @@ const tweets = [
     profileImage: 'will.jpg',
     text: 'Bitcoin breaking out of a downtrend going back to January\n\nUp',
     time: '7:13 PM · APR 9, 2025',
-    comments: 116,
-    retweets: 134,
-    likes: 1400,
-    views: 87100
+    comments: 124,
+    retweets: 172,
+    likes: 1700,
+    views: 110000
   },
 ];
 
