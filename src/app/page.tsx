@@ -112,9 +112,31 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
   const remainingText = shouldTruncate
     ? tweet.text.substring(truncateAt + truncatePhrase.length + ' frontrunning'.length)
     : '';
+    
+  // Specific custom spacing for each tweet using inline styles
+  const customStyle = {};
+  let customClasses = 'relative';
+  
+  if (tweet.id === '1') {
+    // First tweet - 4px more space at bottom
+    customStyle.paddingTop = '16px';  
+    customStyle.paddingBottom = '30px'; // 16px + 4px extra
+    customStyle.marginBottom = '28px';
+  } else if (tweet.id === '2') {
+    // Second tweet - 8px more space at bottom
+    customStyle.paddingTop = '0px';
+    customStyle.paddingBottom = '30px'; // 16px + 8px extra
+    customStyle.marginBottom = '12px';
+  } else if (tweet.id === '3') {
+    // Third tweet - 28px more space at top, reduced bottom padding by 4px
+    customStyle.paddingTop = '12px';
+    customStyle.paddingBottom = '0px'; // Minimum padding
+    customStyle.marginBottom = '-4px'; // Use negative margin instead of negative padding
+  }
 
   return (
-    <article className={`${isLast ? 'pb-0' : 'border-b border-divider pb-4'}`}>
+    <article className="relative" style={customStyle}>
+      {!isLast && <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider absolute bottom-0 left-0 right-0"></div>}
       <div className="flex items-start mb-2">
         <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
           <Image 
@@ -353,14 +375,14 @@ export default function Home() {
           </div>
           
           <aside className="md:w-[385px] block border-l border-divider" role="complementary"> 
-            <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 md:pb-8">
+            <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 pb-[60px] md:pb-8">
               <BTCAnalysis 
                 date="APR 7, 2025"
                 content={fallbackAnalysisContent}
               />
-              <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-8 mt-8"></div>
-              <h2 className="text-xl font-fuji-bold mb-6">BTC X Insights</h2>
-              <div className="space-y-4">
+              <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-12 mt-12 sm:mt-8 mb-12 sm:mb-0"></div>
+              <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6">BTC X Insights</h2>
+              <div className="space-y-0 -mt-4">
                 {tweets.map((tweet, index) => (
                   <TweetCard 
                     key={tweet.id} 

@@ -28,7 +28,7 @@ export default function HalvingCountdown({
   return (
     <section className="rounded-sm overflow-hidden" aria-labelledby="halving-title">
       <div className="flex items-center justify-between mb-4">
-        <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center">
+        <h2 id="halving-title" className="text-xl font-fuji-bold flex items-center mt-6 sm:mt-4">
           Halving Countdown
           {isLoading && (
             <span className="ml-2 text-xs text-[#8a919e] animate-pulse">updating...</span>

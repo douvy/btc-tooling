@@ -435,7 +435,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
       />
       
       <div className="flex justify-between items-center">
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full mt-6 sm:mt-4">
           <h2 id="halving-title" className="text-xl font-fuji-bold">
             Order Book
           </h2>
