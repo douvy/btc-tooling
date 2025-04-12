@@ -6,8 +6,8 @@ Bitcoin market analytics dashboard with real-time data visualization, comprehens
 
 - **Live Bitcoin Price Tracking**: Multi-timeframe price data with change indicators
 - **Advanced Charting**: TradingView-powered interactive price charts
-- **Order Book Visualization**: Real-time depth chart and trade execution simulator
-- **Halving Countdown**: Blockchain-accurate timer with historical context
+- **Order Book Visualization**: Real-time depth chart with multi-exchange support (Bitfinex, Coinbase, Binance) and dynamic amount controls
+- **Halving Countdown**: Blockchain-accurate timer showing blocks remaining, rewards, and historical context
 - **Bitcoin X/Twitter Integration**: Curated feed with engagement metrics
 - **Market Analysis Panel**: Concise BTC fundamentals and macro environment insights
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
@@ -43,6 +43,15 @@ npm run build
 # Start production server
 npm start
 ```
+
+## Deployment
+
+The application is optimized for Vercel deployment with:
+
+- Custom API proxies for CoinGecko and Coinbase with proper caching
+- Serverless function optimization (memory: 512MB, timeout: 10s)
+- Deprecation warning fixes for Node.js compatibility
+- Comprehensive environment variable configuration
 
 ## Architecture
 
