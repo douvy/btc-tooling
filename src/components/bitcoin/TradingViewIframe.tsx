@@ -22,7 +22,7 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
   
   // Store the initial source URL
   const [initialSrc] = useState(
-    `https://www.tradingview.com/widgetembed/?interval=${timeframeMap['1D']}&symbol=BITFINEX%3ABTCUSD&theme=dark&style=1&locale=en&enable_publishing=false&allow_symbol_change=false&hide_side_toolbar=false&save_image=false&studies=%5B%5D&backgroundColor=rgba(0%2C0%2C0%2C0)&gridColor=rgba(51%2C51%2C51%2C0.4)&upColor=%234CAF50&downColor=%23F44336&borderUpColor=%234CAF50&borderDownColor=%23F44336&wickUpColor=%234CAF50&wickDownColor=%23F44336&paneProperties.background=rgba(0%2C0%2C0%2C0)&scalesProperties.backgroundColor=rgba(0%2C0%2C0%2C0)`
+    `https://www.tradingview.com/widgetembed/?interval=${timeframeMap['1D']}&symbol=BITFINEX%3ABTCUSD&theme=dark&style=1&locale=en&enable_publishing=false&allow_symbol_change=false&hide_side_toolbar=false&save_image=false&studies=%5B%5D&backgroundColor=rgba(10%2C11%2C13%2C1)&gridColor=rgba(51%2C51%2C51%2C0.4)&upColor=%234CAF50&downColor=%23F44336&borderUpColor=%234CAF50&borderDownColor=%23F44336&wickUpColor=%234CAF50&wickDownColor=%23F44336&paneProperties.background=rgba(10%2C11%2C13%2C1)&scalesProperties.backgroundColor=rgba(10%2C11%2C13%2C1)`
   );
   
   // Notify parent immediately on mount without any delay
@@ -52,7 +52,7 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
   }, [timeframe]);
   
   return (
-    <div className="w-full h-full bg-transparent">
+    <div className="w-full h-full" style={{ backgroundColor: '#0a0b0d' }}>
       {/* Keep a static src to prevent refreshing */}
       <iframe
         ref={iframeRef}
@@ -60,7 +60,7 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
         style={{ 
           width: '100%', 
           height: '100%',
-          backgroundColor: 'transparent',
+          backgroundColor: '#0a0b0d',
         }}
         frameBorder="0"
         scrolling="no"
