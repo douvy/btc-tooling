@@ -525,7 +525,19 @@ export default function Home() {
                 content={fallbackAnalysisContent}
               />
               <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-12 mt-12 sm:mt-8 mb-12 sm:mb-0"></div>
-              <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6">BTC X Insights</h2>
+              <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6 flex items-center">
+                BTC 
+                <span className="mx-1 flex items-center">
+                  <Image 
+                    src="/images/x.jpg" 
+                    alt="X logo" 
+                    width={22} 
+                    height={22} 
+                    className="inline-block"
+                  />
+                </span> 
+                Insights
+              </h2>
               <div className="space-y-0 -mt-4">
                 {tweets.map((tweet, index) => (
                   <TweetCard 

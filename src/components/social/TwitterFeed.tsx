@@ -60,7 +60,19 @@ export default function TwitterFeed({ tweets }: TwitterFeedProps) {
   return (
     <aside className="md:w-[330px] block border-l border-divider" role="complementary" aria-labelledby="insights-title">
       <div className="h-full overflow-y-auto p-8 pt-6 pl-6 pr-6 md:p-8 md:pt-6">
-        <h2 id="insights-title" className="text-xl font-fuji-bold mb-6">BTC X Insights</h2>
+        <h2 id="insights-title" className="text-xl font-fuji-bold mb-6 flex items-center">
+          BTC 
+          <span className="mx-1 flex items-center">
+            <Image 
+              src="/images/x.jpg" 
+              alt="X logo" 
+              width={22} 
+              height={22} 
+              className="inline-block"
+            />
+          </span> 
+          Insights
+        </h2>
         <div className="space-y-0 -mt-4">
           {tweets.map((tweet, index) => (
             <TweetCard 
