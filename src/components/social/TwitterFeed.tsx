@@ -1,12 +1,62 @@
 import { Tweet } from '@/types';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TwitterFeedProps {
   tweets: Tweet[];
 }
 
 export default function TwitterFeed({ tweets }: TwitterFeedProps) {
+  const [modalData, setModalData] = useState<{
+    isOpen: boolean;
+    image: string;
+    tweet: Tweet | null;
+  }>({
+    isOpen: false,
+    image: '',
+    tweet: null
+  });
+
+  // Close modal when ESC key is pressed
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setModalData({ ...modalData, isOpen: false });
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    
+    // Prevent scrolling when modal is open
+    if (modalData.isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'auto';
+    };
+  }, [modalData.isOpen]);
+
+  const openModal = (tweet: Tweet) => {
+    if (tweet.image) {
+      setModalData({
+        isOpen: true,
+        image: tweet.image,
+        tweet: tweet
+      });
+    }
+  };
+
+  const closeModal = () => {
+    setModalData({
+      ...modalData,
+      isOpen: false
+    });
+  };
+
   return (
     <aside className="md:w-[330px] block border-l border-divider" role="complementary" aria-labelledby="insights-title">
       <div className="h-full overflow-y-auto p-8 pt-6 pl-6 pr-6 md:p-8 md:pt-6">
@@ -17,10 +67,86 @@ export default function TwitterFeed({ tweets }: TwitterFeedProps) {
               key={tweet.id} 
               tweet={tweet} 
               isLast={index === tweets.length - 1} 
+              onImageClick={() => openModal(tweet)}
             />
           ))}
         </div>
       </div>
+
+      {/* Image Modal */}
+      {modalData.isOpen && modalData.tweet && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={closeModal}>
+          <div className="relative bg-main-dark w-full max-w-3xl mx-4 rounded-lg overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button 
+              className="absolute top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-main-dark/80 text-white hover:bg-main-dark transition-colors duration-200"
+              onClick={closeModal}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+            
+            {/* Image */}
+            <div className="w-full">
+              <Image 
+                src={`/images/${modalData.image}`}
+                alt="Tweet image"
+                width={1200}
+                height={800}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+            
+            {/* Tweet info */}
+            <div className="p-6 border-t border-divider">
+              <div className="flex items-start mb-4">
+                <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                  <Image 
+                    src={`/images/${modalData.tweet.profileImage}`} 
+                    alt={`Profile picture of ${modalData.tweet.username}`}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="font-fuji-bold text-base">
+                    {modalData.tweet.link ? (
+                      <a 
+                        href={modalData.tweet.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:underline"
+                      >
+                        {modalData.tweet.username}
+                        <span className="text-[#8a919e] text-base font-fuji-regular"> @{modalData.tweet.handle}</span>
+                      </a>
+                    ) : (
+                      <>
+                        {modalData.tweet.username}
+                        <span className="text-[#8a919e] text-base font-fuji-regular"> @{modalData.tweet.handle}</span>
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[#8a919e] text-sm font-gotham-medium">{modalData.tweet.time}</p>
+                </div>
+              </div>
+              
+              <p className="text-sm mb-4 whitespace-pre-line">{modalData.tweet.text}</p>
+              
+              <div className="flex items-center justify-between text-[#8a919e] text-sm font-gotham-medium">
+                <div className="flex space-x-6">
+                  <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {modalData.tweet.comments}</span>
+                  <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {modalData.tweet.retweets}</span>
+                  <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {modalData.tweet.likes}</span>
+                  <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {modalData.tweet.views}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
@@ -28,9 +154,10 @@ export default function TwitterFeed({ tweets }: TwitterFeedProps) {
 interface TweetCardProps {
   tweet: Tweet;
   isLast: boolean;
+  onImageClick: () => void;
 }
 
-function TweetCard({ tweet, isLast }: TweetCardProps) {
+function TweetCard({ tweet, isLast, onImageClick }: TweetCardProps) {
   const [expanded, setExpanded] = useState(false);
   
   // Check if this is a long tweet that needs truncation
@@ -87,8 +214,23 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
         </div>
         <div>
           <p className="font-fuji-bold text-base">
-            {tweet.username}
-            <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
+            {tweet.link ? (
+              <a 
+                href={tweet.link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {tweet.username}
+                <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
+              </a>
+            ) : (
+              <>
+                {tweet.username}
+                <span className="text-[#8a919e] text-base font-fuji-regular"> @{tweet.handle}</span>
+              </>
+            )}
           </p>
           <p className="text-[#8a919e] text-sm font-gotham-medium">{tweet.time}</p>
         </div>
@@ -122,6 +264,21 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
           </button>
         )}
       </div>
+      
+      {tweet.image && (
+        <div 
+          className="mb-4 mt-2 rounded-lg overflow-hidden border border-divider cursor-pointer transform transition-transform hover:scale-[1.01] duration-300"
+          onClick={onImageClick}
+        >
+          <Image 
+            src={`/images/${tweet.image}`}
+            alt="Tweet image"
+            width={600}
+            height={400}
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
       
       <div className="flex items-center text-[#8a919e] text-sm font-gotham-medium">
         <div className="flex space-x-4">

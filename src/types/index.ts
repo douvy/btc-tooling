@@ -39,6 +39,8 @@ export interface Tweet {
   profileImage: string;
   text: string;
   time: string;
+  image?: string; // Optional tweet image
+  link?: string; // Link to the original tweet
   comments: number;
   retweets: number;
   likes: number;

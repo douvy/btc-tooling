@@ -49,39 +49,43 @@ const fallbackAnalysisContent = `
 const tweets = [
   {
     id: '1',
-    username: 'Michael Saylor',
-    handle: 'saylor',
-    profileImage: 'saylor.jpg',
-    text: '21M is the most important number in finance.',
-    time: '9:35 AM · APR 12, 2025',
-    comments: 1400,
-    retweets: 1900,
-    likes: 19000,
-    views: 793500
+    username: 'Max Keiser',
+    handle: 'maxkeiser',
+    profileImage: 'max.png',
+    text: 'Trump should buy whatever Bitcoin China is selling.',
+    time: '4:28 PM · APR 16, 2025',
+    link: 'https://x.com/maxkeiser/status/1912604000119320853',
+    comments: 31,
+    retweets: 51,
+    likes: 580,
+    views: 14600
   },
   {
     id: '2',
-    username: 'Arthur Hayes',
-    handle: 'CryptoHayes',
-    profileImage: 'arthur.png',
-    text: 'It’s on like donkey kong. We will be getting more policy response this weekend if this keeps up. We are about to enter UP ONLY mode for $BTC.',
-    time: '10:54 AM · APR 11, 2025',
-    comments: 254,
-    retweets: 727,
-    likes: 4500,
-    views: 351000
+    username: 'Pierre Rochard',
+    handle: 'BitcoinPierre',
+    profileImage: 'pierre.jpg',
+    text: 'Bitcoin proved that it is the ultimate safe-haven asset. Even in a crisis, the network stays up, the exchanges trade 24/7, and the market found a healthy clearing price - well above the 2022 low. Very impressive! It is the least leveraged macro asset with the best fundamentals.',
+    time: '3:30 PM · APR 16, 2025',
+    link: 'https://x.com/BitcoinPierre/status/1912589355006206348',
+    comments: 24,
+    retweets: 13,
+    likes: 179,
+    views: 5996
   },
   {
     id: '3',
-    username: 'ً ',
-    handle: 'tradingaxe',
-    profileImage: 'axe.jpg',
-    text: 'This price action on BTC isn\'t PvP.\n\nIt isn\'t just us in here anymore buying and selling intraday to win or lose on perps.\n\nIt isn\'t just Saylor randomly bidding.\n\nIt\'s the beginning and first taste of real PvE.\n\n"Smart money" frontrunning the fed pivot and creating a real bottom.\n\nYou either recognize this with raw intuition or remain sidelined and cope about recession.\n\n~ Dr. Axius. Retar Dio.',
-    time: '2:14 PM · APR 11, 2025',
-    comments: 88,
-    retweets: 104,
-    likes: 1700,
-    views: 87500
+    username: 'Raoul Pal',
+    handle: 'RaoulGMI',
+    profileImage: 'raoul.jpg',
+    text: 'I know many of you want to see the updated version of the BTC vs Global M2 chart. Here it is... just a very small part of the weekly Macro Investing Tool (MIT) as part of RV Plus.\n\nIt is time, give or take a few days...',
+    time: '1:12 PM · APR 16, 2025',
+    image: 'raoul-chart.jpg',
+    link: 'https://x.com/RaoulGMI/status/1912554771644325905',
+    comments: 301,
+    retweets: 820,
+    likes: 5000,
+    views: 435300
   },
 ];
 
@@ -93,6 +97,7 @@ interface TweetCardProps {
 
 function TweetCard({ tweet, isLast }: TweetCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   
   // Check if this is a long tweet that needs truncation
   const isLongTweet = tweet.text.length > 280;
@@ -133,6 +138,41 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
     customStyle.marginBottom = '-4px'; // Use negative margin instead of negative padding
   }
 
+  // Close modal when Escape key is pressed
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setModalOpen(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    
+    // Prevent body scrolling when modal is open
+    if (modalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'auto';
+    };
+  }, [modalOpen]);
+
+  // Function to open the modal
+  const openImageModal = () => {
+    if (tweet.image) {
+      setModalOpen(true);
+    }
+  };
+
+  // Function to close the modal
+  const closeImageModal = () => {
+    setModalOpen(false);
+  };
+
   return (
     <article className="relative" style={customStyle}>
       {!isLast && <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider absolute bottom-0 left-0 right-0"></div>}
@@ -148,8 +188,23 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
         </div>
         <div>
           <p className="font-fuji-bold text-base">
-            {tweet.username}
-            <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+            {tweet.link ? (
+              <a 
+                href={tweet.link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {tweet.username}
+                <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+              </a>
+            ) : (
+              <>
+                {tweet.username}
+                <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+              </>
+            )}
           </p>
           <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
         </div>
@@ -183,6 +238,96 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
           </button>
         )}
       </div>
+      
+      {tweet.image && (
+        <div 
+          className="mb-4 mt-2 rounded-lg overflow-hidden border border-divider cursor-pointer transform transition-transform hover:scale-[1.01] duration-300"
+          onClick={openImageModal}
+        >
+          <Image 
+            src={`/images/${tweet.image}`}
+            alt="Tweet image"
+            width={600}
+            height={400}
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
+      
+      {/* Image Modal */}
+      {modalOpen && tweet.image && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={closeImageModal}>
+          <div className="relative bg-main-dark w-full max-w-3xl mx-4 rounded-lg overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button 
+              className="absolute top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-main-dark/80 text-white hover:bg-main-dark transition-colors duration-200"
+              onClick={closeImageModal}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+            
+            {/* Image */}
+            <div className="w-full">
+              <Image 
+                src={`/images/${tweet.image}`}
+                alt="Tweet image"
+                width={1200}
+                height={800}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+            
+            {/* Tweet info */}
+            <div className="p-6 border-t border-divider">
+              <div className="flex items-start mb-4">
+                <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
+                  <Image 
+                    src={`/images/${tweet.profileImage}`} 
+                    alt={`Profile picture of ${tweet.username}`}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="font-fuji-bold text-base">
+                    {tweet.link ? (
+                      <a 
+                        href={tweet.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:underline"
+                      >
+                        {tweet.username}
+                        <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+                      </a>
+                    ) : (
+                      <>
+                        {tweet.username}
+                        <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{tweet.handle}</span>
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
+                </div>
+              </div>
+              
+              <p className="text-base mb-4 text-[#b4b8c1] whitespace-pre-line">{tweet.text}</p>
+              
+              <div className="flex items-center justify-between text-[#8a919e] text-sm font-proxima-nova">
+                <div className="flex space-x-6">
+                  <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.comments)}</span>
+                  <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.retweets)}</span>
+                  <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.likes)}</span>
+                  <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {formatCompactNumber(tweet.views)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
         <div className="flex space-x-4">
