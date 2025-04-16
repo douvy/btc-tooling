@@ -11,6 +11,7 @@ import { getMockOrderBook } from '@/lib/mockData';
 import { useOrderBookWebSocket } from '@/hooks/useOrderBookWebSocket';
 import OrderBookTooltip from './OrderBookTooltip';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 interface OrderBookProps {
   orderBook?: OrderBookType;
@@ -440,9 +441,18 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
             Order Book
           </h2>
           
-          {/* Exchange indicator */}
+          {/* Exchange indicator with logo */}
           <div className="text-right text-sm text-[#d0d2d8] flex items-center">
-            <span className="ml-1 font-fuji-bold text-lg">Bitfinex</span>
+            <div className="w-6 h-6 mr-2 overflow-hidden rounded-sm">
+              <Image 
+                src="/images/bitfinex.jpg" 
+                alt="Bitfinex logo" 
+                width={24} 
+                height={24}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="font-fuji-bold text-lg">Bitfinex</span>
           </div>
         </div>
       </div>
