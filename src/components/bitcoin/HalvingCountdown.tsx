@@ -132,20 +132,20 @@ export default function HalvingCountdown({
         <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
         <div className="grid grid-cols-4 gap-2 text-xs">
           <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#b4b8c1] font-gotham-bold text-base">2012</div>
-            <div className="font-medium">50 → 25</div>
+            <div className="text-[#b4b8c1] font-fuji-bold text-base">2012</div>
+            <div className="font-medium mt-1">50 → 25</div>
           </div>
           <div className="bg-[#141519] rounded p-2 text-center ">
-            <div className="text-[#b4b8c1] font-gotham-bold text-base">2016</div>
-            <div className="font-medium">25 → 12.5</div>
+            <div className="text-[#b4b8c1] font-fuji-bold text-base">2016</div>
+            <div className="font-medium mt-1">25 → 12.5</div>
           </div>
           <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#b4b8c1] font-gotham-bold text-base">2020</div>
-            <div className="font-medium">12.5 → 6.25</div>
+            <div className="text-[#b4b8c1] font-fuji-bold text-base">2020</div>
+            <div className="font-medium mt-1">12.5 → 6.25</div>
           </div>
           <div className="bg-[#141519] rounded p-2 text-center">
-            <div className="text-[#b4b8c1] font-gotham-bold text-base">2024</div>
-            <div className="font-medium">6.25 → 3.125</div>
+            <div className="text-[#b4b8c1] font-fuji-bold text-base">2024</div>
+            <div className="font-medium mt-1">6.25 → 3.125</div>
           </div>
         </div>
       </div>
