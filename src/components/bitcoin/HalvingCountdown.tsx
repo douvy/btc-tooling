@@ -103,10 +103,10 @@ export default function HalvingCountdown({
               Current Reward
             </h3>
             <div className="flex items-baseline">
-              <p className="text-2xl font-fuji-bold text-primary">{halvingInfo.currentReward.toFixed(2)}</p>
+              <p className="text-2xl font-fuji-bold text-primary">{halvingInfo.currentReward}</p>
               <span className="ml-2 text-xl font-gotham-bold">BTC</span>
             </div>
-            <p className="text-xs text-[#d0d2d8] mt-1 font-fuji-bold">Next reward: {halvingInfo.nextReward.toFixed(3)} BTC</p>
+            <p className="text-xs text-[#b4b8c1] mt-1 font-fuji-bold">Next reward: <span className="text-white">{halvingInfo.nextReward} BTC</span></p>
           </div>
           
           <div>
