@@ -452,7 +452,7 @@ export function OrderBook({ orderBook: propOrderBook, currentPrice, priceChange 
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="font-fuji-bold text-lg">Bitfinex</span>
+            <span className="font-fuji-bold text-lg -ml-2">Bitfinex</span>
           </div>
         </div>
       </div>
