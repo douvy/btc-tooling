@@ -68,15 +68,15 @@ export default function HalvingCountdown({
             
             {/* Inner content with improved typography */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xs text-[#8a919e] mb-2 font-fuji-bold uppercase tracking-wider">ETR</span>
+              <span className="text-sm text-[#b4b8c1] mb-2 font-fuji-bold uppercase tracking-wider">ETR</span>
               <div className="flex flex-col items-center">
                 <span className="text-5xl font-fuji-bold text-white leading-none">{halvingInfo.daysRemaining}</span>
-                <span className="text-sm text-[#a6abb5] mt-1">Days</span>
+                <span className="text-sm text-[#b4b8c1] mt-2">Days</span>
               </div>
               
               {/* Bottom date with refined styling */}
               <div className="mt-6 border-t border-[#21232A] pt-2 px-4 w-full text-center">
-                <span className="text-xs text-[#8a919e] font-medium">{halvingInfo.date}</span>
+                <span className="text-xs text-[#b4b8c1] font-medium">{halvingInfo.date}</span>
               </div>
             </div>
           </div>
