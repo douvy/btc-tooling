@@ -74,7 +74,7 @@ function extractExecutiveSummary(content: string): string {
 }
 
 /**
- * Formats a date string to match the format used in tweets: "APR 7, 2025"
+ * Formats a date string to match the format used in tweets: "APR 18, 2025"
  * @param dateString Any valid date string
  * @returns Formatted date string
  */
@@ -206,7 +206,7 @@ export async function GET(): Promise<NextResponse<AnalysisResponse>> {
     // Return fallback data instead of an error
     return NextResponse.json({
       title: "Comprehensive Big-Picture Analysis of the Bitcoin Market as of April 7, 2025",
-      date: "APR 7, 2025",
+      date: "APR 18, 2025",
       executiveSummary: fallbackBullets.join('\n\n'),
       link: "#"
     });

@@ -32,7 +32,7 @@ The BTC Analysis component is placed in the right sidebar above the Twitter feed
 
 ```tsx
 <BTCAnalysis 
-  date="APR 7, 2025"
+  date="APR 18, 2025"
   content={analysisContent}
 />
 ```

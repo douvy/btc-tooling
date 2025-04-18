@@ -8,14 +8,14 @@ interface BTCAnalysisProps {
 }
 
 export default function BTCAnalysis({ date }: BTCAnalysisProps) {
-  const displayDate = date || 'APR 7, 2025';
+  const displayDate = date || 'APR 18, 2025';
   const [expanded, setExpanded] = useState(false);
   
   // First half of assessment - shortened to move the Show More link 4 lines higher
-  const initialAssessment = "The Bitcoin market is currently weathering a severe global risk-off storm";
+  const initialAssessment = "The Bitcoin market is navigating a complex transition. While institutionalization";
   
   // Rest of assessment to show when expanded - includes the content that was removed from initial
-  const fullAssessment = " triggered by aggressive US trade policies. While correlated downside risk is evident, Bitcoin is exhibiting notable relative strength and rising dominance, supported by massive structural inflows via ETFs and a potentially favorable long-term liquidity environment driven by global debt dynamics. On-chain metrics do not signal a cycle top, and extreme fear prevails, suggesting the current turmoil might be a stress test revealing Bitcoin's evolving role, potentially as both a risk asset and a nascent geopolitical hedge. Volatility will remain extreme, but the confluence of institutional adoption, US policy validation (SBR), and the global debt backdrop provides a unique, albeit risky, backdrop.";
+  const fullAssessment = " via ETFs provides a strong structural bid and the immediate liquidity environment appears supportive, significant macro risks loom large, primarily driven by US trade policy uncertainty and concerns about future liquidity conditions tied to massive debt rollovers. On-chain data suggests the cycle peak may not have been reached, but fearful sentiment and recent price weakness warrant caution. The low implied volatility is a potential red flag for complacency. Expect continued sensitivity to macro news, particularly regarding US-China relations and Fed policy adjustments in response to economic data and market stability concerns.";
   
   return (
     <div>
@@ -40,8 +40,8 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
         <div className="text-base text-[#b4b8c1]">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Macro Environment:</span>
-            </span> Extreme volatility in traditional markets (equities crashing, VIX high, credit spreads widening via HYGH). Aggressive US tariff policies under Trump are causing global disruption. Fed Funds Rate at 4.33%, but markets price significant cuts (4 cuts in 2025). Global liquidity conditions are complex, with past hidden stimulus unwinding but long-term pressures for central bank support due to debt. China easing aggressively.
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Outlook:</span>
+            </span> The overall outlook is cautiously optimistic but acknowledges significant near-term risks and volatility. The base case involves consolidation before a potential further move up later in the cycle, contingent on macro risks not materializing severely. The weakening USD and eventual Fed easing are supportive, but trade wars and liquidity concerns are major headwinds.
           </p>
           
           <p className={`${expanded ? 'mb-3' : 'mb-0'}`}>
@@ -72,7 +72,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
                 <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-[#d0d2d8]">Sentiment:</span>
-              </span> CMC Fear & Greed Index at &quot;Extreme Fear&quot; (17). Options skew negative (puts {'>'} calls), especially short-term.
+              </span> Fear & Greed Index indicates &quot;Fear&quot; (32), recovering from recent &quot;Extreme Fear&quot; but far from greedy. Options skew is slightly negative (cautious). QCP Broadcast highlights market caution driven by trade wars. This contrasts with the high price level, suggesting uncertainty or potential undervaluation based on sentiment.
             </p>
             
             <button 
