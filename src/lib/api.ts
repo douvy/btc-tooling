@@ -225,27 +225,9 @@ async function fetchFromCoinGecko(endpoint: string, params: Record<string, strin
 }
 
 /**
- * Fetch from Coinbase API through our proxy as fallback
+ * NOTE: We removed the Coinbase API fallback function.
+ * We only use CoinGecko API with our API key, plus blockchain.info as fallback.
  */
-async function fetchFromCoinbase(): Promise<any> {
-  logWithTime('fetch', 'Trying Coinbase API fallback');
-  
-  try {
-    const url = '/api/coinbase'; // Default path is BTC-USD/spot
-    const response = await enhancedFetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-      }
-    });
-    
-    return await response.json();
-  } catch (error) {
-    logWithTime('error', 'Coinbase fallback failed:', error);
-    throw error;
-  }
-}
 
 /**
  * Get detailed Bitcoin price data for multiple timeframes
@@ -280,33 +262,20 @@ async function fetchSimpleBitcoinPrice(): Promise<any> {
 }
 
 /**
- * Main function to get Bitcoin price with stale-while-revalidate pattern
+ * Main function to get Bitcoin price - ALWAYS fetch fresh data
  */
 export const getBitcoinPrice = async (requestedTimeframe: TimeFrame = '1D'): Promise<BitcoinPrice> => {
   // Mark the beginning of data fetch
   updateStatus.isLoading = true;
   
   try {
-    const now = Date.now();
-    const endpoint = requestedTimeframe === '1D' ? 'simple' : 'detailed';
+    // ALWAYS fetch fresh data, ignore the cache for timeframe changes
+    logWithTime('fetch', `Getting fresh data for timeframe: ${requestedTimeframe}`);
     
-    // PART 1: Check cache first for immediate response (stale data)
-    const cache = getApiCache();
-    if (cache && cache.timestamp + CACHE_LIFETIME > now && cache.endpoint === endpoint) {
-      logWithTime('cache', `Using cached data (${((now - cache.timestamp) / 1000).toFixed(1)}s old)`);
-      
-      // Return data immediately, but start background refresh if cache is older than 1 second
-      if (now - cache.timestamp > 1000) {
-        logWithTime('update', 'Starting background refresh of older data');
-        // Use setTimeout to make this non-blocking
-        setTimeout(() => refreshInBackground(requestedTimeframe), 0);
-      }
-      
-      // Return cached data immediately
-      return extractTimeframeData(cache.data, requestedTimeframe);
-    }
+    // Bypass cache completely, get fresh data every time
+    clearAPICache(); // Explicitly clear cache to force fresh data
     
-    // PART 2: No valid cache, get fresh data
+    // Fetch fresh data from API
     return await fetchFreshData(requestedTimeframe);
   } catch (error: any) {
     // Handle errors
@@ -500,35 +469,44 @@ async function handleDataFetchError(requestedTimeframe: TimeFrame, originalError
     return extractTimeframeData(localStorageData, requestedTimeframe);
   }
   
-  // 3. Try Coinbase API (alternative source)
+  // 3. Try blockchain.info API (alternative source)
   try {
-    const coinbaseData = await fetchFromCoinbase();
-    if (coinbaseData?.data?.amount) {
-      logWithTime('fetch', 'Using Coinbase data as fallback');
-      const price = parseFloat(coinbaseData.data.amount);
-      
-      // Create minimal data structure
-      const fallbackData = {
-        market_data: {
-          current_price: { usd: price },
-          price_change_percentage_24h: 0 // No historical data
-        }
-      };
-      
-      return extractTimeframeData(fallbackData, requestedTimeframe);
+    // Use the new blockchain ticker API
+    logWithTime('fetch', 'Trying blockchain.info API as fallback');
+    const response = await fetch('/api/blockchain/ticker', {
+      headers: {
+        'Accept': 'application/json',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+      cache: 'no-store'
+    });
+    
+    if (response.ok) {
+      const blockchainData = await response.json();
+      if (blockchainData?.bitcoin?.usd) {
+        logWithTime('fetch', 'Using blockchain.info data as fallback');
+        const price = blockchainData.bitcoin.usd;
+        
+        // Create minimal data structure using the available data
+        const fallbackData = {
+          market_data: {
+            current_price: { usd: price },
+            price_change_percentage_24h: blockchainData.bitcoin.usd_24h_change || 0,
+            last_updated_at: blockchainData.bitcoin.last_updated_at || Math.floor(Date.now() / 1000)
+          }
+        };
+        
+        return extractTimeframeData(fallbackData, requestedTimeframe);
+      }
     }
-  } catch (fallbackError) {
-    logWithTime('error', 'All API fallbacks failed');
+  } catch (blockchainError) {
+    logWithTime('error', 'Blockchain.info API fallback failed:', blockchainError);
   }
   
-  // 4. Return static fallback as last resort
-  logWithTime('error', 'Using static fallback data');
-  return {
-    price: 82151, // Current approximate price 
-    change: 450.83, // Calculated correctly for 0.55% change
-    changePercent: 0.55,
-    direction: 'up'
-  };
+  // 4. Error out - no hardcoded values and no Coinbase fallback
+  logWithTime('error', 'All API sources failed');
+  throw originalError;
 }
 
 /**

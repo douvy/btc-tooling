@@ -70,8 +70,10 @@ function WebSocketBitcoinDisplay({
     };
   }, []);
   
-  // Loading skeleton
+  // Only show loading on initial load - not on timeframe switches
+  // This ensures we always show some data rather than a blank loading state
   if (isLoading && !bitcoinData) {
+    // First time loading - show skeleton
     return (
       <div className={classNames(
         "animate-pulse",
@@ -93,6 +95,9 @@ function WebSocketBitcoinDisplay({
       </div>
     );
   }
+  
+  // For timeframe switches, we'll show the previous data with a subtle loading indicator
+  // This allows for better UX when changing timeframes
   
   // Error state (fallback to loading UI)
   if (error && !bitcoinData) {

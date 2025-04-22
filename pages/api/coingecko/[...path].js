@@ -7,7 +7,8 @@ import {
   buildQueryParams, forwardHeaders, createRateLimiter, checkRateLimit
 } from '../utils/proxyUtils';
 
-const rateLimiter = createRateLimiter('coingecko', 15, 60000);
+// Increase rate limit to ensure successful API calls
+const rateLimiter = createRateLimiter('coingecko', 100, 60000);
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {

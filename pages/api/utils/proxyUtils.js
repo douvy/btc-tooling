@@ -4,7 +4,7 @@
 
 export const SERVERLESS_TIMEOUT = 9500;
 export const CACHE_CONTROL = {
-  DEFAULT: 'public, max-age=5, stale-while-revalidate=10',
+  DEFAULT: 'no-cache, must-revalidate',
   ERROR: 'no-cache, no-store, must-revalidate'
 };
 export const CORS_HEADERS = {

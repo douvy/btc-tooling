@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitcoin API Test</title>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .price-up {
+      color: green;
+    }
+    .price-down {
+      color: red;
+    }
+    .timeframe-btn {
+      background-color: #2196F3;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .timeframe-btn.active {
+      background-color: #0b7dda;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bitcoin API Test</h1>
+  
+  <div class="card">
+    <h2>Timeframes</h2>
+    <div id="timeframe-btns">
+      <button class="timeframe-btn active" data-timeframe="1H">1H</button>
+      <button class="timeframe-btn" data-timeframe="1D">1D</button>
+      <button class="timeframe-btn" data-timeframe="1W">1W</button>
+      <button class="timeframe-btn" data-timeframe="1M">1M</button>
+      <button class="timeframe-btn" data-timeframe="1Y">1Y</button>
+    </div>
+    <div id="price-display">
+      <h3>Current Price: <span id="current-price">Loading...</span></h3>
+      <p>Change: <span id="price-change">-</span> (<span id="percent-change">-</span>)</p>
+      <p>Timeframe: <span id="current-timeframe">1H</span></p>
+      <p>Updated: <span id="last-updated">-</span></p>
+      <p>Latency: <span id="latency">-</span>ms</p>
+      <p>Connection: <span id="connection-status">Connecting...</span></p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>WebSocket Test</h2>
+      <button id="connect-btn" class="btn">Connect WebSocket</button>
+      <button id="disconnect-btn" class="btn">Disconnect</button>
+      <h3>Messages:</h3>
+      <div id="ws-messages" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+    
+    <div class="card">
+      <h2>API Tests</h2>
+      <button id="direct-btn" class="btn">Test Direct API</button>
+      <button id="proxy-btn" class="btn">Test API Proxy</button>
+      <button id="ticker-btn" class="btn">Test BTC Ticker</button>
+      <button id="debug-btn" class="btn">API Debug Info</button>
+      <h3>Results:</h3>
+      <div id="api-results" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const wsMessages = document.getElementById('ws-messages');
+    const apiResults = document.getElementById('api-results');
+    const connectBtn = document.getElementById('connect-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+    const directBtn = document.getElementById('direct-btn');
+    const proxyBtn = document.getElementById('proxy-btn');
+    const tickerBtn = document.getElementById('ticker-btn');
+    const debugBtn = document.getElementById('debug-btn');
+    const timeframeBtns = document.querySelectorAll('.timeframe-btn');
+    const currentPrice = document.getElementById('current-price');
+    const priceChange = document.getElementById('price-change');
+    const percentChange = document.getElementById('percent-change');
+    const currentTimeframe = document.getElementById('current-timeframe');
+    const lastUpdated = document.getElementById('last-updated');
+    const latencyElement = document.getElementById('latency');
+    const connectionStatus = document.getElementById('connection-status');
+
+    // Socket Variables
+    let socket = null;
+    let pingStart = 0;
+    let currentLatency = 0;
+    let currentTimeframeValue = '1H';
+
+    // Connect to WebSocket
+    function connectWebSocket() {
+      if (socket) {
+        addMessage('WebSocket', 'Already connected, disconnecting first...');
+        socket.disconnect();
+      }
+
+      addMessage('WebSocket', 'Connecting to WebSocket...');
+      connectionStatus.textContent = 'Connecting...';
+
+      // Initialize server first
+      fetch('/api/socket')
+        .then(() => {
+          // Now connect to the socket
+          socket = io({
+            path: '/api/socket',
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 10000
+          });
+
+          // Connection events
+          socket.on('connect', () => {
+            addMessage('WebSocket', 'Connected successfully');
+            connectionStatus.textContent = 'Connected';
+            
+            // Subscribe to the current timeframe
+            socket.emit('subscribe', currentTimeframeValue);
+            
+            // Start ping interval
+            startPing();
+          });
+
+          socket.on('disconnect', () => {
+            addMessage('WebSocket', 'Disconnected');
+            connectionStatus.textContent = 'Disconnected';
+          });
+
+          socket.on('connect_error', (err) => {
+            addMessage('Error', `Connection error: ${err.message}`);
+            connectionStatus.textContent = 'Error';
+          });
+
+          // Data events
+          socket.on('crypto_update', (message) => {
+            addMessage('Update', `Received ${message.timeframe} data`);
+            
+            if (message.data && message.data.market_data) {
+              // Log the raw data for debugging
+              console.log('Raw WebSocket data:', message.data);
+              
+              // Calculate relevant timeframe values
+              processTimeframeData(message.data, message.timeframe);
+              
+              // Update last updated timestamp
+              const now = new Date();
+              lastUpdated.textContent = now.toLocaleTimeString();
+            }
+          });
+
+          socket.on('pong', () => {
+            // Calculate latency
+            currentLatency = Date.now() - pingStart;
+            latencyElement.textContent = currentLatency;
+          });
+
+          socket.on('error', (err) => {
+            addMessage('Error', err.message || 'Unknown error');
+          });
+        })
+        .catch(error => {
+          addMessage('Error', `Failed to initialize WebSocket: ${error.message}`);
+        });
+    }
+
+    // Start ping interval for latency measurement
+    function startPing() {
+      setInterval(() => {
+        if (socket && socket.connected) {
+          pingStart = Date.now();
+          socket.emit('ping');
+        }
+      }, 5000);
+    }
+
+    // Process timeframe data
+    function processTimeframeData(data, dataTimeframe) {
+      // Only update UI if the data matches our current timeframe
+      if (dataTimeframe === currentTimeframeValue || dataTimeframe === 'all') {
+        // Extract the core market data
+        const marketData = data.market_data;
+        
+        // Get current price
+        const price = marketData.current_price.usd;
+        currentPrice.textContent = `$${price.toFixed(2)}`;
+        
+        // Extract the correct percentage change for the current timeframe
+        let changePercentValue = 0;
+        let dollarChangeValue = 0;
+        
+        switch (currentTimeframeValue) {
+          case '1H':
+            changePercentValue = marketData.price_change_percentage_1h_in_currency?.usd || 0;
+            // Calculate dollar change based on percentage
+            const prevPrice1h = price / (1 + (changePercentValue / 100));
+            dollarChangeValue = Math.abs(price - prevPrice1h);
+            break;
+          case '1D':
+            // For 1D we can use direct values
+            dollarChangeValue = Math.abs(marketData.price_change_24h || 0);
+            changePercentValue = marketData.price_change_percentage_24h_in_currency?.usd || 
+                                marketData.price_change_percentage_24h || 0;
+            break;
+          case '1W':
+            changePercentValue = marketData.price_change_percentage_7d_in_currency?.usd || 0;
+            // Calculate dollar change
+            const prevPrice7d = price / (1 + (changePercentValue / 100));
+            dollarChangeValue = Math.abs(price - prevPrice7d);
+            break;
+          case '1M':
+            changePercentValue = marketData.price_change_percentage_30d_in_currency?.usd || 0;
+            // Calculate dollar change
+            const prevPrice30d = price / (1 + (changePercentValue / 100));
+            dollarChangeValue = Math.abs(price - prevPrice30d);
+            break;
+          case '1Y':
+            changePercentValue = marketData.price_change_percentage_1y_in_currency?.usd || 0;
+            // Calculate dollar change
+            const prevPrice1y = price / (1 + (changePercentValue / 100));
+            dollarChangeValue = Math.abs(price - prevPrice1y);
+            break;
+          default:
+            // Default to 24h
+            dollarChangeValue = Math.abs(marketData.price_change_24h || 0);
+            changePercentValue = marketData.price_change_percentage_24h_in_currency?.usd || 0;
+        }
+        
+        // Format and display the changes
+        const direction = changePercentValue >= 0 ? 'up' : 'down';
+        const absPercentChange = Math.abs(changePercentValue).toFixed(2);
+        
+        // Update UI with changes
+        priceChange.textContent = `$${dollarChangeValue.toFixed(2)}`;
+        percentChange.textContent = `${direction === 'up' ? '+' : '-'}${absPercentChange}%`;
+        
+        // Add appropriate color class
+        priceChange.className = direction === 'up' ? 'price-up' : 'price-down';
+        percentChange.className = direction === 'up' ? 'price-up' : 'price-down';
+        
+        // Update the current timeframe display
+        currentTimeframe.textContent = currentTimeframeValue;
+      }
+    }
+
+    // Add message to the log
+    function addMessage(type, message) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      const msgEl = document.createElement('div');
+      msgEl.innerHTML = `<strong>${timeString} [${type}]:</strong> ${message}`;
+      wsMessages.prepend(msgEl);
+    }
+
+    // Add API result to the log
+    function addResult(type, result) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      const resultEl = document.createElement('div');
+      
+      // Format the result based on type
+      let formattedResult = '';
+      if (typeof result === 'object') {
+        formattedResult = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+      } else {
+        formattedResult = result;
+      }
+      
+      resultEl.innerHTML = `<strong>${timeString} [${type}]:</strong> ${formattedResult}`;
+      apiResults.prepend(resultEl);
+    }
+
+    // Event listeners for WebSocket
+    connectBtn.addEventListener('click', connectWebSocket);
+    disconnectBtn.addEventListener('click', () => {
+      if (socket) {
+        socket.disconnect();
+        addMessage('WebSocket', 'Disconnected by user');
+      }
+    });
+
+    // Event listeners for API tests
+    directBtn.addEventListener('click', async () => {
+      try {
+        const start = Date.now();
+        const response = await fetch('https://api.coingecko.com/api/v3/ping');
+        const data = await response.json();
+        const time = Date.now() - start;
+        addResult('Direct API', `Response in ${time}ms: ${JSON.stringify(data)}`);
+      } catch (error) {
+        addResult('Error', `Direct API error: ${error.message}`);
+      }
+    });
+
+    proxyBtn.addEventListener('click', async () => {
+      try {
+        const start = Date.now();
+        const response = await fetch('/api/coingecko/simple/price?ids=bitcoin&vs_currencies=usd&include_24h_change=true');
+        const data = await response.json();
+        const time = Date.now() - start;
+        addResult('API Proxy', `Response in ${time}ms: ${JSON.stringify(data)}`);
+      } catch (error) {
+        addResult('Error', `API Proxy error: ${error.message}`);
+      }
+    });
+
+    tickerBtn.addEventListener('click', async () => {
+      try {
+        const start = Date.now();
+        const response = await fetch('/api/blockchain/ticker');
+        const data = await response.json();
+        const time = Date.now() - start;
+        
+        // Extract and display price for quick reference
+        let priceDisplay = 'Unknown';
+        if (data.bitcoin && data.bitcoin.usd) {
+          priceDisplay = `$${data.bitcoin.usd.toFixed(2)}`;
+        } else if (data.market_data && data.market_data.current_price && data.market_data.current_price.usd) {
+          priceDisplay = `$${data.market_data.current_price.usd.toFixed(2)}`;
+        }
+        
+        addResult('BTC Ticker', `Price: ${priceDisplay} (${time}ms)`);
+        
+        // Also show the full data structure
+        console.log('Full ticker data:', data);
+      } catch (error) {
+        addResult('Error', `BTC Ticker error: ${error.message}`);
+      }
+    });
+
+    debugBtn.addEventListener('click', async () => {
+      try {
+        // Create our own debug endpoint check
+        addResult('Debug', 'Checking API debugging info...');
+        
+        // Check BTC price from blockchain ticker
+        const blockchainResponse = await fetch('/api/blockchain/ticker');
+        const blockchainData = await blockchainResponse.json();
+        
+        // Extract price information
+        let btcPrice = 'Unknown';
+        if (blockchainData.bitcoin && blockchainData.bitcoin.usd) {
+          btcPrice = blockchainData.bitcoin.usd;
+        } else if (blockchainData.market_data && blockchainData.market_data.current_price && blockchainData.market_data.current_price.usd) {
+          btcPrice = blockchainData.market_data.current_price.usd;
+        }
+        
+        // Show the price
+        addResult('BTC Price', `$${btcPrice.toFixed(2)}`);
+        
+        // Now check if all timeframes are available
+        const timeframes = ['1H', '1D', '1W', '1M', '1Y'];
+        const timeframeData = {};
+        
+        if (blockchainData.market_data) {
+          // 1H
+          const hourChange = blockchainData.market_data.price_change_percentage_1h_in_currency?.usd || 0;
+          const hourPrevPrice = btcPrice / (1 + (hourChange / 100));
+          
+          // 1D
+          const dayChange = blockchainData.market_data.price_change_percentage_24h_in_currency?.usd || 
+                           blockchainData.market_data.price_change_percentage_24h || 0;
+          const dayPrevPrice = btcPrice / (1 + (dayChange / 100));
+          
+          // 1W
+          const weekChange = blockchainData.market_data.price_change_percentage_7d_in_currency?.usd || 0;
+          const weekPrevPrice = btcPrice / (1 + (weekChange / 100));
+          
+          // 1M
+          const monthChange = blockchainData.market_data.price_change_percentage_30d_in_currency?.usd || 0;
+          const monthPrevPrice = btcPrice / (1 + (monthChange / 100));
+          
+          // 1Y
+          const yearChange = blockchainData.market_data.price_change_percentage_1y_in_currency?.usd || 0;
+          const yearPrevPrice = btcPrice / (1 + (yearChange / 100));
+          
+          // Collect all timeframe data
+          timeframeData['1H'] = {
+            percentChange: hourChange.toFixed(2) + '%',
+            dollarChange: `$${Math.abs(btcPrice - hourPrevPrice).toFixed(2)}`
+          };
+          
+          timeframeData['1D'] = {
+            percentChange: dayChange.toFixed(2) + '%',
+            dollarChange: `$${Math.abs(btcPrice - dayPrevPrice).toFixed(2)}`
+          };
+          
+          timeframeData['1W'] = {
+            percentChange: weekChange.toFixed(2) + '%',
+            dollarChange: `$${Math.abs(btcPrice - weekPrevPrice).toFixed(2)}`
+          };
+          
+          timeframeData['1M'] = {
+            percentChange: monthChange.toFixed(2) + '%',
+            dollarChange: `$${Math.abs(btcPrice - monthPrevPrice).toFixed(2)}`
+          };
+          
+          timeframeData['1Y'] = {
+            percentChange: yearChange.toFixed(2) + '%',
+            dollarChange: `$${Math.abs(btcPrice - yearPrevPrice).toFixed(2)}`
+          };
+          
+          // Show timeframe data
+          addResult('Timeframe Data', timeframeData);
+        }
+      } catch (error) {
+        addResult('Error', `Debug error: ${error.message}`);
+      }
+    });
+
+    // Timeframe button listeners
+    timeframeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        timeframeBtns.forEach(b => b.classList.remove('active'));
+        
+        // Add active class to clicked button
+        btn.classList.add('active');
+        
+        // Get the timeframe value
+        const newTimeframe = btn.getAttribute('data-timeframe');
+        
+        // Update current timeframe
+        currentTimeframeValue = newTimeframe;
+        currentTimeframe.textContent = newTimeframe;
+        
+        // Send request to WebSocket if connected
+        if (socket && socket.connected) {
+          socket.emit('subscribe', newTimeframe);
+          addMessage('WebSocket', `Requested ${newTimeframe} timeframe data`);
+        } else {
+          addMessage('WebSocket', 'Not connected, cannot request new timeframe');
+        }
+      });
+    });
+
+    // Auto-connect on page load
+    window.addEventListener('load', () => {
+      // Wait a moment for the page to settle
+      setTimeout(connectWebSocket, 1000);
+    });
+  </script>
+</body>
+</html>

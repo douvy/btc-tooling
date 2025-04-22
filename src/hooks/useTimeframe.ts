@@ -109,29 +109,117 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
     // Update timeframe immediately
     setTimeframe(newTimeframe);
     
+    // For better UX, immediately clear any stored animation state
+    setPriceChangeDirection(null);
+    
+    // GUARANTEED IMMEDIATE RECALCULATION:
+    // If we have any bitcoin data at all, we can just recalculate for the new timeframe
+    // Rather than making a network request
+    try {
+      // Import the calculation function directly
+      const { extractTimeframeData } = require('@/lib/priceUtils');
+      
+      console.log(`⚡ IMMEDIATE TIMEFRAME SWITCH: ${timeframe} → ${newTimeframe}`);
+      
+      // Try different data sources in order of preference
+      let rawData = null;
+      
+      // 1. Try API cache first
+      try {
+        const { getApiCache } = require('@/lib/api/cache');
+        const cache = getApiCache();
+        if (cache && cache.data) {
+          console.log('Using API cache for immediate recalculation');
+          rawData = cache.data;
+        }
+      } catch (e) {
+        console.warn('Error accessing API cache:', e);
+      }
+      
+      // 2. If no API cache, try to construct from current bitcoin data
+      if (!rawData && bitcoinData && bitcoinData.price) {
+        console.log('Constructing data object from current bitcoin data');
+        
+        // Create a data structure that matches what the extractTimeframeData function expects
+        rawData = {
+          market_data: {
+            current_price: { usd: bitcoinData.price },
+            // Use the existing percentage changes as starting points
+            price_change_percentage_1h_in_currency: { usd: bitcoinData.timeframe === '1H' ? bitcoinData.changePercent * (bitcoinData.direction === 'up' ? 1 : -1) : 0 },
+            price_change_percentage_24h_in_currency: { usd: bitcoinData.timeframe === '1D' ? bitcoinData.changePercent * (bitcoinData.direction === 'up' ? 1 : -1) : 0 },
+            price_change_percentage_7d_in_currency: { usd: bitcoinData.timeframe === '1W' ? bitcoinData.changePercent * (bitcoinData.direction === 'up' ? 1 : -1) : 0 },
+            price_change_percentage_30d_in_currency: { usd: bitcoinData.timeframe === '1M' ? bitcoinData.changePercent * (bitcoinData.direction === 'up' ? 1 : -1) : 0 },
+            price_change_percentage_1y_in_currency: { usd: bitcoinData.timeframe === '1Y' ? bitcoinData.changePercent * (bitcoinData.direction === 'up' ? 1 : -1) : 0 },
+            last_updated_at: Math.floor(Date.now() / 1000)
+          }
+        };
+      }
+      
+      // 3. Try to use the timeframes cache
+      if (!rawData && Object.keys(timeframesCache).length > 0) {
+        console.log('Attempting to build from timeframes cache');
+        
+        // Find any timeframe data we can use
+        const anyTimeframeData = Object.values(timeframesCache)[0];
+        if (anyTimeframeData && anyTimeframeData.price) {
+          rawData = {
+            market_data: {
+              current_price: { usd: anyTimeframeData.price },
+              // Use zeros as placeholders since we don't know the other timeframes
+              price_change_percentage_1h_in_currency: { usd: 0 },
+              price_change_percentage_24h_in_currency: { usd: 0 },
+              price_change_percentage_7d_in_currency: { usd: 0 },
+              price_change_percentage_30d_in_currency: { usd: 0 },
+              price_change_percentage_1y_in_currency: { usd: 0 },
+              last_updated_at: Math.floor(Date.now() / 1000)
+            }
+          };
+        }
+      }
+      
+      // If we have any data to work with, recalculate immediately
+      if (rawData && rawData.market_data && rawData.market_data.current_price) {
+        console.log('Recalculating with current price:', rawData.market_data.current_price.usd);
+        
+        // Perform the calculation for new timeframe
+        const recalculatedData = extractTimeframeData(rawData, newTimeframe);
+        
+        // Update UI immediately
+        setBitcoinData(recalculatedData);
+        setTimeframesCache(prev => ({ ...prev, [newTimeframe]: recalculatedData }));
+        
+        // Request fresh data in the background
+        fetchBitcoinData(true);
+        
+        // We're done - user sees results immediately
+        return;
+      } else {
+        console.log('No usable data available for immediate recalculation');
+      }
+    } catch (err) {
+      console.warn('Error during immediate timeframe calculation:', err);
+      // Continue with fallback approach
+    }
+    
+    // FALLBACK: If we couldn't do immediate calculation, try the API
+    console.log('Falling back to API call for timeframe change');
+    
     // Cancel any existing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
     
-    // Always force a fresh request on timeframe change to avoid stale data
+    // Show loading state
     setIsLoading(true);
     
-    // For better UX, immediately clear any stored animation state
-    setPriceChangeDirection(null);
-    
-    // Clear the API cache to force fresh data
-    clearAPICache();
-    
-    // Force a fresh fetch without using cache
+    // Fetch data from API
     fetchBitcoinData(true)
       .catch(err => {
         console.error('Error changing timeframe:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
       })
       .finally(() => {
-        // Clean up loading state just in case
         setIsLoading(false);
       });
   }, [timeframe, fetchBitcoinData]);

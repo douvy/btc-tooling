@@ -3,43 +3,23 @@ import { extractTimeframeData } from '@/lib/priceUtils';
 import { logWithTime } from './logger';
 import { lastUpdateTimestamp, updateStatus, CACHE_LIFETIME } from './constants';
 import { saveToLocalStorage, loadFromLocalStorage, getApiCache, updateApiCache } from './cache';
-import { fetchDetailedBitcoinData, fetchSimpleBitcoinPrice, fetchFromCoinbase } from './endpoints';
+import { fetchDetailedBitcoinData, fetchSimpleBitcoinPrice } from './endpoints';
+
+// High cache lifetime to avoid rate limits
+const EXTENDED_CACHE_LIFETIME = 5 * 60 * 1000; // 5 minutes
+
+// Enable verbose logging in development for debugging price calculations
+const VERBOSE_LOGGING = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
 
 async function fetchFreshData(timeframe: TimeFrame): Promise<BitcoinPrice> {
-  const isSimpleEndpoint = timeframe === '1D';
+  // Always use detailed endpoint for all timeframes to get accurate fluctuations
   const fetchStart = Date.now();
   
+  // Use CoinGecko as the primary source for reliable price data with ALL timeframes
   try {
-    if (isSimpleEndpoint) {
-      const data = await fetchSimpleBitcoinPrice();
-      if (!data?.bitcoin?.usd) throw new Error('Invalid data format');
-      
-      const formattedData = {
-        market_data: {
-          current_price: { usd: data.bitcoin.usd },
-          price_change_percentage_24h: data.bitcoin.usd_24h_change || 0,
-          total_volume: { usd: data.bitcoin.usd_24h_vol || 0 },
-          last_updated_at: data.bitcoin.last_updated_at || Date.now() / 1000
-        }
-      };
-      
-      updateApiCache({
-        data: formattedData,
-        timestamp: Date.now(),
-        endpoint: 'simple',
-        source: 'api',
-        fetchTime: Date.now() - fetchStart
-      });
-      
-      saveToLocalStorage('btc-price-simple', formattedData);
-      const result = extractTimeframeData(formattedData, timeframe);
-      logWithTime('update', `Updated BTC price: $${result.price.toFixed(2)}`);
-      lastUpdateTimestamp.dataUpdate = Date.now();
-      updateStatus.hasError = false;
-      updateStatus.errorMessage = '';
-      return result;
-    }
+    logWithTime('fetch', 'Using CoinGecko API for all timeframes');
     
+    // Always fetch detailed data with all timeframes
     const data = await fetchDetailedBitcoinData();
     if (!data?.market_data?.current_price?.usd) throw new Error('Invalid data format');
     
@@ -53,7 +33,14 @@ async function fetchFreshData(timeframe: TimeFrame): Promise<BitcoinPrice> {
     
     saveToLocalStorage('btc-price-detailed', data);
     const result = extractTimeframeData(data, timeframe);
-    logWithTime('update', `Updated BTC price: $${result.price.toFixed(2)}`);
+    
+    // Enhanced logging for development
+    if (VERBOSE_LOGGING) {
+      logWithTime('update', `Updated BTC price (${timeframe}): $${result.price.toFixed(2)} (${result.direction === 'up' ? '+' : '-'}${result.changePercent.toFixed(2)}%) - change: $${result.change.toFixed(2)}`);
+    } else {
+      logWithTime('update', `Updated BTC price: $${result.price.toFixed(2)}`);
+    }
+    
     lastUpdateTimestamp.dataUpdate = Date.now();
     updateStatus.hasError = false;
     updateStatus.errorMessage = '';
@@ -79,21 +66,41 @@ async function handleDataFetchError(timeframe: TimeFrame): Promise<BitcoinPrice>
     return extractTimeframeData(localData, timeframe);
   }
   
-  // Try Coinbase API
+  // Try CoinGecko simple price API as fallback
   try {
-    const coinbaseData = await fetchFromCoinbase();
-    if (coinbaseData?.data?.amount) {
-      logWithTime('fetch', 'Using Coinbase fallback');
-      const price = parseFloat(coinbaseData.data.amount);
-      const fallbackData = {
-        market_data: {
-          current_price: { usd: price },
-          price_change_percentage_24h: 0
-        }
-      };
-      return extractTimeframeData(fallbackData, timeframe);
+    logWithTime('fetch', 'Trying CoinGecko simple API fallback');
+    
+    // Use simple API which is less likely to be rate-limited
+    const response = await fetch('/api/coingecko/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', {
+      headers: {
+        'Accept': 'application/json',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+      cache: 'no-store'
+    });
+    
+    if (response.ok) {
+      const simpleData = await response.json();
+      if (simpleData?.bitcoin?.usd) {
+        logWithTime('fetch', 'Using CoinGecko simple API data as fallback');
+        const price = simpleData.bitcoin.usd;
+        
+        // Create basic data structure with the price and any available change data
+        const fallbackData = {
+          market_data: {
+            current_price: { usd: price },
+            price_change_percentage_24h: simpleData.bitcoin.usd_24h_change || 0,
+            price_change_percentage_24h_in_currency: { usd: simpleData.bitcoin.usd_24h_change || 0 },
+            last_updated_at: Math.floor(Date.now() / 1000)
+          }
+        };
+        return extractTimeframeData(fallbackData, timeframe);
+      }
     }
-  } catch {}
+  } catch (error) {
+    logWithTime('error', 'CoinGecko simple API fallback failed:', error);
+  }
   
   throw new Error('Bitcoin price data unavailable');
 }
@@ -112,8 +119,11 @@ export const getBitcoinPrice = async (timeframe: TimeFrame = '1D'): Promise<Bitc
     const endpoint = timeframe === '1D' ? 'simple' : 'detailed';
     
     const cache = getApiCache();
-    if (cache && cache.timestamp + CACHE_LIFETIME > now && cache.endpoint === endpoint) {
-      if (now - cache.timestamp > 1000) backgroundRefresh(timeframe);
+    // Use extended cache lifetime to avoid rate limits
+    if (cache && cache.timestamp + EXTENDED_CACHE_LIFETIME > now) {
+      // Only trigger background refresh if the cache is more than 1 minute old
+      // This significantly reduces API calls
+      if (now - cache.timestamp > 60000) backgroundRefresh(timeframe);
       return extractTimeframeData(cache.data, timeframe);
     }
     
