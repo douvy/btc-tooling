@@ -52,40 +52,41 @@ const tweets = [
     username: 'K A L E O 🏴‍☠️',
     handle: 'CryptoKaleo',
     profileImage: 'kaleo.png',
-    text: '#Bitcoin set a new all time relative to the Nasdaq Composite Index (NDX) last week.\n\nThe ratio is currently accumulating near the 2021 highs and looks ready to make another leg up.\n\nBe more bullish.',
-    time: '12:14 PM · APR 30, 2025',
+    text: '#Bitcoin / $BTC\n\nDips are gifts, resume up only.',
+    time: '10:13 AM · MAY 5, 2025',
     image: 'kaleo-post.jpg',
-    link: 'https://x.com/CryptoKaleo/status/1917613664271479157',
-    comments: 37,
-    retweets: 10,
-    likes: 98,
-    views: 11100
+    link: 'https://x.com/CryptoKaleo/status/1919395060493259066',
+    comments: 64,
+    retweets: 90,
+    likes: 751,
+    views: 68400
   },
   {
     id: '2',
-    username: 'Joe',
-    handle: 'JoeCarlasare',
-    profileImage: 'joe.jpg',
-    text: 'bitcoin will do well whether the system endures or collapses\\that’s the beauty of it',
-    time: '7:33 PM · APR 29, 2025',
-    link: 'https://x.com/JoeCarlasare/status/1917361608562532696',
-    comments: 61,
-    retweets: 29,
-    likes: 449,
-    views: 16400
+    username: 'fapital',
+    handle: 'Fapital3',
+    profileImage: 'fapital.jpg',
+    text: 'real estate will not be our generations path to wealth most likely it will be crypto and bitcoin',
+    time: '1:17 AM · MAY 5, 2025',
+    link: 'https://x.com/Fapital3/status/1919260052843638910',
+    comments: 65,
+    retweets: 44,
+    likes: 633,
+    views: 31300
   },
   {
     id: '3',
     username: 'Michael Saylor',
     handle: 'saylor',
     profileImage: 'saylor.jpg',
-    text: 'When banks finally bless Bitcoin\nand the experts agree it’s a good idea,\neveryone will want to buy it,\nno one will need to sell it,\nand you won’t be able to afford it.',
-    time: '1:04 AM · APR 28, 2025',
-    link: 'https://x.com/saylor/status/1916901292200386808',
+    text: 'Too much blue, not enough orange.',
+    time: '9:53 AM · MAY 4, 2025',
+    image: 'saylor-post.jpg',
+    link: 'https://x.com/saylor/status/1919027732140204508',
     comments: 1600,
-    retweets: 4000,
+    retweets: 3200,
     likes: 24000,
-    views: 1100000
+    views: 1900000
   },
 ];
 
@@ -206,7 +207,7 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
               </>
             )}
           </p>
-          <p className="text-[#c2c5cc] text-sm font-gotham-medium">{tweet.time}</p>
+          <p className="text-[#c2c5cc] text-sm font-gotham-medium mt-1">{tweet.time}</p>
         </div>
       </div>
       
