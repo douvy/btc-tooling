@@ -522,7 +522,7 @@ export default function Home() {
           <aside className="md:w-[385px] block border-l border-divider" role="complementary"> 
             <div className="h-full overflow-y-auto px-6 pt-6 pb-8 md:px-8 md:pt-6 pb-[60px] md:pb-8">
               <BTCAnalysis 
-                date="MAY 5, 2025"
+                date="MAY 21, 2025"
                 content={fallbackAnalysisContent}
               />
               <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-12 mt-12 sm:mt-8 mb-12 sm:mb-0"></div>
