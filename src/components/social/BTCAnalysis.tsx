@@ -12,10 +12,10 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
   const [expanded, setExpanded] = useState(false);
   
   // First half of assessment - shortened to move the Show More link 4 lines higher
-  const initialAssessment = "Bitcoin is navigating a complex environment. Structural adoption (ETFs, SBR) provides";
+  const initialAssessment = "Bitcoin is likely in a mid-to-late stage bull market, but the cycle is being altered";
   
   // Rest of assessment to show when expanded - includes the content that was removed from initial
-  const fullAssessment = " strong tailwinds. The post-halving period is historically bullish. However, macro risks (tariffs, liquidity, potential stagflation) are significant headwinds. On-chain and derivatives data suggest the market isn't at a typical euphoric peak. A simple extrapolation of past cycles is insufficient. Strategy requires balancing structural positives with macro risks. Timing potential liquidity events or policy shifts is key. Bitcoin is likely in a mid-to-late stage bull market, but the cycle is being altered by institutional flows and macro factors. The peak may be higher and potentially later than historical cycles, but the path will likely be volatile and heavily influenced by Fed policy and geopolitical events.";
+  const fullAssessment = " by institutional flows and macro factors. The confluence of high valuations, potential liquidity crunches, and policy uncertainties demands a strategic and risk-aware approach. If the Fed is forced into significant easing (Quantitative Support) as Howell predicts, this would likely ignite the next major leg up for Bitcoin.";
   
   return (
     <div>
@@ -41,9 +41,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Assessment:</span>
-            </span> The Bitcoin market in early May 2025 presents a complex and somewhat contradictory picture. Structurally, the market appears robust, driven by significant institutional adoption via ETFs, a supportive post-halving supply dynamic, and a strengthening narrative as a potential hedge against geopolitical uncertainty and monetary debasement. Bitcoin price is near all-time highs, reflecting these positive forces.
-
-However, significant headwinds and risks loom large. On-chain metrics, while not bearish, are not displaying the widespread euphoria characteristic of previous cycle peaks, suggesting either a different cycle structure or that the top is not imminent.
+            </span> The Bitcoin market in May 2025 stands at a pivotal juncture, characterized by a record-high price of approximately $109,522, yet exhibiting a complex interplay of bullish on-chain metrics, maturing market structures, significant institutional inflows, and a rapidly evolving macroeconomic and geopolitical landscape. While many indicators suggest continued strength and potential for further upside, underlying liquidity concerns, particularly related to U.S. Treasury debt refinancing, and the unpredictable nature of global policy shifts, introduce significant uncertainties.
           </p>
           
           <p className={`${expanded ? 'mb-3' : 'mb-0'}`}>
@@ -74,7 +72,7 @@ However, significant headwinds and risks loom large. On-chain metrics, while not
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
                 <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-[#d0d2d8]">Sentiment:</span>
-              </span> The Fear & Greed Index was neutral (53) in April after recovering from extreme fear (15) in March. WatcherGuru and Trump Telegram feeds (April) indicate extreme market fear in traditional markets due to tariff announcements, with Bitcoin being positioned as a "store of value" / "tariff-proof" asset by some commentators (Bessent, Saylor, E. Trump). Retail investors were reportedly buying the equity dip heavily. QCP Broadcast noted swings from "extreme panic" to "cautious optimism" based on tariff news and Fed signals.
+              </span> The Fear & Greed Index was at 66 ("Greed") as of May 18, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.
             </p>
             
             <button 
