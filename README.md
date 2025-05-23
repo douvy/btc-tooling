@@ -1,49 +1,61 @@
 # BTC Tooling
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://btctooling.com)
-[![GitHub Stars](https://img.shields.io/github/stars/btc-tooling/btc-tooling?style=social)](https://github.com/btc-tooling/btc-tooling/stargazers)
+Bitcoin market analytics dashboard with real-time data visualization, comprehensive market metrics, and trading tools.
 
-Complete Bitcoin analytics dashboard with real-time price tracking, order books, and market insights.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-btctooling.com-blue)](https://btctooling.com)
 
-![Dashboard](https://btctooling.com/demo.jpg)
-
-## Why Star This Project?
-
-- Production-ready Bitcoin analytics platform
-- Real-time data visualization using WebSockets
-- Multi-exchange order book with depth visualization
-- Clean, modular React/TypeScript codebase
-- Easy to fork and customize for your needs
-- Actively maintained and updated
+![BTC Tooling Dashboard](/public/images/demo.jpg)
 
 ## Features
 
-- Live Bitcoin price tracking across multiple timeframes
-- TradingView-powered price charts
-- Real-time order book visualization (Bitfinex, Coinbase, Binance)
-- Halving countdown with blockchain data
-- Twitter/X integration with curated BTC content
-- Responsive design for all devices
+- **Live Bitcoin Price Tracking**: Multi-timeframe price data with change indicators
+- **Advanced Charting**: TradingView-powered interactive price charts
+- **Order Book Visualization**: Real-time depth chart with multi-exchange support (Bitfinex, Coinbase, Binance) and dynamic amount controls
+- **Halving Countdown**: Blockchain-accurate timer showing blocks remaining, rewards, and historical context
+- **Bitcoin X/Twitter Integration**: Curated feed with engagement metrics
+- **Market Analysis Panel**: Concise BTC fundamentals and macro environment insights
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
-## Tech
+## Tech Stack
 
-- Next.js 15 (App Router), React 19, TypeScript
-- Tailwind CSS, WebSockets, Blockchain.info API
-- Vercel-optimized deployment
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS, Custom Design System
+- **Data**: Blockchain.info API, WebSockets for real-time updates
+- **Performance**: Dynamic imports, client-side rendering for interactive components
 
 ## Quick Start
 
 ```bash
-# Clone repository
-git clone https://github.com/btc-tooling/btc-tooling.git
-cd btc-tooling
-
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
 ```
+
+Access the dashboard at [http://localhost:3000](http://localhost:3000)
+
+## Development
+
+```bash
+# Run linting
+npm run lint
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+## Deployment
+
+The application is optimized for Vercel deployment with:
+
+- Custom API proxies for CoinGecko and Coinbase with proper caching
+- Serverless function optimization (memory: 512MB, timeout: 10s)
+- Deprecation warning fixes for Node.js compatibility
+- Comprehensive environment variable configuration
 
 ## Architecture
 
@@ -59,26 +71,12 @@ src/
 └── types/       # TypeScript type definitions
 ```
 
-## Deployment
-
-The application is optimized for Vercel deployment with:
-
-- Custom API proxies for CoinGecko and Coinbase with proper caching
-- Serverless function optimization (memory: 512MB, timeout: 10s)
-- Deprecation warning fixes for Node.js compatibility
-
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create your feature branch: `git checkout -b feature/new-feature`
+3. Commit your changes: `git commit -m 'Add new feature'`
+4. Push to the branch: `git push origin feature/new-feature`
 5. Open a Pull Request
 
-## License
-
-MIT
-
----
-
-⭐ **If you find this useful, please star the repo!** ⭐
+If you find this project useful, please consider giving it a star
