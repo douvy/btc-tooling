@@ -9,11 +9,11 @@ Bitcoin market analytics dashboard with real-time data visualization, comprehens
 ## Features
 
 - **Live Bitcoin Price Tracking**: Multi-timeframe price data with change indicators
-- **Advanced Charting**: TradingView-powered interactive price charts
-- **Order Book Visualization**: Real-time depth chart with multi-exchange support (Bitfinex, Coinbase, Binance) and dynamic amount controls
-- **Halving Countdown**: Blockchain-accurate timer showing blocks remaining, rewards, and historical context
-- **Bitcoin X/Twitter Integration**: Curated feed with engagement metrics
-- **Market Analysis Panel**: Concise BTC fundamentals and macro environment insights
+- **Advanced Charting**: TradingView-powered interactive price chart
+- **Order Book Visualization**: Real-time depth chart with Bitfinex exchange support and dynamic amount controls
+- **Halving Countdown**: Timer showing blocks remaining, rewards, and historical context
+- **Bitcoin X/Twitter Integration**: Curated feed with 3 recent, relevant Bitcoin posts
+- **Market Analysis Panel**: Concise BTC analysis with assessment, strategic outlook, and sentiment
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
 ## Tech Stack
