@@ -79,7 +79,7 @@ const tweets = [
     handle: 'ciniz',
     profileImage: 'ciniz.jpg',
     text: 'maybe i dont follow enough bitcoin maxis, but this is the quietest BTC all time high ever \n\n$109,000 BTC and timeline quiet',
-    time: '11:22 AM · MAY 11, 2025',
+    time: '11:22 AM · MAY 21, 2025',
     link: 'https://x.com/ciniz/status/1925210639363907792',
     comments: 17,
     retweets: 8,
