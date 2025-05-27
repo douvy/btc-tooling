@@ -206,7 +206,7 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
               </>
             )}
           </p>
-          <p className="text-[#c2c5cc] text-sm font-gotham-medium mt-1">{tweet.time}</p>
+          <p className="text-[#c2c5cc] text-sm mt-1">{tweet.time}</p>
         </div>
       </div>
       
