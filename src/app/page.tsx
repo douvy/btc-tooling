@@ -51,7 +51,7 @@ const tweets = [
     id: '1',
     username: 'David Marcus',
     handle: 'davidmarcus',
-    profileImage: 'sacks.jpg',
+    profileImage: 'david-marcus.jpg',
     text: 'I can’t keep track of all the companies now racing to accumulate Bitcoin. Only about 1.4 million additional Bitcoin will be created in the next 115 years. It’s going to be so wild.',
     time: '9:47 AM · MAY 27, 2025',
     link: 'https://x.com/davidmarcus/status/1927361082449883233',
