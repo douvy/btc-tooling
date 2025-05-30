@@ -67,12 +67,28 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
   // STEP 1: Get real-time current price from Coinbase WebSocket API (no rate limits)
   let realtimePrice = null;
   try {
-    const realtimeResponse = await fetch('/api/coinbase-realtime');
-    const realtimeData = await realtimeResponse.json();
+    // Add a timeout to prevent hanging if the API is slow
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
     
-    if (realtimeData.success && realtimeData.price) {
-      realtimePrice = realtimeData.price;
-      // Real-time price from Coinbase WebSocket available
+    const realtimeResponse = await fetch('/api/coinbase-realtime', {
+      signal: controller.signal,
+      cache: 'no-store' // Ensure we always get fresh data
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (realtimeResponse.ok) {
+      const realtimeData = await realtimeResponse.json();
+      
+      if (realtimeData.success && realtimeData.price) {
+        realtimePrice = realtimeData.price;
+        console.log('Using real-time price:', realtimePrice, 'from', realtimeData.source || 'unknown');
+      } else {
+        console.warn('Real-time API returned success:false');
+      }
+    } else {
+      console.warn('Real-time API returned non-OK status:', realtimeResponse.status);
     }
   } catch (error) {
     console.warn('Failed to get real-time price, will use historical data:', error);
@@ -96,7 +112,17 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     // Use our historical price API that provides real data for all timeframes
     const url = '/api/price-history';
     
-    const response = await fetch(url);
+    // Add a timeout to prevent hanging if the API is slow
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: 'no-store' // Ensure we always get fresh data
+    });
+    
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }

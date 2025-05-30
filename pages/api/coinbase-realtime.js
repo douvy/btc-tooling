@@ -22,7 +22,10 @@ let lastUpdateTime = 0;
 let ws = null;
 
 // Setup WebSocket connection if running on server
+// Note: In production, Vercel serverless functions don't maintain persistent connections
+// We'll need to handle this differently for production vs development
 if (typeof global !== 'undefined') {
+  console.log('Setting up Coinbase WebSocket connection in', process.env.NODE_ENV, 'environment');
   try {
     // Use the WebSocket API from Coinbase which has no rate limits
     const WebSocket = require('ws');
@@ -75,18 +78,41 @@ if (typeof global !== 'undefined') {
 export default async function handler(req, res) {
   // If WebSocket is not available or hasn't received data yet
   if (!lastPrice) {
+    console.log('WebSocket data not available, fetching direct price');
+    
+    // In production or when WebSocket fails, make a direct API call
+    try {
+      const response = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+      const data = await response.json();
+      
+      if (data && data.data && data.data.amount) {
+        const price = parseFloat(data.data.amount);
+        
+        return res.status(200).json({
+          success: true,
+          price: price,
+          timestamp: Date.now(),
+          source: 'direct-api'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching direct price:', error);
+    }
+    
+    // If direct API also fails, return error
     return res.status(200).json({
       success: false,
-      message: 'Real-time price not available yet',
+      message: 'Real-time price not available',
       timestamp: Date.now()
     });
   }
   
-  // Return the most recent price
+  // Return the most recent price from WebSocket if available
   res.status(200).json({
     success: true,
     price: lastPrice,
     timestamp: lastUpdateTime,
-    age: Date.now() - lastUpdateTime
+    age: Date.now() - lastUpdateTime,
+    source: 'websocket'
   });
 }

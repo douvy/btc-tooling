@@ -24,18 +24,18 @@ export default async function handler(req, res) {
     // Get API key
     const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'No API key configured' });
+      console.warn('No CoinGecko API key configured');
+      // Continue anyway, will use public endpoints with stricter rate limits
     }
     
     // Get market chart data for 1 year (which covers all our timeframes)
     // This is just ONE API call, which is efficient with our credits
     const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily`;
     
-    const response = await fetch(url, {
-      headers: {
-        'x-cg-demo-api-key': apiKey
-      }
-    });
+    // Prepare headers based on whether we have an API key
+    const headers = apiKey ? { 'x-cg-demo-api-key': apiKey } : {};
+    
+    const response = await fetch(url, { headers });
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -61,11 +61,10 @@ export default async function handler(req, res) {
     try {
       // Get hourly data from the past 24 hours
       const hourlyUrl = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1&interval=hourly`;
-      const hourlyResponse = await fetch(hourlyUrl, {
-        headers: {
-          'x-cg-demo-api-key': apiKey
-        }
-      });
+      // Prepare headers based on whether we have an API key
+      const hourlyHeaders = apiKey ? { 'x-cg-demo-api-key': apiKey } : {};
+      
+      const hourlyResponse = await fetch(hourlyUrl, { headers: hourlyHeaders });
       
       if (hourlyResponse.ok) {
         const hourlyData = await hourlyResponse.json();
