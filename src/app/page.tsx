@@ -20,8 +20,7 @@ const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
 });
 import HalvingCountdown from '@/components/bitcoin/HalvingCountdown';
 import BTCAnalysis from '@/components/social/BTCAnalysis';
-import { useTimeframe } from '@/hooks/useTimeframe';
-import { useLatencyMonitor } from '@/hooks/useLatencyMonitor';
+import { useBitcoinPrice } from '@/hooks/useBitcoinPrice';
 import { useHalvingData } from '@/hooks/useHalvingData';
 import { formatCompactNumber } from '@/lib/priceUtils';
 import Image from 'next/image';
@@ -342,7 +341,7 @@ function TweetCard({ tweet, isLast }: TweetCardProps) {
 }
 
 export default function Home() {
-  // Use the original hook with Bitcoin price data and real-time 5-second updates
+  // Use our improved hook for Bitcoin price data with all timeframes
   const { 
     timeframe, 
     setTimeframe, 
@@ -352,11 +351,10 @@ export default function Home() {
     isRefreshing,
     priceChangeDirection,
     lastUpdateTime,
-    refreshData
-  } = useTimeframe('1D');
-  
-  // Use the latency monitor to track WebSocket connection quality
-  const { latency, connectionStatus } = useLatencyMonitor();
+    refreshData,
+    latency,
+    connectionStatus
+  } = useBitcoinPrice('1D');
   
   // Use the halving data hook
   const { halvingData, isLoading: isHalvingLoading, error: halvingError } = useHalvingData();

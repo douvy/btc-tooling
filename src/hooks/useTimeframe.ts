@@ -41,7 +41,11 @@ export function useTimeframe(initialTimeframe: TimeFrame = '1D'): UseTimeframeRe
   const timerIdRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   
-  const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => {
+  /**
+ * Fetch Bitcoin data for the current timeframe
+ * This uses our enhanced API with all timeframes properly filled in
+ */
+const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => {
     if (isFetchingRef.current && !force) return false;
     if (!isMountedRef.current) return false;
     if (!force && Date.now() - lastFetchTimeRef.current < 3000) return false;

@@ -59,10 +59,7 @@ export default function TimeframeSelector({
         <button
           key={tf}
           className={getButtonClasses(tf)}
-          // Only allow clicking 1D timeframe, disable others
-          onClick={tf === '1D' ? () => onTimeframeChange(tf) : undefined}
-          disabled={tf !== '1D'}
-          style={tf !== '1D' ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
+          onClick={() => onTimeframeChange(tf)}
           aria-label={`${tf} view`}
           aria-current={timeframe === tf ? 'page' : undefined}
         >

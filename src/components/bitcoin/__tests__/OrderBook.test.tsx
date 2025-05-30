@@ -92,7 +92,7 @@ describe('OrderBook Component', () => {
     fireEvent.click(incrementButton);
     
     // Get the amount input and check if it's updated
-    const amountInput = screen.getByLabelText('Amount in BTC');
+    const amountInput = screen.getByLabelText('Amount in BTC') as HTMLInputElement;
     expect(parseFloat(amountInput.value)).toBeGreaterThan(0);
   });
 

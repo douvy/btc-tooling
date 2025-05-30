@@ -21,6 +21,8 @@ export default function DesktopPriceDisplay({
   latency = 0,
   connectionStatus = 'connected'
 }: DesktopPriceDisplayProps) {
+  // Data received from hook
+
   const isPositiveChange = data.direction === 'up';
   const formattedPrice = formatPrice(data.price);
   const formattedChange = formatPrice(data.change);

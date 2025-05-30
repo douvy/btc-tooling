@@ -16,6 +16,7 @@ export default async function handler(req, res) {
 
   setCorsHeaders(res);
   
+  // We're using a Demo API key which requires api.coingecko.com domain
   const targetUrl = 'https://api.coingecko.com/api/v3/coins/bitcoin';
   const logPrefix = '[CoinGecko Bitcoin Proxy]';
   
@@ -26,15 +27,17 @@ export default async function handler(req, res) {
   // Extract timeframe if provided
   const timeframe = req.query.timeframe;
   
+  // Get API key if available
+  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  
   const headers = {
     'Accept': 'application/json',
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
   };
   
-  // Add API key if available
-  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  // Add API key to headers as recommended by CoinGecko
   if (apiKey) {
-    headers['x-cg-api-key'] = apiKey;
+    headers['x-cg-demo-api-key'] = apiKey;
   }
   
   // Build the query parameters for CoinGecko
@@ -52,7 +55,19 @@ export default async function handler(req, res) {
     _t: Date.now().toString() // Cache buster
   });
   
+  // IMPORTANT: API key needs to be in both header and URL for CoinGecko API
+  if (apiKey) {
+    // Use x_cg_demo_api_key for the Demo API
+    queryParams.append('x_cg_demo_api_key', apiKey);
+    console.log(`${logPrefix} Using CoinGecko Demo API key: ${apiKey.substring(0, 5)}...`);
+  } else {
+    console.warn(`${logPrefix} No CoinGecko API key found!`);
+  }
+  
   const fullUrl = `${targetUrl}?${queryParams.toString()}`;
+  
+  // DEBUGGING: Log the full URL to confirm API key is being included
+  console.log(`${logPrefix} Full URL (with API key): ${fullUrl}`);
   
   try {
     const controller = new AbortController();
@@ -70,6 +85,25 @@ export default async function handler(req, res) {
     clearTimeout(timeoutId);
     
     console.log(`${logPrefix} Response: ${response.status} (${Date.now() - fetchStart}ms)`);
+    
+    // Check for rate limit headers to confirm if API key is working
+    const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+    const rateLimitTotal = response.headers.get('x-ratelimit-limit');
+    const rateLimitReset = response.headers.get('x-ratelimit-reset');
+    
+    if (rateLimitRemaining && rateLimitTotal) {
+      console.log(`${logPrefix} Rate Limit: ${rateLimitRemaining}/${rateLimitTotal} remaining, reset in ${rateLimitReset || 'unknown'} seconds`);
+      
+      // Add warning if rate limit is getting low
+      if (parseInt(rateLimitRemaining) < 5) {
+        console.warn(`${logPrefix} ⚠️ WARNING: Rate limit getting low: ${rateLimitRemaining}/${rateLimitTotal} remaining!`);
+      }
+    } else {
+      console.warn(`${logPrefix} No rate limit headers found - API key may not be working correctly!`);
+      
+      // Log all headers for debugging
+      console.log(`${logPrefix} Response headers:`, Object.fromEntries([...response.headers.entries()]));
+    }
     
     if (response.ok) {
       const cgData = await response.json();
@@ -189,7 +223,7 @@ export default async function handler(req, res) {
       }
       
       res.status(response.status);
-      res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
       res.json(transformedData);
     } else {
       // Handle error response
@@ -240,7 +274,7 @@ export default async function handler(req, res) {
             
             // Return the cached data
             res.status(200);
-            res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
+            res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
             res.json(cachedData);
             return;
           }
