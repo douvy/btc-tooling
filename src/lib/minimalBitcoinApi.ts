@@ -153,7 +153,26 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     // Validate the response structure
     if (!result || !result.price || !result.timeframes) {
       console.error('Invalid historical API response structure:', result);
-      throw new Error('Invalid historical data structure');
+      
+      // Try using the fallback API directly instead of throwing
+      const fallbackUrl = '/api/price-check';
+      console.log('Trying fallback API:', fallbackUrl);
+      const fallbackResponse = await fetch(fallbackUrl);
+      const fallbackData = await fallbackResponse.json();
+      
+      if (fallbackData && fallbackData.price) {
+        console.log('Using fallback price data');
+        return {
+          price: fallbackData.price,
+          change: Math.abs(fallbackData.price * (fallbackData.change24h || 0) / 100),
+          changePercent: Math.abs(fallbackData.change24h || 0),
+          direction: (fallbackData.change24h || 0) >= 0 ? 'up' : 'down',
+          timeframe
+        };
+      }
+      
+      // If fallback also failed, then throw
+      throw new Error('Invalid historical data structure and fallback failed');
     }
     
     // Save to cache for future use
