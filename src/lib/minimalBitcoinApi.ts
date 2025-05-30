@@ -312,7 +312,36 @@ function extractHistoricalTimeframeDataWithRealtime(data: any, timeframe: TimeFr
     };
   }
   
-  // For other timeframes, calculate normally
+  // For all timeframes except ALL, use a direct calculation without complex adjustments
+  // This ensures consistent percentages with external sources
+  if (timeframe !== 'ALL' as TimeFrame) {
+    try {
+      // Use the proper historical data - the "previous" price should be accurate
+      // because we're now calculating it correctly in the price-history API
+      const previousPrice = tfData.previous;
+      
+      // Calculate direction and change based on realtime price vs historical previous
+      const calculatedChange = realtimePrice - previousPrice;
+      const calculatedPercent = (calculatedChange / previousPrice) * 100;
+      const direction = calculatedChange >= 0 ? 'up' : 'down';
+      
+      // The key difference: Do NOT adjust the percent by the priceDiffPercent like we do below
+      // Just use the direct calculation between previous price and current price
+      
+      return {
+        price: realtimePrice,
+        change: Math.abs(calculatedChange),
+        changePercent: Math.abs(calculatedPercent),
+        direction,
+        timeframe
+      };
+    } catch (error) {
+      console.error(`Error in ${timeframe} calculation:`, error);
+      // If something goes wrong, fall back to standard calculation below
+    }
+  }
+  
+  // For other timeframes, use the original calculation method
   // Calculate the percent difference between the historical and real-time price
   const priceDiffPercent = ((realtimePrice - historicalPrice) / historicalPrice) * 100;
   
