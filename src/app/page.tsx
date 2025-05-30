@@ -356,8 +356,13 @@ export default function Home() {
     connectionStatus
   } = useBitcoinPrice('1D');
   
-  // Use the halving data hook
-  const { halvingData, isLoading: isHalvingLoading, error: halvingError } = useHalvingData();
+  // Use the halving data hook with refreshData function
+  const { 
+    halvingData, 
+    isLoading: isHalvingLoading, 
+    error: halvingError,
+    refreshData: refreshHalvingDataFromHook 
+  } = useHalvingData();
 
   // Update document title with current BTC price
   useEffect(() => {
@@ -373,23 +378,17 @@ export default function Home() {
     }
   }, [bitcoinData]);
 
-  // Refresh function for manual refresh
+  // Improved refresh function for manual refresh that doesn't reload the page
   const refreshHalvingData = async () => {
     try {
-      // Clear the cached data to force a fresh load
-      localStorage.removeItem('halvingData');
+      // Use the refreshData method from the hook which handles cache clearing
+      // and triggers a component-specific update
+      refreshHalvingDataFromHook();
       
-      const response = await fetch('/api/halving', { 
-        cache: 'no-store',
-        headers: { 'pragma': 'no-cache', 'cache-control': 'no-cache' }
-      });
+      // No need to manually reload the page!
+      // The hook will update its state, causing just this component to re-render
       
-      if (!response.ok) {
-        throw new Error(`Failed to refresh halving data: ${response.status}`);
-      }
-      
-      // The useHalvingData hook will automatically update on the next render
-      window.location.reload(); // Simple refresh to update the UI
+      console.log('[Halving] Refresh triggered without page reload');
     } catch (err) {
       console.error('Failed to manually refresh halving data:', err);
     }

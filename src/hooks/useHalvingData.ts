@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { HalvingInfo } from '@/types';
 
 // Default fallback data - updated for post-2024 halving
@@ -25,10 +25,17 @@ export function useHalvingData() {
   const [halvingData, setHalvingData] = useState<HalvingInfo>(fallbackHalvingData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  // Add state to track refresh requests
+  const [refreshCounter, setRefreshCounter] = useState<number>(0);
 
   useEffect(() => {
     // Flag to track if the component is mounted
     let isMounted = true;
+    
+    // Log the refresh counter change for debugging
+    if (refreshCounter > 0) {
+      console.log(`[Halving] Manual refresh #${refreshCounter} requested`);
+    }
     
     const fetchHalvingData = async () => {
       try {
@@ -109,11 +116,32 @@ export function useHalvingData() {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, []);
+  }, [refreshCounter]); // Include refreshCounter in dependencies to trigger data fetch on manual refresh
   
+  /**
+   * Manually trigger a refresh of the halving data
+   * This function is safe to call multiple times in succession
+   * It will clear localStorage cache and trigger a fresh API call
+   */
+  const refreshData = useCallback(() => {
+    // Clear the localStorage cache to force a fresh API call
+    try {
+      localStorage.removeItem('halvingData');
+    } catch (err) {
+      console.warn('Failed to clear localStorage halvingData:', err);
+    }
+    
+    // Increment the refresh counter to trigger the effect
+    setRefreshCounter(prev => prev + 1);
+    
+    // Set loading state to true for visual feedback
+    setIsLoading(true);
+  }, []);
+
   return {
     halvingData,
     isLoading,
-    error
+    error,
+    refreshData
   };
 }

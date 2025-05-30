@@ -19,11 +19,16 @@ export default function HalvingCountdown({
   const handleRefresh = async () => {
     if (onRefresh && !isRefreshing) {
       setIsRefreshing(true);
-      // Clear localStorage cache for halvingData
-      localStorage.removeItem('halvingData');
+      
+      // No need to clear localStorage cache here anymore
+      // The hook's refreshData function now handles this
+      
+      // Call the onRefresh function provided by the parent
       await onRefresh();
+      
       // Add small delay to ensure visual feedback of refresh action
-      setTimeout(() => setIsRefreshing(false), 500);
+      // This is important for UX even if data loads quickly
+      setTimeout(() => setIsRefreshing(false), 800);
     }
   };
 
@@ -36,6 +41,36 @@ export default function HalvingCountdown({
             <span className="ml-2 text-xs text-[#8a919e] animate-pulse">updating...</span>
           )}
         </h2>
+        
+        {/* Refresh button with proper loading state */}
+        {onRefresh && (
+          <button 
+            onClick={handleRefresh} 
+            disabled={isLoading || isRefreshing}
+            className={`flex items-center justify-center p-1 rounded-sm transition-colors ${
+              isRefreshing || isLoading
+                ? 'text-gray-600 cursor-not-allowed'
+                : 'text-[#8a919e] hover:text-white hover:bg-gray-800'
+            }`}
+            aria-label="Refresh halving data"
+            title="Refresh halving data"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M23 4v6h-6" />
+              <path d="M1 20v-6h6" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+          </button>
+        )}
       </div>
       
       <div className="flex flex-row items-center justify-between">
