@@ -86,41 +86,95 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
-  // Log request in production for debugging
+  // VERY IMPORTANT: Set headers to prevent caching of this API response
+  // This ensures we always get fresh price data
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  
+  // Log request for debugging
   console.log('Coinbase realtime API called, environment:', process.env.NODE_ENV);
-  // If WebSocket is not available or hasn't received data yet
-  if (!lastPrice) {
-    console.log('WebSocket data not available, fetching direct price');
+
+  // In production, always make a direct API call for fresh data
+  // In development, use WebSocket if available
+  if (process.env.NODE_ENV === 'production' || !lastPrice) {
+    console.log('Using direct API call for price data');
     
-    // In production or when WebSocket fails, make a direct API call
     try {
-      const response = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
-      const data = await response.json();
+      // Try multiple price sources for reliability
+      const coinbasePromise = fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       
-      if (data && data.data && data.data.amount) {
-        const price = parseFloat(data.data.amount);
+      // Add a backup API in case Coinbase fails
+      const backupPromise = fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      
+      // Race the promises to get the fastest response
+      const responses = await Promise.allSettled([coinbasePromise, backupPromise]);
+      
+      // Try Coinbase first
+      if (responses[0].status === 'fulfilled') {
+        const response = responses[0].value;
+        const data = await response.json();
         
-        return res.status(200).json({
-          success: true,
-          price: price,
-          timestamp: Date.now(),
-          source: 'direct-api'
-        });
+        if (data && data.data && data.data.amount) {
+          const price = parseFloat(data.data.amount);
+          
+          return res.status(200).json({
+            success: true,
+            price: price,
+            timestamp: Date.now(),
+            source: 'coinbase-direct'
+          });
+        }
       }
+      
+      // Try CoinGecko as backup
+      if (responses[1].status === 'fulfilled') {
+        const response = responses[1].value;
+        const data = await response.json();
+        
+        if (data && data.bitcoin && data.bitcoin.usd) {
+          const price = data.bitcoin.usd;
+          
+          return res.status(200).json({
+            success: true,
+            price: price,
+            timestamp: Date.now(),
+            source: 'coingecko-backup'
+          });
+        }
+      }
+      
+      throw new Error('All price APIs failed');
     } catch (error) {
       console.error('Error fetching direct price:', error);
+      
+      // If direct API calls fail, try WebSocket as last resort
+      if (lastPrice && Date.now() - lastUpdateTime < 60000) { // Only use if less than 1 minute old
+        return res.status(200).json({
+          success: true,
+          price: lastPrice,
+          timestamp: lastUpdateTime,
+          age: Date.now() - lastUpdateTime,
+          source: 'websocket-fallback'
+        });
+      }
+      
+      // If everything fails, return error
+      return res.status(200).json({
+        success: false,
+        message: 'Real-time price not available',
+        timestamp: Date.now()
+      });
     }
-    
-    // If direct API also fails, return error
-    return res.status(200).json({
-      success: false,
-      message: 'Real-time price not available',
-      timestamp: Date.now()
-    });
   }
   
-  // Return the most recent price from WebSocket if available
-  res.status(200).json({
+  // In development, use WebSocket price if available
+  return res.status(200).json({
     success: true,
     price: lastPrice,
     timestamp: lastUpdateTime,
