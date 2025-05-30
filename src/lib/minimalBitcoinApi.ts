@@ -78,17 +78,24 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     
     clearTimeout(timeoutId);
     
-    if (realtimeResponse.ok) {
-      const realtimeData = await realtimeResponse.json();
-      
-      if (realtimeData.success && realtimeData.price) {
-        realtimePrice = realtimeData.price;
-        console.log('Using real-time price:', realtimePrice, 'from', realtimeData.source || 'unknown');
-      } else {
-        console.warn('Real-time API returned success:false');
-      }
-    } else {
+    // Try to parse even if status is not OK
+    let realtimeData;
+    try {
+      realtimeData = await realtimeResponse.json();
+      console.log('Real-time API response:', realtimeData);
+    } catch (parseError) {
+      console.warn('Failed to parse real-time API response', parseError);
+      const text = await realtimeResponse.text();
+      console.warn('Raw response:', text);
+    }
+    
+    if (realtimeData && realtimeData.success && realtimeData.price) {
+      realtimePrice = realtimeData.price;
+      console.log('Using real-time price:', realtimePrice, 'from', realtimeData.source || 'unknown');
+    } else if (!realtimeResponse.ok) {
       console.warn('Real-time API returned non-OK status:', realtimeResponse.status);
+    } else {
+      console.warn('Real-time API returned invalid data:', realtimeData);
     }
   } catch (error) {
     console.warn('Failed to get real-time price, will use historical data:', error);
@@ -123,11 +130,31 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     
     clearTimeout(timeoutId);
     
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    // Try to parse the response even if status is not OK
+    let result;
+    try {
+      result = await response.json();
+      console.log('Historical API response structure:', 
+        result ? 
+        `success=${!!result.success}, has timeframes=${!!result.timeframes}, timeframe count=${result.timeframes ? Object.keys(result.timeframes).length : 0}` : 
+        'null response'
+      );
+    } catch (error) {
+      console.error('Failed to parse historical API response', error);
+      const text = await response.text();
+      console.error('Raw historical response:', text);
+      throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
     }
     
-    const result = await response.json();
+    if (!response.ok) {
+      console.error(`Historical API error: ${response.status}`);
+    }
+    
+    // Validate the response structure
+    if (!result || !result.price || !result.timeframes) {
+      console.error('Invalid historical API response structure:', result);
+      throw new Error('Invalid historical data structure');
+    }
     
     // Save to cache for future use
     saveToCache(result);

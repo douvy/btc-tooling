@@ -76,6 +76,18 @@ if (typeof global !== 'undefined') {
 }
 
 export default async function handler(req, res) {
+  // CRITICAL FOR PRODUCTION: Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // If it's a preflight request, send 200
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  // Log request in production for debugging
+  console.log('Coinbase realtime API called, environment:', process.env.NODE_ENV);
   // If WebSocket is not available or hasn't received data yet
   if (!lastPrice) {
     console.log('WebSocket data not available, fetching direct price');

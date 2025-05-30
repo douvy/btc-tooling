@@ -161,15 +161,23 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
   
   // Set up polling on mount
   useEffect(() => {
+    // Add debug log for production
+    console.log('Setting up Bitcoin price polling in', process.env.NODE_ENV);
+    
     // Do NOT use fallback data - just show loading state until real data arrives
     // The initial fetch is fast enough with WebSockets
     
     // Initial fetch
-    fetchBitcoinData(true);
+    console.log('Starting initial Bitcoin price fetch');
+    fetchBitcoinData(true)
+      .then(() => console.log('Initial Bitcoin price fetch complete'))
+      .catch(err => console.error('Error in initial price fetch:', err));
     
     // Set up refresh interval for real-time updates
     pollingIntervalRef.current = setInterval(() => {
-      fetchBitcoinData(true);
+      console.log('Executing periodic Bitcoin price refresh');
+      fetchBitcoinData(true)
+        .catch(err => console.error('Error in periodic price fetch:', err));
     }, REFRESH_INTERVAL);
     
     // Cleanup on unmount

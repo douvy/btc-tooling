@@ -9,9 +9,22 @@ let cacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for historical data
 
 export default async function handler(req, res) {
+  // CRITICAL FOR PRODUCTION: Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // If it's a preflight request, send 200
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   // Set cache headers for the browser - allow for more frequent updates
   // We use WebSockets for real-time data, so this is just for the historical data
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+  
+  // Log for debugging in production
+  console.log('Price history API called, environment:', process.env.NODE_ENV);
   
   try {
     // Try to use cache if available and not expired
