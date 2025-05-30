@@ -40,14 +40,6 @@
     "pages/api/**/*": {
       "memory": 512,
       "maxDuration": 10
-    },
-    "app/api/**/*": {
-      "memory": 512,
-      "maxDuration": 10
-    },
-    "src/app/api/**/*": {
-      "memory": 512,
-      "maxDuration": 10
     }
   },
   "regions": ["iad1", "sfo1", "lhr1"],
