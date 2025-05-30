@@ -55,8 +55,6 @@ export default async function handler(req, res) {
     // Add the API key to the query string with the correct parameter name
     queryParams.append('x_cg_demo_api_key', apiKey);
     console.log(`${logPrefix} Using CoinGecko Demo API key: ${apiKey.substring(0, 5)}...`);
-  } else {
-    console.warn(`${logPrefix} No CoinGecko API key found!`);
   }
   
   // Add cache busting parameter
@@ -109,13 +107,9 @@ export default async function handler(req, res) {
       if (rateLimitRemaining && rateLimitTotal) {
         console.log(`${logPrefix} Rate Limit: ${rateLimitRemaining}/${rateLimitTotal} remaining, reset in ${rateLimitReset || 'unknown'} seconds`);
         
-        // Add warning if rate limit is getting low
         if (parseInt(rateLimitRemaining) < 5) {
-          console.warn(`${logPrefix} ⚠️ WARNING: Rate limit getting low: ${rateLimitRemaining}/${rateLimitTotal} remaining!`);
         }
       } else {
-        console.warn(`${logPrefix} No rate limit headers found - API key may not be working correctly!`);
-        
         // Log all headers for debugging
         console.log(`${logPrefix} Response headers:`, Object.fromEntries([...response.headers.entries()]));
       }

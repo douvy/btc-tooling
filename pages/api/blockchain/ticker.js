@@ -60,8 +60,6 @@ export default async function handler(req, res) {
     // Use x_cg_demo_api_key for the Demo API
     queryParams.append('x_cg_demo_api_key', apiKey);
     console.log(`${logPrefix} Using CoinGecko Demo API key: ${apiKey.substring(0, 5)}...`);
-  } else {
-    console.warn(`${logPrefix} No CoinGecko API key found!`);
   }
   
   const fullUrl = `${targetUrl}?${queryParams.toString()}`;
@@ -94,12 +92,9 @@ export default async function handler(req, res) {
     if (rateLimitRemaining && rateLimitTotal) {
       console.log(`${logPrefix} Rate Limit: ${rateLimitRemaining}/${rateLimitTotal} remaining, reset in ${rateLimitReset || 'unknown'} seconds`);
       
-      // Add warning if rate limit is getting low
       if (parseInt(rateLimitRemaining) < 5) {
-        console.warn(`${logPrefix} ⚠️ WARNING: Rate limit getting low: ${rateLimitRemaining}/${rateLimitTotal} remaining!`);
       }
     } else {
-      console.warn(`${logPrefix} No rate limit headers found - API key may not be working correctly!`);
       
       // Log all headers for debugging
       console.log(`${logPrefix} Response headers:`, Object.fromEntries([...response.headers.entries()]));
@@ -118,8 +113,6 @@ export default async function handler(req, res) {
       // Get the current price directly from CoinGecko
       const price = marketData.current_price.usd;
       console.log(`${logPrefix} CURRENT BITCOIN PRICE FROM COINGECKO (NOT BLOCKCHAIN.INFO): $${price.toFixed(2)}`);
-      // Also log to the actual console output for easier debugging
-      console.warn(`ACTUAL BITCOIN PRICE FROM COINGECKO: $${price.toFixed(2)}`);
       // Show in a way that's very visible for debugging
       console.log(`
       ===================================================
@@ -219,7 +212,6 @@ export default async function handler(req, res) {
         fs.writeFileSync(cachePath, JSON.stringify(cacheData));
         console.log(`${logPrefix} Cached data written to ${cachePath}`);
       } catch (fsError) {
-        console.warn(`${logPrefix} Error writing cache file:`, fsError);
       }
       
       res.status(response.status);
@@ -242,7 +234,6 @@ export default async function handler(req, res) {
       
       // If we're hitting rate limits, try to use cached data
       if (response.status === 429 || response.status === 403) {
-        console.warn(`${logPrefix} Rate limited, looking for cached data`);
         
         try {
           // Try to load from server-side cache
@@ -261,7 +252,6 @@ export default async function handler(req, res) {
               console.log(`${logPrefix} Found cache file, last updated: ${new Date(cachedData.timestamp || 0).toISOString()}`);
             }
           } catch (fsError) {
-            console.warn(`${logPrefix} Error reading cache file:`, fsError);
           }
           
           // If cached data is available, use it

@@ -75,7 +75,6 @@ export async function fetchDetailedBitcoinData(): Promise<any> {
   
   // Check if we can make a request (rate limit check)
   if (!canMakeRequest()) {
-    console.warn('Rate limit reached, using cached data instead');
     throw new Error('Rate limit reached, using cached data');
   }
   
@@ -255,7 +254,6 @@ export async function fetchSimpleBitcoinPrice(): Promise<any> {
   
   // Check if we can make a request (rate limit check)
   if (!canMakeRequest()) {
-    console.warn('Rate limit reached, using cached data instead');
     throw new Error('Rate limit reached, using cached data');
   }
   

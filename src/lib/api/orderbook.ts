@@ -273,7 +273,6 @@ export async function fetchOrderBook(
     case 'binance':
       return fetchBinanceOrderBook(symbol);
     default:
-      console.warn(`[API] Unknown exchange: ${exchange}, using mock data`);
       return getMockOrderBook(exchange as any);
   }
 }

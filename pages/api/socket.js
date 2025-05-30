@@ -173,36 +173,30 @@ function validateTimeframeData(data) {
   
   // Check 1H data
   if (!data.market_data.price_change_percentage_1h_in_currency?.usd) {
-    console.warn('[WebSocket] Missing 1H percentage data');
   }
   
   // Check 1D data
   if (!data.market_data.price_change_percentage_24h_in_currency?.usd && 
       !data.market_data.price_change_percentage_24h) {
-    console.warn('[WebSocket] Missing 1D percentage data');
   }
   
   // Check 1W data
   if (!data.market_data.price_change_percentage_7d_in_currency?.usd && 
       !data.market_data.price_change_percentage_7d) {
-    console.warn('[WebSocket] Missing 1W percentage data');
   }
   
   // Check 1M data
   if (!data.market_data.price_change_percentage_30d_in_currency?.usd && 
       !data.market_data.price_change_percentage_30d) {
-    console.warn('[WebSocket] Missing 1M percentage data');
   }
   
   // Check 1Y data
   if (!data.market_data.price_change_percentage_1y_in_currency?.usd && 
       !data.market_data.price_change_percentage_1y) {
-    console.warn('[WebSocket] Missing 1Y percentage data');
   }
   
   // Check ALL data
   if (!data.market_data.price_change_percentage_all_time_in_currency?.usd) {
-    console.warn('[WebSocket] Missing ALL timeframe percentage data');
   }
   
   return true;
@@ -243,7 +237,6 @@ const fetchData = async (type, force = false) => {
       // Return the complete enhanced cached data
       return priceCache[type];
     } catch (err) {
-      console.warn('[WebSocket] Error enhancing cached data:', err.message);
       // On error, continue to fetch fresh data
     }
   }
@@ -282,7 +275,6 @@ const fetchData = async (type, force = false) => {
   } catch (error) {
     // 5. Emergency fallback: If we have ANY cached data, return it
     if (priceCache[type]?.market_data?.current_price?.usd) {
-      console.warn('[WebSocket] Using stale cache as fallback due to fetch error');
       // Enhance the stale data to ensure all timeframes
       return enhanceWithCompleteTimeframes(priceCache[type]);
     }
@@ -531,7 +523,6 @@ function enhanceWithCompleteTimeframes(data) {
       !marketData.price_change_percentage_24h_in_currency?.usd) {
     // If we're missing 24h data, use a zero value
     // It's better to show zero than to use an inaccurate guess
-    console.warn('[WebSocket] Missing 24h percentage data, using zero');
     enhancedData.market_data.price_change_percentage_24h = 0;
     
     if (!enhancedData.market_data.price_change_percentage_24h_in_currency) {
