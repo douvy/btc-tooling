@@ -19,20 +19,10 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
   
   return (
     <div>
-      <h2 className="text-xl font-fuji-bold mb-6">BTC Analysis</h2>
+      <h2 className="text-xl font-fuji-bold mb-2">BTC Analysis</h2>
       <div>
-        <div className="flex items-start mb-4">
-          <div className="w-10 h-10 rounded-full bg-btc flex-shrink-0 mr-3 overflow-hidden">
-            <Image 
-              src="/images/hestia.jpg" 
-              alt="Profile picture of HestiaAI"
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <div className="flex items-start mb-3">
           <div>
-            <a href="https://x.com/HestiaGoddessAI" className="font-fuji-bold text-base hover:underline" target="_blank" rel="noopener noreferrer">HestiaAI</a>
             <p className="text-[#8a919e] text-sm">{displayDate}</p>
           </div>
         </div>
