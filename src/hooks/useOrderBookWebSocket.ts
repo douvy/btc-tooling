@@ -254,11 +254,40 @@ export function useOrderBookWebSocket(
   };
   
   // Main effect for initializing WebSocket connection to real exchange APIs
+  // Define reconnect refs at the top level of the hook (outside useEffect)
+  const reconnectAttemptsRef = useRef<number>(0);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     // Only run on the client side
     if (typeof window === 'undefined') {
       return;
     }
+    
+    // Add network connectivity change monitoring
+    const handleOnline = () => {
+      console.log('[OrderBook] Network connection restored, attempting to reconnect WebSocket');
+      // If we were disconnected due to network issues, try to reconnect
+      if (connectionStatus === 'disconnected' || connectionStatus === 'error' || 
+          connectionStatus === 'fallback_mock' || connectionStatus === 'reconnecting') {
+        // Reset reconnection attempts counter to give a fresh start
+        reconnectAttemptsRef.current = 0;
+        // Reconnect immediately
+        if (connectWebSocketRef.current) {
+          connectWebSocketRef.current();
+        }
+      }
+    };
+    
+    const handleOffline = () => {
+      console.log('[OrderBook] Network connection lost, WebSocket will disconnect');
+      // When network is offline, update status but keep existing data
+      setConnectionStatus('disconnected');
+    };
+    
+    // Add event listeners for online/offline events
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     
     console.log(`[OrderBook] Initializing ${exchange} order book WebSocket connection`);
     
@@ -276,6 +305,15 @@ export function useOrderBookWebSocket(
       socketRef.current.onopen = () => {
         console.log(`[OrderBook] Connected to ${exchange} WebSocket`);
         setConnectionStatus('connected');
+        
+        // Reset reconnection attempts counter on successful connection
+        reconnectAttemptsRef.current = 0;
+        
+        // Clear any pending reconnection attempts
+        if (reconnectTimeoutRef.current !== null) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
         
         const formattedSymbol = exchange === 'binance' ? 'btcusdt' : 
                                  exchange === 'coinbase' ? 'BTC-USD' : 'tBTCUSD';
@@ -623,29 +661,75 @@ export function useOrderBookWebSocket(
         }
       };
       
-      // Handle errors - simply log and set status, we'll fall back to mock data
-      socketRef.current.onerror = () => {
-        console.log(`[OrderBook] WebSocket connection issue detected - will use fallback data`);
-        setConnectionStatus('fallback_mock');
+      // Handle WebSocket errors with proper reconnection strategy
+      const attemptReconnect = () => {
+        // Implement exponential backoff for reconnection attempts
+        const delay = Math.min(
+          options.initialReconnectDelayMs * Math.pow(2, reconnectAttemptsRef.current),
+          options.maxReconnectDelayMs
+        );
         
-        // Ensure we have fallback data
-        if (!internalOrderBookRef.current) {
-          const mockData = getMockOrderBook(exchange);
-          internalOrderBookRef.current = mockData;
-          setOrderBook(mockData);
-          setLastUpdated(new Date());
+        console.log(`[OrderBook] Scheduling reconnection attempt ${reconnectAttemptsRef.current + 1} in ${delay}ms`);
+        setConnectionStatus('reconnecting');
+        
+        // Clear any existing reconnection timeout
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
         }
+        
+        // Schedule reconnection attempt
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectAttemptsRef.current++;
+          
+          // Check if we've exceeded max reconnection attempts
+          if (reconnectAttemptsRef.current > options.maxReconnectAttempts) {
+            console.log(`[OrderBook] Max reconnection attempts (${options.maxReconnectAttempts}) exceeded, using fallback data`);
+            setConnectionStatus('fallback_mock');
+            
+            // Ensure we have fallback data
+            const mockData = getMockOrderBook(exchange);
+            internalOrderBookRef.current = mockData;
+            setOrderBook(mockData);
+            setLastUpdated(new Date());
+            return;
+          }
+          
+          // Attempt to reconnect
+          console.log(`[OrderBook] Attempting reconnection #${reconnectAttemptsRef.current}`);
+          if (connectWebSocketRef.current) {
+            connectWebSocketRef.current();
+          }
+        }, delay);
       };
       
-      socketRef.current.onclose = () => {
-        console.log(`[OrderBook] WebSocket closed - using fallback data`);
-        setConnectionStatus('fallback_mock');
+      // Handle WebSocket errors
+      socketRef.current.onerror = (event) => {
+        console.log(`[OrderBook] WebSocket error detected:`, event);
+        // Don't immediately fall back to mock data - let the onclose handler handle reconnection
+        // This avoids duplicate reconnection attempts since an error is usually followed by a close
+      };
+      
+      // Handle WebSocket close events
+      socketRef.current.onclose = (event) => {
+        console.log(`[OrderBook] WebSocket closed with code ${event.code}, reason: ${event.reason}`);
         
-        // Always ensure we have good data
-        const mockData = getMockOrderBook(exchange);
-        internalOrderBookRef.current = mockData;
-        setOrderBook(mockData);
-        setLastUpdated(new Date());
+        // If this is an abnormal closure (not intentional), attempt to reconnect
+        if (event.code !== 1000) { // 1000 = normal closure
+          // First ensure we have usable data while reconnecting
+          if (!internalOrderBookRef.current) {
+            const tempData = getMockOrderBook(exchange);
+            internalOrderBookRef.current = tempData;
+            setOrderBook(tempData);
+            setLastUpdated(new Date());
+          }
+          
+          // Then attempt to reconnect
+          attemptReconnect();
+        } else {
+          // This was a normal closure (e.g., component unmounting)
+          console.log(`[OrderBook] WebSocket closed normally - no reconnection needed`);
+          setConnectionStatus('disconnected');
+        }
       };
       // Only set up simulated updates if we're in simulation mode
       const useSimulation = false;
@@ -668,19 +752,32 @@ export function useOrderBookWebSocket(
     
     // Clean up function
     return () => {
+      // Close WebSocket with normal closure code
       if (socketRef.current) {
         try {
-          socketRef.current.close();
+          // Use code 1000 (normal closure) to indicate intentional disconnect
+          socketRef.current.close(1000, "Component unmounting");
         } catch (err) {
           console.error('[OrderBook] Error closing socket on cleanup:', err);
         }
         socketRef.current = null;
       }
       
+      // Clear any pending reconnection attempts
+      if (reconnectTimeoutRef.current !== null) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      
+      // Clear any update intervals
       if (updateTimeoutRef.current !== null) {
         clearInterval(updateTimeoutRef.current);
         updateTimeoutRef.current = null;
       }
+      
+      // Remove network event listeners
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [exchange, symbol, updateInternalOrderBook, setupMockData]);
 
