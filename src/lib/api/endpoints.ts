@@ -27,7 +27,6 @@ export async function fetchFromCoinGecko(endpoint: string, params: Record<string
   const apiKey = process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
   if (apiKey) {
     // The API key is now included in the URL by the proxy as x_cg_api_key
-    console.log('CoinGecko Demo API key will be passed via proxy (as x_cg_api_key)');
   }
   
   try {
@@ -37,11 +36,8 @@ export async function fetchFromCoinGecko(endpoint: string, params: Record<string
     // Parse and return the data
     return await response.json();
   } catch (error) {
-    console.error('Error fetching from CoinGecko:', error);
-    
     // If we hit rate limits, try blockchain.info API
     try {
-      console.log('Attempting to use blockchain.info API as fallback');
       const blockchainResponse = await fetch('/api/blockchain/ticker');
       if (blockchainResponse.ok) {
         const blockchainData = await blockchainResponse.json();
@@ -55,7 +51,7 @@ export async function fetchFromCoinGecko(endpoint: string, params: Record<string
         };
       }
     } catch (fallbackError) {
-      console.error('Fallback API also failed:', fallbackError);
+      // Fallback API failed
     }
     
     // Re-throw the original error if fallback fails
@@ -123,12 +119,10 @@ export async function fetchDetailedBitcoinData(): Promise<any> {
 function enhanceWithCompleteTimeframes(data: any): any {
   // Handle completely missing data (API failures)
   if (!data || !data.market_data) {
-    console.warn('No valid data available from API');
     throw new Error('No valid data available from API');
   }
   
   if (!data?.market_data?.current_price?.usd) {
-    console.error('Cannot enhance data without current price');
     return data;
   }
   
@@ -242,35 +236,9 @@ function enhanceWithCompleteTimeframes(data: any): any {
   // Log the enhanced data in development mode
   if (process.env.NODE_ENV === 'development') {
     try {
-      // Log the ORIGINAL data to see what the API actually provides
-      console.log('ORIGINAL API RESPONSE DATA:');
-      console.log('Current price:', data.market_data.current_price?.usd);
-      console.log('1h percent change (raw):', data.market_data.price_change_percentage_1h_in_currency?.usd);
-      console.log('24h percent change (raw):', data.market_data.price_change_percentage_24h);
-      console.log('7d percent change (raw):', data.market_data.price_change_percentage_7d_in_currency?.usd);
-      console.log('30d percent change (raw):', data.market_data.price_change_percentage_30d_in_currency?.usd);
-      console.log('1y percent change (raw):', data.market_data.price_change_percentage_1y_in_currency?.usd);
-      
-      // Log the modified data after our calculations
-      console.log('\nENHANCED DATA:');
-      console.log('Current price:', enhancedData.market_data.current_price?.usd);
-      console.log('1h percent change:', enhancedData.market_data.price_change_percentage_1h_in_currency?.usd);
-      console.log('24h percent change:', enhancedData.market_data.price_change_percentage_24h);
-      console.log('7d percent change:', enhancedData.market_data.price_change_percentage_7d_in_currency?.usd);
-      console.log('30d percent change:', enhancedData.market_data.price_change_percentage_30d_in_currency?.usd);
-      console.log('1y percent change:', enhancedData.market_data.price_change_percentage_1y_in_currency?.usd);
-      console.log('ALL percent change:', enhancedData.market_data.price_change_percentage_all_time_in_currency?.usd);
-      
-      // Log the dollar changes to check accuracy
-      console.log('\nDOLLAR CHANGES:');
-      console.log('1h dollar change:', enhancedData.market_data.price_change_1h_in_currency?.usd);
-      console.log('24h dollar change:', enhancedData.market_data.price_change_24h);
-      console.log('7d dollar change:', enhancedData.market_data.price_change_7d_in_currency?.usd);
-      console.log('30d dollar change:', enhancedData.market_data.price_change_30d_in_currency?.usd);
-      console.log('1y dollar change:', enhancedData.market_data.price_change_1y_in_currency?.usd);
-      console.log('ALL dollar change:', enhancedData.market_data.price_change_all_time_in_currency?.usd);
+      // Development logs removed
     } catch (error) {
-      console.error('Error logging enhanced data:', error);
+      // Error logging removed
     }
   }
   

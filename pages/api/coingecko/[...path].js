@@ -120,21 +120,7 @@ export default async function handler(req, res) {
         console.log(`${logPrefix} Response headers:`, Object.fromEntries([...response.headers.entries()]));
       }
       
-      // Log first part of response for debugging
-      if (responseText.length > 0) {
-        try {
-          // Try to parse as JSON and log the keys
-          const responseData = JSON.parse(responseText);
-          if (responseData.error) {
-            console.error(`${logPrefix} API Error:`, responseData.error);
-          } else if (responseData.status && responseData.status.error_code) {
-            console.error(`${logPrefix} API Error:`, responseData.status.error_message);
-          }
-        } catch (e) {
-          // If not JSON, log first part of response
-          console.log(`${logPrefix} Response preview: ${responseText.substring(0, 100)}...`);
-        }
-      }
+      // Response parsing removed
     }
 
     res.status(response.status);
@@ -156,7 +142,6 @@ export default async function handler(req, res) {
     
   } catch (error) {
     const errorMessage = error.name === 'AbortError' ? 'Request timed out' : error.message;
-    console.error(`${logPrefix} Error:`, errorMessage);
     
     res.setHeader('Cache-Control', CACHE_CONTROL.ERROR);
     res.status(error.name === 'AbortError' ? 504 : 500).json({

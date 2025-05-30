@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { HalvingInfo } from '@/types';
 
+// Only log in development mode
+const isDev = process.env.NODE_ENV === 'development';
+
 // Default fallback data - updated for post-2024 halving
 const fallbackHalvingData: HalvingInfo = {
   daysRemaining: 1084,
@@ -32,10 +35,8 @@ export function useHalvingData() {
     // Flag to track if the component is mounted
     let isMounted = true;
     
-    // Log the refresh counter change for debugging
-    if (refreshCounter > 0) {
-      console.log(`[Halving] Manual refresh #${refreshCounter} requested`);
-    }
+    // Track manual refresh requests
+    // (removed debug logging)
     
     const fetchHalvingData = async () => {
       try {
@@ -62,8 +63,6 @@ export function useHalvingData() {
           }));
         }
       } catch (err) {
-        console.error('Failed to fetch halving data:', err);
-        
         if (isMounted) {
           setError(err instanceof Error ? err : new Error(String(err)));
           setIsLoading(false);
@@ -75,7 +74,7 @@ export function useHalvingData() {
               const { data } = JSON.parse(cachedData);
               setHalvingData(data);
             } catch (parseErr) {
-              console.error('Error parsing cached halving data:', parseErr);
+              // Silently handle parse errors
             }
           }
         }
@@ -100,7 +99,7 @@ export function useHalvingData() {
           fetchHalvingData();
         }
       } catch (err) {
-        console.error('Error parsing cached halving data:', err);
+        // Handle parse errors silently
         fetchHalvingData();
       }
     } else {
@@ -128,7 +127,7 @@ export function useHalvingData() {
     try {
       localStorage.removeItem('halvingData');
     } catch (err) {
-      console.warn('Failed to clear localStorage halvingData:', err);
+      // Silently handle localStorage errors
     }
     
     // Increment the refresh counter to trigger the effect

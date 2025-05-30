@@ -81,7 +81,7 @@ export default async function handler(req, res) {
         try {
           if (body) parsedBody = JSON.parse(body);
         } catch (e) {
-          console.error('Error parsing response:', e);
+          // Parse error handled silently
         }
         
         testResults.push({
@@ -96,7 +96,6 @@ export default async function handler(req, res) {
           headers
         });
       } catch (testError) {
-        console.error(`Error testing ${test.name}:`, testError);
         testResults.push({
           paramName: test.name,
           error: testError.message,
@@ -141,7 +140,7 @@ export default async function handler(req, res) {
       try {
         if (body) parsedBody = JSON.parse(body);
       } catch (e) {
-        console.error('Error parsing response:', e);
+        // Parse error handled silently
       }
       
       testResults.push({
@@ -156,7 +155,6 @@ export default async function handler(req, res) {
         headers
       });
     } catch (headerError) {
-      console.error('Error testing header auth:', headerError);
       testResults.push({
         paramName: 'Authorization header',
         error: headerError.message,
@@ -194,8 +192,6 @@ export default async function handler(req, res) {
     // Return the response
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error testing CoinGecko API key:', error);
-    
     res.status(500).json({
       status: 500,
       success: false,

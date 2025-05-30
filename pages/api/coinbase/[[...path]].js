@@ -86,7 +86,6 @@ export default async function handler(req, res) {
     
   } catch (error) {
     const errorMessage = error.name === 'AbortError' ? 'Request timed out' : error.message;
-    console.error(`${logPrefix} Error:`, errorMessage);
     
     res.setHeader('Cache-Control', CACHE_CONTROL.ERROR);
     res.status(error.name === 'AbortError' ? 504 : 500).json({

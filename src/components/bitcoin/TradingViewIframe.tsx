@@ -44,10 +44,9 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
         timeframe: timeframeMap[timeframe]
       }, '*');
       
-      // Optionally, we can add a console log to help debugging
-      console.log(`Attempted to change timeframe to ${timeframe} (${timeframeMap[timeframe]}) via postMessage`);
+      // Message sent to iframe (removed debugging log)
     } catch (error) {
-      console.error('Error sending postMessage to TradingView iframe:', error);
+      // Silently handle iframe communication errors
     }
   }, [timeframe]);
   

@@ -1,11 +1,29 @@
-import { logPrefix, logLevels } from './constants';
+import { logPrefix, logLevels, isDev } from './constants';
 
 /**
- * Enhanced logging with levels and timestamps
+ * Enhanced logging with levels and timestamps - no-op in production
  */
 export function logWithTime(level: keyof typeof logLevels, ...args: any[]) {
-  if (logLevels[level]) {
-    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-    console.log(`${logPrefix} [${timestamp}] [${level.toUpperCase()}]`, ...args);
-  }
+  // Removed console logging
+}
+
+/**
+ * Development-only logging utility - no-op in all environments
+ */
+export function devLog(...args: any[]) {
+  // Removed console logging
+}
+
+/**
+ * Development-only warning utility - no-op in all environments
+ */
+export function devWarn(...args: any[]) {
+  // Removed console logging
+}
+
+/**
+ * Error logging utility - no-op in all environments
+ */
+export function logError(...args: any[]) {
+  // Removed console logging
 }

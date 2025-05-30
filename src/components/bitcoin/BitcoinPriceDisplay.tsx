@@ -36,7 +36,7 @@ function BitcoinPriceDisplay({
   // Track previous price for logging
   const prevPriceRef = useRef<number | null>(null);
   
-  // Log price changes
+  // Track price changes
   useEffect(() => {
     if (!data) return;
     
@@ -45,10 +45,6 @@ function BitcoinPriceDisplay({
       Math.abs(data.price - prevPriceRef.current) >= 1;
       
     if (isSignificantChange) {
-      console.log(
-        `Bitcoin price updated (${timeframe}): $${data.price.toFixed(2)} ` +
-        `(${data.direction === 'up' ? '+' : '-'}${data.changePercent.toFixed(2)}%)`
-      );
       prevPriceRef.current = data.price;
     }
   }, [data, timeframe]);

@@ -132,7 +132,6 @@ export function useOrderBookWebSocket(
 
   // Helper function to apply mock data fallback
   const setupMockData = useCallback(() => {
-    console.log(`[OrderBook] Using mock ${exchange} order book data`);
     setConnectionStatus('fallback_mock');
     const mockData = getMockOrderBook(exchange);
     setOrderBook(mockData);
@@ -213,7 +212,7 @@ export function useOrderBookWebSocket(
       try {
         socketRef.current.close();
       } catch (err) {
-        console.error('[OrderBook] Error closing socket:', err);
+        // Socket closing error, non-critical
       }
       socketRef.current = null;
     }
@@ -222,27 +221,21 @@ export function useOrderBookWebSocket(
     try {
       let formattedSymbol = symbol;
       
-      console.log(`[OrderBook] Attempting to connect to ${exchange} WebSocket...`);
-      
       // Format symbols properly for each exchange
       if (exchange === 'binance') {
         formattedSymbol = 'btcusdt'; // Force lowercase for binance
         // Connect to Binance WebSocket for depth data - we need to use the direct stream URL, and it doesn't need a subscription message
         socketRef.current = new WebSocket(`${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
-        console.log(`[OrderBook] Connecting to Binance: ${BINANCE_WEBSOCKET_URL}/btcusdt@depth@100ms`);
       } else if (exchange === 'coinbase') {
         formattedSymbol = 'BTC-USD';
         // Connect to Coinbase WebSocket - needs subsequent subscription message
         socketRef.current = new WebSocket(COINBASE_WEBSOCKET_URL);
-        console.log(`[OrderBook] Connecting to Coinbase: ${COINBASE_WEBSOCKET_URL}`);
       } else {
         // Default to Bitfinex
         formattedSymbol = 'tBTCUSD';
         socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
-        console.log(`[OrderBook] Connecting to Bitfinex: ${BITFINEX_WEBSOCKET_URL}`);
       }
     } catch (error) {
-      console.error(`[OrderBook] Error connecting to ${exchange} WebSocket:`, error);
       setConnectionStatus('fallback_mock');
       const mockData = getMockOrderBook(exchange);
       internalOrderBookRef.current = mockData;
@@ -266,7 +259,6 @@ export function useOrderBookWebSocket(
     
     // Add network connectivity change monitoring
     const handleOnline = () => {
-      console.log('[OrderBook] Network connection restored, attempting to reconnect WebSocket');
       // If we were disconnected due to network issues, try to reconnect
       if (connectionStatus === 'disconnected' || connectionStatus === 'error' || 
           connectionStatus === 'fallback_mock' || connectionStatus === 'reconnecting') {
@@ -280,7 +272,6 @@ export function useOrderBookWebSocket(
     };
     
     const handleOffline = () => {
-      console.log('[OrderBook] Network connection lost, WebSocket will disconnect');
       // When network is offline, update status but keep existing data
       setConnectionStatus('disconnected');
     };
@@ -288,8 +279,6 @@ export function useOrderBookWebSocket(
     // Add event listeners for online/offline events
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
-    console.log(`[OrderBook] Initializing ${exchange} order book WebSocket connection`);
     
     try {
       // Initialize connection
@@ -303,7 +292,6 @@ export function useOrderBookWebSocket(
         
       // Handle socket open event
       socketRef.current.onopen = () => {
-        console.log(`[OrderBook] Connected to ${exchange} WebSocket`);
         setConnectionStatus('connected');
         
         // Reset reconnection attempts counter on successful connection
@@ -657,7 +645,7 @@ export function useOrderBookWebSocket(
             }
           }
         } catch (error) {
-          console.error(`[OrderBook] Error processing ${exchange} WebSocket message:`, error);
+          // Silently handle processing errors
         }
       };
       
@@ -744,7 +732,7 @@ export function useOrderBookWebSocket(
       // No interval to cleanup if we're not using simulation
       
     } catch (err) {
-      console.error('[OrderBook] Error setting mock data:', err);
+      // Silently handle mock data setup errors
       setError(err instanceof Error ? err : new Error('Failed to initialize order book data'));
       // Use our setupMockData function to handle fallback
       setupMockData();
@@ -758,7 +746,7 @@ export function useOrderBookWebSocket(
           // Use code 1000 (normal closure) to indicate intentional disconnect
           socketRef.current.close(1000, "Component unmounting");
         } catch (err) {
-          console.error('[OrderBook] Error closing socket on cleanup:', err);
+          // Silently handle socket closing errors
         }
         socketRef.current = null;
       }

@@ -112,7 +112,6 @@ export async function GET(): Promise<NextResponse<HalvingInfo>> {
     return NextResponse.json(halvingInfo);
     
   } catch (error) {
-    console.error('Error fetching halving data:', error);
     
     // Return fallback data instead of an error for better user experience
     // Accurate as of April 2025, after the 2024 halving

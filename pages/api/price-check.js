@@ -20,14 +20,12 @@ export default async function handler(req, res) {
     // Try to use cache if available and not expired
     const now = Date.now();
     if (cachedData && (now - cacheTimestamp < CACHE_TTL)) {
-      console.log('Serving Bitcoin price from memory cache');
       return res.status(200).json(cachedData);
     }
     
     // Get API key
     const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
     if (!apiKey) {
-      console.error('No API key configured');
       
       // Return fallback data instead of error
       return res.status(200).json({ 
@@ -100,11 +98,9 @@ export default async function handler(req, res) {
       throw fetchError; // Re-throw to be caught by the outer try-catch
     }
   } catch (error) {
-    console.error('Error fetching Bitcoin price:', error);
     
     // If cache is available but expired, still use it as fallback
     if (cachedData) {
-      console.log('Using expired cache as fallback');
       return res.status(200).json({
         ...cachedData,
         fromExpiredCache: true

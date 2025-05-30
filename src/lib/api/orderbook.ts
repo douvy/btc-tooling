@@ -94,7 +94,6 @@ export async function fetchBitfinexOrderBook(
       exchange: 'bitfinex'
     };
   } catch (error) {
-    console.error('[API] Failed to fetch Bitfinex order book:', error);
     
     // Return mock data as a last resort
     return getMockOrderBook('bitfinex');
@@ -174,7 +173,6 @@ export async function fetchCoinbaseOrderBook(
       exchange: 'coinbase'
     };
   } catch (error) {
-    console.error('[API] Failed to fetch Coinbase order book:', error);
     
     // Return mock data as a last resort
     return getMockOrderBook('coinbase');
@@ -254,7 +252,6 @@ export async function fetchBinanceOrderBook(
       exchange: 'binance'
     };
   } catch (error) {
-    console.error('[API] Failed to fetch Binance order book:', error);
     
     // Return mock data as a last resort
     return getMockOrderBook('binance');

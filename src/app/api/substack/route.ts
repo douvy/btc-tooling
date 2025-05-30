@@ -68,7 +68,6 @@ function extractExecutiveSummary(content: string): string {
     // Return just these three bullet points, separated by double newlines
     return bullets.join('\n\n');
   } catch (err) {
-    console.error("Error extracting bullet points:", err);
     return fallbackBullets.join('\n\n');
   }
 }
@@ -134,7 +133,6 @@ async function parseRssFeed(xml: string): Promise<RssFeedItem[]> {
     
     return items;
   } catch (error) {
-    console.error('Error parsing RSS feed:', error);
     return [];
   }
 }
@@ -201,8 +199,6 @@ export async function GET(): Promise<NextResponse<AnalysisResponse>> {
     });
     
   } catch (error) {
-    console.error('Error fetching or parsing RSS feed:', error);
-    
     // Return fallback data instead of an error
     return NextResponse.json({
       title: "Comprehensive Big-Picture Analysis of the Bitcoin Market as of April 7, 2025",

@@ -44,7 +44,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
           // Use absolute URL for WebSocket to ensure it works in production
           const socketUrl = typeof window !== 'undefined' ? `${window.location.origin}` : '';
           
-          console.log('[Latency Monitor] Connecting to WebSocket server...');
           setConnectionStatus('connecting');
           
           // Connect to the WebSocket server
@@ -62,7 +61,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
         socket.on('connect', () => {
           if (!mounted) return;
           
-          console.log('[Latency Monitor] Connected successfully');
           setConnectionStatus('connected');
           
           // Set up latency monitoring (ping every 5 seconds)
@@ -83,7 +81,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
         socket.on('disconnect', () => {
           if (!mounted) return;
           
-          console.log('[Latency Monitor] Disconnected');
           setConnectionStatus('disconnected');
           
           if (pingIntervalRef.current) {
@@ -95,7 +92,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
         socket.on('connect_error', (err: Error) => {
           if (!mounted) return;
           
-          console.error('[Latency Monitor] Connection error:', err);
           setConnectionStatus('disconnected');
           
           if (pingIntervalRef.current) {
@@ -123,7 +119,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
         });
         
       } catch (err) {
-        console.error('[Latency Monitor] Setup error:', err);
         setConnectionStatus('disconnected');
       }
     };
@@ -139,7 +134,6 @@ export function useLatencyMonitor(): UseLatencyMonitorResult {
       }
       
       if (socketRef.current) {
-        console.log('[Latency Monitor] Disconnecting on unmount');
         socketRef.current.disconnect();
         socketRef.current = null;
       }

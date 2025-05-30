@@ -77,7 +77,6 @@ export default async function handler(req, res) {
       responseText: responseText.substring(0, 500)
     });
   } catch (error) {
-    console.error('Error testing API key:', error);
     res.status(500).json({
       success: false,
       error: error.message

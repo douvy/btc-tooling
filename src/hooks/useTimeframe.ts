@@ -123,7 +123,6 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
       // Import the calculation function directly
       const { extractTimeframeData } = require('@/lib/priceUtils');
       
-      console.log(`⚡ IMMEDIATE TIMEFRAME SWITCH: ${timeframe} → ${newTimeframe}`);
       
       // Try different data sources in order of preference
       let rawData = null;
@@ -133,16 +132,13 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
         const { getApiCache } = require('@/lib/api/cache');
         const cache = getApiCache();
         if (cache && cache.data) {
-          console.log('Using API cache for immediate recalculation');
           rawData = cache.data;
         }
       } catch (e) {
-        console.warn('Error accessing API cache:', e);
       }
       
       // 2. If no API cache, try to construct from current bitcoin data
       if (!rawData && bitcoinData && bitcoinData.price) {
-        console.log('Constructing data object from current bitcoin data');
         
         // Create a data structure that matches what the extractTimeframeData function expects
         rawData = {
@@ -161,7 +157,6 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
       
       // 3. Try to use the timeframes cache
       if (!rawData && Object.keys(timeframesCache).length > 0) {
-        console.log('Attempting to build from timeframes cache');
         
         // Find any timeframe data we can use
         const anyTimeframeData = Object.values(timeframesCache)[0];
@@ -183,7 +178,6 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
       
       // If we have any data to work with, recalculate immediately
       if (rawData && rawData.market_data && rawData.market_data.current_price) {
-        console.log('Recalculating with current price:', rawData.market_data.current_price.usd);
         
         // Perform the calculation for new timeframe
         const recalculatedData = extractTimeframeData(rawData, newTimeframe);
@@ -198,15 +192,12 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
         // We're done - user sees results immediately
         return;
       } else {
-        console.log('No usable data available for immediate recalculation');
       }
     } catch (err) {
-      console.warn('Error during immediate timeframe calculation:', err);
       // Continue with fallback approach
     }
     
     // FALLBACK: If we couldn't do immediate calculation, try the API
-    console.log('Falling back to API call for timeframe change');
     
     // Cancel any existing request
     if (abortControllerRef.current) {
@@ -220,7 +211,6 @@ const fetchBitcoinData = useCallback(async (force = false): Promise<boolean> => 
     // Fetch data from API
     fetchBitcoinData(true)
       .catch(err => {
-        console.error('Error changing timeframe:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
       })
       .finally(() => {

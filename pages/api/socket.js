@@ -40,14 +40,12 @@ const processQueue = async () => {
   
   // Reset counter if window has passed
   if (Date.now() > rateLimiter.resetTime) {
-    console.log('[WebSocket] Resetting rate limit counter');
     rateLimiter.count = 0;
     rateLimiter.resetTime = Date.now() + RATE_LIMIT_WINDOW;
   }
   
   // Don't process if we're at the limit
   if (rateLimiter.count >= RATE_LIMIT_MAX) {
-    console.log(`[WebSocket] Rate limit reached (${rateLimiter.count}/${RATE_LIMIT_MAX}), waiting until ${new Date(rateLimiter.resetTime).toLocaleTimeString()}`);
     return;
   }
   
@@ -60,7 +58,6 @@ const processQueue = async () => {
   
   // Execute the request
   rateLimiter.count++;
-  console.log(`[WebSocket] Processing queued request (${rateLimiter.count}/${RATE_LIMIT_MAX})`);
   
   try {
     const result = await next.fn();
@@ -103,7 +100,6 @@ setInterval(processQueue, 30000);
 const fetchDetailedBitcoinData = async () => {
   return queueRequest(async () => {
     // Using CoinGecko API through our proxy
-    console.log('[WebSocket] Using internal CoinGecko proxy for comprehensive data');
     
     // Add a cache buster to prevent any caching issues
     const cacheBuster = Date.now().toString();
@@ -136,7 +132,6 @@ const fetchDetailedBitcoinData = async () => {
       
       // Get the current price - this is our baseline for all calculations
       const currentPrice = response.data.market_data.current_price.usd;
-      console.log(`[WebSocket] Current Bitcoin price: $${currentPrice.toFixed(2)}`);
       
       // IMPORTANT: Enhance data with calculations for ALL timeframes
       // This ensures we always have complete data for every timeframe
@@ -145,20 +140,16 @@ const fetchDetailedBitcoinData = async () => {
       // Double check that all required timeframes have data
       validateTimeframeData(enhancedData);
       
-      console.log('[WebSocket] Successfully fetched and enhanced Bitcoin data');
       return enhancedData;
     } catch (error) {
-      console.error('[WebSocket] Error fetching detailed Bitcoin data:', error.message);
       
       // Fallback to ticker API endpoint
       try {
-        console.log('[WebSocket] Attempting fallback to blockchain ticker API');
         const tickerResponse = await axios.get('http://localhost:3000/api/blockchain/ticker', {
           timeout: 8000
         });
         
         if (tickerResponse?.data?.market_data?.current_price?.usd) {
-          console.log('[WebSocket] Successfully fetched data from fallback API');
           // Ensure the data is enhanced with all timeframes
           const enhancedFallbackData = enhanceWithCompleteTimeframes(tickerResponse.data);
           return enhancedFallbackData;
@@ -166,7 +157,6 @@ const fetchDetailedBitcoinData = async () => {
         
         throw new Error('Invalid data from fallback API');
       } catch (fallbackError) {
-        console.error('[WebSocket] Fallback API also failed:', fallbackError.message);
         throw new Error('All Bitcoin data sources failed');
       }
     }
@@ -178,7 +168,6 @@ const fetchDetailedBitcoinData = async () => {
  */
 function validateTimeframeData(data) {
   if (!data?.market_data?.current_price?.usd) {
-    console.error('[WebSocket] Missing current price data');
     return false;
   }
   
@@ -291,8 +280,6 @@ const fetchData = async (type, force = false) => {
     
     return completeData;
   } catch (error) {
-    console.error('[WebSocket] Error fetching fresh data:', error.message);
-    
     // 5. Emergency fallback: If we have ANY cached data, return it
     if (priceCache[type]?.market_data?.current_price?.usd) {
       console.warn('[WebSocket] Using stale cache as fallback due to fetch error');
@@ -301,7 +288,6 @@ const fetchData = async (type, force = false) => {
     }
     
     // 6. Ultimate fallback: Create minimal valid data
-    console.error('[WebSocket] No valid data available, creating minimal fallback data');
     const fallbackData = createMinimalFallbackData();
     return fallbackData;
   }
@@ -414,7 +400,7 @@ const SocketHandler = async (req, res) => {
       await fetchData('detailed', true);
     }
   } catch (error) {
-    console.error('[WebSocket] Error prefetching data:', error.message);
+    // Prefetch error handled silently
   }
 
   // Handle connections
@@ -510,7 +496,6 @@ const sendUpdate = async (socket, forceRefresh = false) => {
  */
 function enhanceWithCompleteTimeframes(data) {
   if (!data?.market_data?.current_price?.usd) {
-    console.error('[WebSocket] Cannot enhance data without current price');
     return data;
   }
   
@@ -716,7 +701,7 @@ const broadcastUpdates = async (io) => {
           dataUpdated = !!detailedData;
         }
       } catch (error) {
-        console.error('[WebSocket] Error updating detailed data:', error.message);
+        // Error handled silently
         // Still consider data updated if we have any cache at all
         dataUpdated = !!detailedData;
       }
@@ -763,8 +748,6 @@ const broadcastUpdates = async (io) => {
     
     console.log(`[WebSocket] Broadcast complete to ${sockets.length} clients`);
   } catch (error) {
-    console.error('[WebSocket] Broadcast error:', error.message);
-    
     // Notify all clients of the error
     io.emit(ERROR_EVENT, {
       message: 'Failed to update cryptocurrency data',

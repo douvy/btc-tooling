@@ -128,7 +128,6 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
   try {
     // Validate the input data
     if (!data?.market_data?.current_price?.usd) {
-      console.error('Invalid data format - missing current price');
       return fallbackBitcoinPrice(timeframe);
     }
     
@@ -209,7 +208,6 @@ export function extractTimeframeData(data: any, timeframe: TimeFrame): BitcoinPr
       timeframe
     };
   } catch (error) {
-    console.error('Error extracting timeframe data:', error);
     return fallbackBitcoinPrice(timeframe);
   }
 }

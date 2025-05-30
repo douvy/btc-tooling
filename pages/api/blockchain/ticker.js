@@ -228,7 +228,6 @@ export default async function handler(req, res) {
     } else {
       // Handle error response
       const errorData = await response.text();
-      console.error(`${logPrefix} Error response:`, errorData);
       
       // Try to extract the error message
       let errorMessage = `CoinGecko API error: ${response.status}`;
@@ -279,7 +278,7 @@ export default async function handler(req, res) {
             return;
           }
         } catch (cacheError) {
-          console.error(`${logPrefix} Error accessing cache:`, cacheError);
+          // Cache error handled silently
         }
       }
       
@@ -296,7 +295,6 @@ export default async function handler(req, res) {
     
   } catch (error) {
     const errorMessage = error.name === 'AbortError' ? 'Request timed out' : error.message;
-    console.error(`${logPrefix} Error:`, errorMessage);
     
     res.setHeader('Cache-Control', CACHE_CONTROL.ERROR);
     res.status(error.name === 'AbortError' ? 504 : 500).json({

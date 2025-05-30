@@ -25,14 +25,12 @@ let ws = null;
 // Note: In production, Vercel serverless functions don't maintain persistent connections
 // We'll need to handle this differently for production vs development
 if (typeof global !== 'undefined') {
-  console.log('Setting up Coinbase WebSocket connection in', process.env.NODE_ENV, 'environment');
   try {
     // Use the WebSocket API from Coinbase which has no rate limits
     const WebSocket = require('ws');
     ws = new WebSocket('wss://ws-feed.exchange.coinbase.com');
     
     ws.on('open', function open() {
-      console.log('Coinbase WebSocket connected');
       
       // Subscribe to BTC-USD ticker
       const subscribeMsg = {
@@ -52,26 +50,24 @@ if (typeof global !== 'undefined') {
         if (message.type === 'ticker' && message.product_id === 'BTC-USD') {
           lastPrice = parseFloat(message.price);
           lastUpdateTime = Date.now();
-          console.log(`Real-time BTC price: $${lastPrice}`);
         }
       } catch (err) {
-        console.error('Error processing WebSocket message:', err);
+        // Error processing message
       }
     });
     
     ws.on('error', function error(err) {
-      console.error('WebSocket error:', err);
+      // WebSocket error handler
     });
     
     ws.on('close', function close() {
-      console.log('WebSocket connection closed');
       // Try to reconnect after a delay
       setTimeout(() => {
         ws = new WebSocket('wss://ws-feed.exchange.coinbase.com');
       }, 5000);
     });
   } catch (err) {
-    console.error('Error setting up WebSocket:', err);
+    // Error setting up WebSocket
   }
 }
 
@@ -93,13 +89,10 @@ export default async function handler(req, res) {
   res.setHeader('Expires', '0');
   res.setHeader('Surrogate-Control', 'no-store');
   
-  // Log request for debugging
-  console.log('Coinbase realtime API called, environment:', process.env.NODE_ENV);
 
   // In production, always make a direct API call for fresh data
   // In development, use WebSocket if available
   if (process.env.NODE_ENV === 'production' || !lastPrice) {
-    console.log('Using direct API call for price data');
     
     try {
       // Try multiple price sources for reliability
@@ -151,7 +144,6 @@ export default async function handler(req, res) {
       
       throw new Error('All price APIs failed');
     } catch (error) {
-      console.error('Error fetching direct price:', error);
       
       // If direct API calls fail, try WebSocket as last resort
       if (lastPrice && Date.now() - lastUpdateTime < 60000) { // Only use if less than 1 minute old

@@ -82,7 +82,6 @@ export default async function handler(req, res) {
   
   // Set up timeout for serverless functions
   const timeout = setTimeout(() => {
-    console.error('[OrderBook API] Request timed out');
     res.status(504).json({ error: 'Gateway Timeout', code: 504 });
   }, SERVERLESS_TIMEOUT);
   
@@ -130,7 +129,6 @@ export default async function handler(req, res) {
     // Send the response
     res.status(200).json(responseData);
   } catch (error) {
-    console.error('[OrderBook API] Error:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message, code: 500 });
   } finally {
     clearTimeout(timeout);

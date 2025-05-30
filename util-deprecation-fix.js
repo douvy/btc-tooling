@@ -29,10 +29,7 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
         }
       };
       
-      // For monitoring - only log in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Successfully patched util._extend deprecation warning');
-      }
+      // No logging needed
     }
     
     // In strict environments, we can also make this property read-only to prevent further issues
@@ -44,6 +41,6 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
       });
     }
   } catch (error) {
-    console.error('⚠️ Failed to patch util._extend:', error);
+    // Silently handle patch failures
   }
 }

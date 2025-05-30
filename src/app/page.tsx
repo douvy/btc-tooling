@@ -388,9 +388,9 @@ export default function Home() {
       // No need to manually reload the page!
       // The hook will update its state, causing just this component to re-render
       
-      console.log('[Halving] Refresh triggered without page reload');
+      // Refresh triggered successfully
     } catch (err) {
-      console.error('Failed to manually refresh halving data:', err);
+      // Silently handle refresh errors
     }
   };
 

@@ -30,13 +30,11 @@ function getCachedData(): CachedData | null {
     
     // Check if cache is expired
     if (Date.now() - cached.timestamp > MAX_CACHE_AGE) {
-      console.log('Cache expired, fetching fresh data');
       return null;
     }
     
     return cached;
   } catch (err) {
-    console.error('Error reading cache:', err);
     return null;
   }
 }
@@ -55,7 +53,6 @@ function saveToCache(data: any): void {
     
     localStorage.setItem('btc-price-data', JSON.stringify(cacheData));
   } catch (err) {
-    console.error('Error saving to cache:', err);
   }
 }
 
@@ -82,23 +79,19 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     let realtimeData;
     try {
       realtimeData = await realtimeResponse.json();
-      console.log('Real-time API response:', realtimeData);
     } catch (parseError) {
-      console.warn('Failed to parse real-time API response', parseError);
       const text = await realtimeResponse.text();
-      console.warn('Raw response:', text);
     }
     
     if (realtimeData && realtimeData.success && realtimeData.price) {
       realtimePrice = realtimeData.price;
-      console.log('Using real-time price:', realtimePrice, 'from', realtimeData.source || 'unknown');
     } else if (!realtimeResponse.ok) {
-      console.warn('Real-time API returned non-OK status:', realtimeResponse.status);
+      // Non-OK status handled silently
     } else {
-      console.warn('Real-time API returned invalid data:', realtimeData);
+      // Invalid data handled silently
     }
   } catch (error) {
-    console.warn('Failed to get real-time price, will use historical data:', error);
+    // Error fetching real-time price
   }
   
   // STEP 2: Try to use cached historical data for changes
@@ -134,34 +127,22 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     let result;
     try {
       result = await response.json();
-      console.log('Historical API response structure:', 
-        result ? 
-        `success=${!!result.success}, has timeframes=${!!result.timeframes}, timeframe count=${result.timeframes ? Object.keys(result.timeframes).length : 0}` : 
-        'null response'
-      );
     } catch (error) {
-      console.error('Failed to parse historical API response', error);
       const text = await response.text();
-      console.error('Raw historical response:', text);
       throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
     }
     
-    if (!response.ok) {
-      console.error(`Historical API error: ${response.status}`);
-    }
+    // Check for non-OK response
     
     // Validate the response structure
     if (!result || !result.price || !result.timeframes) {
-      console.error('Invalid historical API response structure:', result);
       
       // Try using the fallback API directly instead of throwing
       const fallbackUrl = '/api/price-check';
-      console.log('Trying fallback API:', fallbackUrl);
       const fallbackResponse = await fetch(fallbackUrl);
       const fallbackData = await fallbackResponse.json();
       
       if (fallbackData && fallbackData.price) {
-        console.log('Using fallback price data');
         return {
           price: fallbackData.price,
           change: Math.abs(fallbackData.price * (fallbackData.change24h || 0) / 100),
@@ -186,7 +167,6 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     // Otherwise just use historical data
     return extractHistoricalTimeframeData(result, timeframe);
   } catch (error) {
-    console.error('Error fetching Bitcoin price:', error);
     
     // Fall back to the simple price endpoint if historical fails
     try {
@@ -218,7 +198,6 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
         };
       }
     } catch (fallbackError) {
-      console.error('Even fallback API failed:', fallbackError);
       
       // Last resort - return empty data and let the UI handle it
       return {
@@ -237,7 +216,6 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
  */
 function extractHistoricalTimeframeData(data: any, timeframe: TimeFrame): BitcoinPrice {
   if (!data || !data.price || !data.timeframes || !data.timeframes[timeframe]) {
-    console.error('Invalid or missing data for timeframe', timeframe, data);
     return {
       price: 0,
       change: 0,
@@ -282,7 +260,6 @@ function extractHistoricalTimeframeData(data: any, timeframe: TimeFrame): Bitcoi
  */
 function extractHistoricalTimeframeDataWithRealtime(data: any, timeframe: TimeFrame, realtimePrice: number): BitcoinPrice {
   if (!data || !data.timeframes || !data.timeframes[timeframe]) {
-    console.error('Invalid or missing historical data for timeframe', timeframe);
     return {
       price: realtimePrice,
       change: 0,
@@ -336,7 +313,6 @@ function extractHistoricalTimeframeDataWithRealtime(data: any, timeframe: TimeFr
         timeframe
       };
     } catch (error) {
-      console.error(`Error in ${timeframe} calculation:`, error);
       // If something goes wrong, fall back to standard calculation below
     }
   }

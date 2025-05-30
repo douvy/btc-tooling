@@ -23,21 +23,17 @@ export default async function handler(req, res) {
   // We use WebSockets for real-time data, so this is just for the historical data
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
   
-  // Log for debugging in production
-  console.log('Price history API called, environment:', process.env.NODE_ENV);
   
   try {
     // Try to use cache if available and not expired
     const now = Date.now();
     if (cachedData && (now - cacheTimestamp < CACHE_TTL)) {
-      console.log('Serving Bitcoin historical data from memory cache');
       return res.status(200).json(cachedData);
     }
     
     // Get API key
     const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
     if (!apiKey) {
-      console.warn('No CoinGecko API key configured');
       // Continue anyway, will use public endpoints with stricter rate limits
     }
     
@@ -72,17 +68,10 @@ export default async function handler(req, res) {
         const marketsResult = await marketsResponse.json();
         if (marketsResult && marketsResult.length > 0) {
           marketsData = marketsResult[0];
-          console.log('Got markets data with changes:', {
-            '1h': marketsData.price_change_percentage_1h_in_currency + '%',
-            '24h': marketsData.price_change_percentage_24h + '%',
-            '7d': marketsData.price_change_percentage_7d_in_currency + '%',
-            '30d': marketsData.price_change_percentage_30d_in_currency + '%',
-            '1y': marketsData.price_change_percentage_1y_in_currency + '%'
-          });
         }
       }
     } catch (err) {
-      console.warn('Error parsing markets data:', err);
+      // Error parsing markets data
     }
     
     // Process the data to extract all timeframes
@@ -117,11 +106,10 @@ export default async function handler(req, res) {
           // The last entry is the current price
           const oneHourAgoIndex = Math.max(0, hourlyPrices.length - 2);
           hourlyPrice = hourlyPrices[oneHourAgoIndex][1];
-          console.log('Found hourly price from API:', hourlyPrice);
         }
       }
     } catch (hourlyError) {
-      console.error('Error fetching hourly data:', hourlyError);
+      // Error fetching hourly data
     }
     
     // If we couldn't get hourly data from API, use a reasonable fallback
@@ -129,7 +117,6 @@ export default async function handler(req, res) {
       // Use a price that's slightly different from current (99.5% of current price)
       // This provides a small but realistic hourly change 
       hourlyPrice = currentPrice * 0.995;
-      console.log('Using fallback hourly price:', hourlyPrice);
     }
     
     // For "ALL" timeframe, use $100 as the starting price
@@ -170,12 +157,6 @@ export default async function handler(req, res) {
           direction: 'up' // Bitcoin is always up from its starting price
         };
         
-        console.log('ALL timeframe calculation:', {
-          currentPrice,
-          previousPrice: 100,
-          change: allTimeChange,
-          percentChange: allTimePercent
-        });
       } 
       // Special handling for timeframes with markets data available
       else if (marketsData) {
@@ -207,13 +188,6 @@ export default async function handler(req, res) {
           const impliedPrevious = currentPrice / (1 + (actualPercentChange/100));
           const impliedChange = Math.abs(currentPrice - impliedPrevious);
           
-          console.log(`Using accurate ${timeframe} data from markets endpoint:`, {
-            currentPrice,
-            actualPercentChange,
-            impliedPrevious,
-            impliedChange,
-            direction
-          });
           
           changes[timeframe] = {
             previous: impliedPrevious,
@@ -256,11 +230,9 @@ export default async function handler(req, res) {
     // Return the data
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching historical price data:', error);
     
     // If cache is available but expired, still use it as fallback
     if (cachedData) {
-      console.log('Using expired cache as fallback');
       return res.status(200).json({
         ...cachedData,
         fromExpiredCache: true

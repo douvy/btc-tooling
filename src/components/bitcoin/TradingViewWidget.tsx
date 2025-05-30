@@ -105,7 +105,6 @@ export default function TradingViewWidget({
         }
         return false;
       } catch (e) {
-        console.error('TradingView widget creation failed:', e);
         safeOnError();
         return false;
       }
@@ -133,7 +132,6 @@ export default function TradingViewWidget({
       };
       
       script.onerror = () => {
-        console.error('Failed to load TradingView script');
         safeOnError();
       };
       

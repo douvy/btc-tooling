@@ -94,7 +94,7 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
           setError(null);
         }
       } else {
-        console.error('[WebSocket] Invalid data format from API:', data);
+        // Invalid data format, handled silently
         if (targetTimeframe === timeframe) {
           setError(new Error('Invalid data format from API'));
         }
@@ -105,7 +105,6 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
         setIsLoading(false);
       }
     } catch (err) {
-      console.error('[WebSocket] API fetch error:', err);
       if (targetTimeframe === timeframe) {
         setError(err instanceof Error ? err : new Error('Failed to fetch Bitcoin data'));
         setIsLoading(false);
@@ -176,7 +175,6 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
         socket.on('connect_error', (err: Error) => {
           if (!mounted) return;
           
-          console.error('[WebSocket] Connection error:', err);
           setConnectionStatus('disconnected');
           setError(new Error(`WebSocket connection error: ${err.message}`));
           
@@ -222,12 +220,10 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
                     setError(null);
                   }
                 } catch (err) {
-                  console.error(`[WebSocket] Error processing ${tf} data:`, err);
                 }
               });
             }
           } catch (err) {
-            console.error('[WebSocket] Error processing data:', err);
             setError(err instanceof Error ? err : new Error('Failed to process data'));
           }
         });
@@ -235,7 +231,6 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
         socket.on('error', (errorData: {message?: string}) => {
           if (!mounted) return;
           
-          console.error('[WebSocket] Error event:', errorData);
           setError(new Error(errorData.message || 'Unknown WebSocket error'));
           
           // Use fallback REST API
@@ -243,7 +238,6 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
         });
         
       } catch (err) {
-        console.error('[WebSocket] Setup error:', err);
         fetchFallbackData(true);
       }
     };
@@ -283,9 +277,7 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
           try {
             const calculatedData = extractTimeframeData(rawDataRef.current, tf);
             timeframeCacheRef.current[tf] = calculatedData;
-            console.log(`[WebSocket] Calculated data for ${tf} timeframe: $${calculatedData.price.toFixed(2)}, ${calculatedData.changePercent.toFixed(2)}%`);
           } catch (err) {
-            console.error(`[WebSocket] Error calculating ${tf} data:`, err);
           }
         });
       } else {
@@ -326,7 +318,6 @@ export function useWebSocketPrice(initialTimeframe: TimeFrame = '1D'): UseWebSoc
         }
       })
       .catch(err => {
-        console.error('Error fetching timeframe data:', err);
         setIsLoading(false);
         setError(new Error(`Failed to load ${newTimeframe} data`));
       });

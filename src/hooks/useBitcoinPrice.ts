@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { TimeFrame, BitcoinPrice } from '@/types';
 import { getBitcoinPrice } from '@/lib/minimalBitcoinApi';
+import { devLog, devWarn, logError } from '@/lib/api/logger';
 
 const ANIMATION_DURATION = 1500;
 const REFRESH_INTERVAL = 5000; // 5 seconds between refreshes - using Coinbase WebSocket API
@@ -100,7 +101,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
     if (currentFetchState.current.inProgress && 
         currentFetchState.current.controller && 
         currentFetchState.current.timeframe !== targetTimeframe) {
-      console.log(`Aborting request for ${currentFetchState.current.timeframe} to fetch ${targetTimeframe}`);
       currentFetchState.current.controller.abort();
     }
     
@@ -148,7 +148,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
       // Make sure this is still the current request for this timeframe
       // This prevents race conditions where an older request completes after a newer one
       if (currentFetchState.current.requestId !== requestId) {
-        console.log(`Ignoring outdated response for ${targetTimeframe}, request #${requestId}`);
         return;
       }
       
@@ -177,7 +176,7 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
         localStorage.setItem(key, JSON.stringify(historicalDataRef.current[targetTimeframe]));
       } catch (err) {
         // Ignore storage errors - not critical
-        console.warn('Failed to save historical data to localStorage:', err);
+        devWarn('Failed to save historical data to localStorage:', err);
       }
       
       // Only update the UI if this is for the currently selected timeframe
@@ -203,13 +202,11 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
         prevPriceRef.current = data.price;
         setLastUpdateTime(Date.now());
         if (error) setError(null);
-      } else {
-        console.log(`Cached data for ${targetTimeframe} but not displaying (current: ${timeframe})`);
       }
     } catch (err) {
       // Only show errors if this is the current request
       if (currentFetchState.current.requestId === requestId) {
-        console.error(`Error fetching Bitcoin data for ${targetTimeframe}:`, err);
+        logError(`Error fetching Bitcoin data for ${targetTimeframe}:`, err);
         
         // Only update UI error state if this is for the current timeframe
         if (targetTimeframe === timeframe) {
@@ -236,7 +233,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
               
               // For recent data (less than 24 hours old), use as-is
               if (ageInHours < 24) {
-                console.log(`[Bitcoin Price] Using recent historical data (${ageInHours.toFixed(1)}h old) for ${targetTimeframe}`);
                 fallbackData = {
                   ...mostRecent,
                   timestamp: Date.now() // Update timestamp to current
@@ -244,7 +240,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
               } 
               // For older data, apply aging adjustments for realism
               else {
-                console.log(`[Bitcoin Price] Using aged historical data (${ageInHours.toFixed(1)}h old) for ${targetTimeframe}`);
                 
                 // Apply volatility based on how old the data is
                 // Older data gets more randomized to reflect uncertainty
@@ -276,7 +271,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
             }
             // TIER 2: If no historical data for this timeframe, try to extrapolate from other timeframes
             else if (Object.values(historicalDataRef.current).some(arr => arr.length > 0)) {
-              console.log(`[Bitcoin Price] No historical data for ${targetTimeframe}, extrapolating from other timeframes`);
               
               // Find any timeframe with data, preferring shorter timeframes
               const timeframePreference: TimeFrame[] = ['1D', '1H', '1W', '1M', '1Y', 'ALL'];
@@ -367,13 +361,11 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
                   timestamp: Date.now()
                 };
                 
-                console.log(`[Bitcoin Price] Extrapolated ${targetTimeframe} from ${baseTimeframe} data using multiplier ${changeMultiplier.toFixed(3)}`);
               }
             }
             
             // TIER 3: Last resort - generate reasonable fallback data if no historical data exists
             if (!fallbackData) {
-              console.log(`[Bitcoin Price] No historical data available, using reasonable defaults for ${targetTimeframe}`);
               
               // Get current date to generate reasonable price range
               const currentYear = new Date().getFullYear();
@@ -434,9 +426,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
               };
             }
             
-            // Log the fallback data we're using
-            console.log(`[Bitcoin Price] Using fallback data for ${targetTimeframe}:`, 
-              `$${fallbackData.price} (${fallbackData.direction === 'up' ? '+' : '-'}${fallbackData.changePercent.toFixed(2)}%)`);
             
             // Cache the fallback data
             dataCache.current[targetTimeframe] = fallbackData;
@@ -479,8 +468,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
   const handleTimeframeChange = useCallback((newTimeframe: TimeFrame) => {
     if (newTimeframe === timeframe) return;
     
-    console.log(`Changing timeframe: ${timeframe} → ${newTimeframe}`);
-    
     // IMPORTANT: Cancel any pending requests to prevent race conditions
     if (currentFetchState.current.controller) {
       currentFetchState.current.controller.abort();
@@ -496,24 +483,22 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
     
     // If we have cached data for this timeframe, show it immediately
     if (dataCache.current[newTimeframe]) {
-      console.log(`Using cached data for ${newTimeframe}`);
       setBitcoinData(dataCache.current[newTimeframe]);
       setIsLoading(false);
       setIsRefreshing(true); // Always show refreshing to indicate something is happening
       
       // Still refresh in the background to ensure data is current
       fetchBitcoinData(newTimeframe, forceRefresh).catch(err => {
-        console.error(`Background refresh error for ${newTimeframe}:`, err);
+        logError(`Background refresh error for ${newTimeframe}:`, err);
         setIsRefreshing(false);
       });
     } else {
       // No cached data, show loading state and fetch
-      console.log(`No cached data for ${newTimeframe}, fetching...`);
       setIsLoading(true);
       
       // Fetch new data for this timeframe with higher priority
       fetchBitcoinData(newTimeframe, forceRefresh).catch(err => {
-        console.error(`Error fetching data for ${newTimeframe}:`, err);
+        logError(`Error fetching data for ${newTimeframe}:`, err);
         setError(err instanceof Error ? err : new Error(String(err)));
         setIsLoading(false);
       });
@@ -534,9 +519,8 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
       if (tf !== timeframe) {
         // Stagger the requests to prevent overwhelming the API
         setTimeout(() => {
-          console.log(`Prefetching data for ${tf} timeframe`);
-          fetchBitcoinData(tf, false).catch(err => {
-            console.error(`Error prefetching ${tf}:`, err);
+          fetchBitcoinData(tf, false).catch(() => {
+            // Silently handle prefetch errors
           });
         }, delay);
         
@@ -564,7 +548,6 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
       
       // Refresh stale timeframes in the background
       if (staleTimeframes.length > 0) {
-        console.log(`Refreshing stale data for timeframes: ${staleTimeframes.join(', ')}`);
         
         // Stagger the refresh to avoid overwhelming the API
         let delay = 0;
@@ -572,8 +555,8 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
         
         staleTimeframes.forEach(tf => {
           setTimeout(() => {
-            fetchBitcoinData(tf, false).catch(err => {
-              console.error(`Error refreshing stale data for ${tf}:`, err);
+            fetchBitcoinData(tf, false).catch(() => {
+              // Silently handle refresh errors
             });
           }, delay);
           
@@ -614,11 +597,9 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
           
           if (validData.length > 0) {
             historicalDataRef.current[tf] = validData;
-            console.log(`Loaded ${validData.length} historical entries for ${tf} timeframe`);
           }
         }
       } catch (err) {
-        console.warn(`Failed to load historical data for ${tf}:`, err);
         // Non-critical, we'll still function without historical data
       }
     });
@@ -626,26 +607,23 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
 
   // Fetch data for the current timeframe on mount and when timeframe changes
   useEffect(() => {
-    // Add debug log for production
-    console.log('Setting up Bitcoin price polling in', process.env.NODE_ENV);
-    
     // Fetch data for the current timeframe immediately
-    console.log(`Starting initial Bitcoin price fetch for ${timeframe}`);
     fetchBitcoinData(timeframe, true)
       .then(() => {
-        console.log(`Initial Bitcoin price fetch complete for ${timeframe}`);
-        
         // After initial fetch, prefetch other timeframes in the background
         // This ensures seamless switching later
         prefetchAllTimeframes();
       })
-      .catch(err => console.error(`Error in initial price fetch for ${timeframe}:`, err));
+      .catch(() => {
+        // Silently handle initial fetch errors
+      });
     
     // Set up refresh interval for real-time updates of the current timeframe
     pollingIntervalRef.current = setInterval(() => {
-      console.log(`Executing periodic Bitcoin price refresh for ${timeframe}`);
       fetchBitcoinData(timeframe, true)
-        .catch(err => console.error(`Error in periodic price fetch for ${timeframe}:`, err));
+        .catch(() => {
+          // Silently handle periodic fetch errors
+        });
     }, REFRESH_INTERVAL);
     
     // Cleanup on unmount
