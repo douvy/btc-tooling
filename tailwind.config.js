@@ -12,7 +12,7 @@ module.exports = {
         'main-dark': '#0a0b0d',
         'card-bg': '#141519',
         'input-bg': '#1E2026',
-        'divider': '#2A2D33',
+        'divider': '#22262B',
         
         // Text color palette
         'white': '#FFFFFF',
