@@ -4,8 +4,10 @@ import { Tweet } from '@/types';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import TweetCard from './TweetCard';
+import TwitterIcon from './TwitterIcon';
 import ErrorBoundary from '../layout/ErrorBoundary';
 import { formatCompactNumber } from '@/lib/priceUtils';
+import TweetAction from './TweetAction';
 
 interface TwitterFeedProps {
   tweets: Tweet[];
@@ -94,25 +96,30 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
         <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6 flex items-center">
           BTC 
           <span className="mx-1 flex items-center">
-            <Image 
-              src="/images/x.jpg" 
-              alt="X logo" 
-              width={22} 
-              height={22} 
-              className="inline-block"
+            <TwitterIcon 
+              platform="x"
+              size="sm"
+              ariaLabel="Bitcoin X feed" 
             />
           </span> 
           Insights
         </h2>
         <div className="space-y-0 -mt-4">
-          {tweets.map((tweet, index) => (
-            <TweetCard 
-              key={tweet.id} 
-              tweet={tweet} 
-              isLast={index === tweets.length - 1} 
-              onImageClick={() => openImageModal(tweet)}
-            />
-          ))}
+          {tweets.map((tweet, index) => {
+            // Determine position variant based on index
+            const variant = index === 0 ? 'first' : 
+                          index === tweets.length - 1 ? 'last' : 'middle';
+            
+            return (
+              <TweetCard 
+                key={tweet.id} 
+                tweet={tweet} 
+                isLast={index === tweets.length - 1}
+                variant={variant}
+                onImageClick={() => openImageModal(tweet)}
+              />
+            );
+          })}
         </div>
 
         {/* Image Modal */}
@@ -179,10 +186,10 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
                 
                 <div className="flex items-center justify-between text-[#8a919e] text-sm font-proxima-nova">
                   <div className="flex space-x-6">
-                    <span><i className="fa-regular fa-comment mr-1" aria-hidden="true"></i> {formatCompactNumber(modalData.selectedTweet.comments)}</span>
-                    <span><i className="fa-regular fa-retweet mr-1" aria-hidden="true"></i> {formatCompactNumber(modalData.selectedTweet.retweets)}</span>
-                    <span><i className="fa-regular fa-heart mr-1" aria-hidden="true"></i> {formatCompactNumber(modalData.selectedTweet.likes)}</span>
-                    <span><i className="fa-regular fa-chart-simple mr-1" aria-hidden="true"></i> {formatCompactNumber(modalData.selectedTweet.views)}</span>
+                    <TweetAction type="comment" count={formatCompactNumber(modalData.selectedTweet.comments)} />
+                    <TweetAction type="retweet" count={formatCompactNumber(modalData.selectedTweet.retweets)} />
+                    <TweetAction type="heart" count={formatCompactNumber(modalData.selectedTweet.likes)} />
+                    <TweetAction type="chart" count={formatCompactNumber(modalData.selectedTweet.views)} />
                   </div>
                 </div>
               </div>
@@ -202,7 +209,7 @@ function TwitterFeedFallback() {
     <div className="animate-pulse">
       <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6 flex items-center">
         BTC 
-        <span className="mx-1 flex items-center">
+        <span className="mx-1 flex items-center opacity-50">
           <div className="w-[22px] h-[22px] rounded-full bg-gray-800"></div>
         </span> 
         Insights
