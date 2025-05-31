@@ -19,8 +19,7 @@ type ConnectionStatus =
   | 'disconnected'   // Disconnected, not trying to reconnect
   | 'error'          // Error state, will try to reconnect
   | 'fallback_rest'  // Using REST API fallback
-  | 'fallback_cache' // Using cached data fallback
-  | 'fallback_mock'; // Using mock data fallback
+  | 'fallback_cache'; // Using cached data fallback
 type Exchange = 'bitfinex' | 'coinbase' | 'binance';
 
 // WebSocket URLs for different exchanges
@@ -130,15 +129,12 @@ export function useOrderBookWebSocket(
   const cachedOrderBookRef = useRef<OrderBook | null>(null);
   const cacheTimestampRef = useRef<number>(0);
 
-  // Helper function to apply mock data fallback
-  const setupMockData = useCallback(() => {
-    setConnectionStatus('fallback_mock');
-    const mockData = getMockOrderBook(exchange);
-    setOrderBook(mockData);
-    setLastUpdated(new Date());
-    setIsLoading(false);
-    return mockData;
-  }, [exchange]);
+  // Helper function to handle connection failures - no mock data
+  const handleConnectionFailure = useCallback(() => {
+    setConnectionStatus('error');
+    setError(new Error('Failed to establish WebSocket connection'));
+    setIsLoading(true);
+  }, []);
 
   // Function to update internal order book with simulated changes
   const updateInternalOrderBook = useCallback(() => {
@@ -236,12 +232,9 @@ export function useOrderBookWebSocket(
         socketRef.current = new WebSocket(BITFINEX_WEBSOCKET_URL);
       }
     } catch (error) {
-      setConnectionStatus('fallback_mock');
-      const mockData = getMockOrderBook(exchange);
-      internalOrderBookRef.current = mockData;
-      setOrderBook(mockData);
-      setLastUpdated(new Date());
-      setIsLoading(false);
+      setConnectionStatus('error');
+      setError(new Error('Failed to establish WebSocket connection'));
+      setIsLoading(true);
       return;
     }
   };
@@ -261,7 +254,7 @@ export function useOrderBookWebSocket(
     const handleOnline = () => {
       // If we were disconnected due to network issues, try to reconnect
       if (connectionStatus === 'disconnected' || connectionStatus === 'error' || 
-          connectionStatus === 'fallback_mock' || connectionStatus === 'reconnecting') {
+          connectionStatus === 'reconnecting') {
         // Reset reconnection attempts counter to give a fresh start
         reconnectAttemptsRef.current = 0;
         // Reconnect immediately
@@ -329,12 +322,9 @@ export function useOrderBookWebSocket(
         }
       };
       
-      // Initialize with mock data while waiting for real data
-      const mockData = getMockOrderBook(exchange);
-      internalOrderBookRef.current = mockData;
-      setOrderBook(mockData);
-      setLastUpdated(new Date());
-      setIsLoading(false);
+      // Don't use mock data immediately, let the WebSocket connection provide real data
+      // We'll just set isLoading to true until we get real data
+      setIsLoading(true);
       
       // Process incoming WebSocket messages from exchange
       socketRef.current.onmessage = (event) => {
@@ -671,14 +661,9 @@ export function useOrderBookWebSocket(
           
           // Check if we've exceeded max reconnection attempts
           if (reconnectAttemptsRef.current > options.maxReconnectAttempts) {
-            console.log(`[OrderBook] Max reconnection attempts (${options.maxReconnectAttempts}) exceeded, using fallback data`);
-            setConnectionStatus('fallback_mock');
-            
-            // Ensure we have fallback data
-            const mockData = getMockOrderBook(exchange);
-            internalOrderBookRef.current = mockData;
-            setOrderBook(mockData);
-            setLastUpdated(new Date());
+            console.log(`[OrderBook] Max reconnection attempts (${options.maxReconnectAttempts}) exceeded`);
+            setConnectionStatus('error');
+            setError(new Error(`Failed to reconnect after ${options.maxReconnectAttempts} attempts`));
             return;
           }
           
@@ -703,13 +688,8 @@ export function useOrderBookWebSocket(
         
         // If this is an abnormal closure (not intentional), attempt to reconnect
         if (event.code !== 1000) { // 1000 = normal closure
-          // First ensure we have usable data while reconnecting
-          if (!internalOrderBookRef.current) {
-            const tempData = getMockOrderBook(exchange);
-            internalOrderBookRef.current = tempData;
-            setOrderBook(tempData);
-            setLastUpdated(new Date());
-          }
+          // Don't use mock data while reconnecting unless absolutely necessary
+          // Just maintain loading state until we get real data
           
           // Then attempt to reconnect
           attemptReconnect();
@@ -732,10 +712,9 @@ export function useOrderBookWebSocket(
       // No interval to cleanup if we're not using simulation
       
     } catch (err) {
-      // Silently handle mock data setup errors
+      // Handle connection errors
       setError(err instanceof Error ? err : new Error('Failed to initialize order book data'));
-      // Use our setupMockData function to handle fallback
-      setupMockData();
+      handleConnectionFailure();
     }
     
     // Clean up function
@@ -767,7 +746,7 @@ export function useOrderBookWebSocket(
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [exchange, symbol, updateInternalOrderBook, setupMockData]);
+  }, [exchange, symbol, updateInternalOrderBook, handleConnectionFailure]);
 
   // Track update times for performance metrics
   const updateTimesRef = useRef<number[]>([]);
@@ -947,10 +926,8 @@ export function useOrderBookWebSocket(
   
   // Simulate real-time order book updates and track performance measurements
   useEffect(() => {
-    // Only run on client
-    if (typeof window === 'undefined' || connectionStatus !== 'fallback_mock') {
-      return;
-    }
+    // We removed the simulation mode that was triggered by fallback_mock
+    return;
     
     // Generate random updates to the orderbook extremely frequently (20-50ms for real-time feel)
     const updateInterval = setInterval(() => {
