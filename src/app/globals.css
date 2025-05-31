@@ -61,6 +61,11 @@ button:focus,
   }
 }
 
+/* Ensure all buttons have pointer cursor by default */
+button:not([disabled]):not(.cursor-default):not(.cursor-not-allowed) {
+  cursor: pointer !important;
+}
+
 /* Enhanced animations for price updates with more pronounced visual feedback */
 @keyframes pulse-green {
   0% {
