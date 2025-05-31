@@ -23,20 +23,20 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
       <div>
         <div className="flex items-start mb-3">
           <div>
-            <p className="text-[#8a919e] text-sm">{displayDate}</p>
+            <p className="text-muted text-sm">{displayDate}</p>
           </div>
         </div>
         
-        <div className="text-base text-[#b4b8c1]">
+        <div className="text-base text-secondary">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Assessment:</span>
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-light-gray">Assessment:</span>
             </span> The Bitcoin market in May 2025 stands at a pivotal juncture, characterized by a record-high price of approximately $109,522, yet exhibiting a complex interplay of bullish on-chain metrics, maturing market structures, significant institutional inflows, and a rapidly evolving macroeconomic and geopolitical landscape. While many indicators suggest continued strength and potential for further upside, underlying liquidity concerns, particularly related to U.S. Treasury debt refinancing, and the unpredictable nature of global policy shifts, introduce significant uncertainties.
           </p>
           
           <p className={`${expanded ? 'mb-3' : 'mb-0'}`}>
             <span className="font-fuji-bold text-base">
-              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-[#d0d2d8]">Strategic Outlook:</span>
+              <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-light-gray">Strategic Outlook:</span>
             </span> {initialAssessment}
             <span 
               className={`transition-opacity duration-300 ease-in-out ${expanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden inline-block'}`}
@@ -61,7 +61,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           >
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
-                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-[#d0d2d8]">Sentiment:</span>
+                <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-light-gray">Sentiment:</span>
               </span> The Fear & Greed Index was at 66 ("Greed") as of May 18, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.
             </p>
             

@@ -29,14 +29,14 @@ export default function TimeframeSelector({
     // Desktop variant (default)
     if (variant === 'default') {
       return classNames(baseClasses, 'px-4 py-2 text-sm', {
-        'bg-[#1c2232] text-primary rounded-sm': isActive,
+        'bg-dark-navy text-primary rounded-sm': isActive,
       });
     }
     
     // Medium screens variant
     if (variant === 'medium') {
       return classNames(baseClasses, 'px-3 py-1.5 text-sm', {
-        'bg-[#001e3c] text-[#FF9900]': isActive,
+        'bg-dark-blue text-btc-alt': isActive,
       });
     }
     
@@ -44,11 +44,11 @@ export default function TimeframeSelector({
     if (sizeSmaller) {
       // Increased padding and font size for mobile
       return classNames(baseClasses, 'px-3.5 py-1.5 text-sm', {
-        'bg-[#001e3c] text-[#FF9900]': isActive,
+        'bg-dark-blue text-btc-alt': isActive,
       });
     } else {
       return classNames(baseClasses, 'px-3 py-2 text-sm', {
-        'bg-[#001e3c] text-[#FF9900]': isActive,
+        'bg-dark-blue text-btc-alt': isActive,
       });
     }
   };

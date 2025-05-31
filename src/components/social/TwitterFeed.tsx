@@ -169,22 +169,22 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
                           className="hover:underline"
                         >
                           {modalData.selectedTweet.username}
-                          <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{modalData.selectedTweet.handle}</span>
+                          <span className="text-subtle text-base font-fuji-regular"> @{modalData.selectedTweet.handle}</span>
                         </a>
                       ) : (
                         <>
                           {modalData.selectedTweet.username}
-                          <span className="text-[#c2c5cc] text-base font-fuji-regular"> @{modalData.selectedTweet.handle}</span>
+                          <span className="text-subtle text-base font-fuji-regular"> @{modalData.selectedTweet.handle}</span>
                         </>
                       )}
                     </p>
-                    <p className="text-[#c2c5cc] text-sm mt-1">{modalData.selectedTweet.time}</p>
+                    <p className="text-subtle text-sm mt-1">{modalData.selectedTweet.time}</p>
                   </div>
                 </div>
                 
-                <p className="text-base mb-4 text-[#b4b8c1] whitespace-pre-line">{modalData.selectedTweet.text}</p>
+                <p className="text-base mb-4 text-secondary whitespace-pre-line">{modalData.selectedTweet.text}</p>
                 
-                <div className="flex items-center justify-between text-[#8a919e] text-sm font-proxima-nova">
+                <div className="flex items-center justify-between text-muted text-sm font-proxima-nova">
                   <div className="flex space-x-6">
                     <TweetAction type="comment" count={formatCompactNumber(modalData.selectedTweet.comments)} />
                     <TweetAction type="retweet" count={formatCompactNumber(modalData.selectedTweet.retweets)} />

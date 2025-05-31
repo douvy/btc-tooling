@@ -70,7 +70,7 @@ export default function TweetAction({
   };
   
   // Base classes for the component
-  const baseClasses = `inline-flex items-center text-[#8a919e] transition-colors duration-200 ${sizeClasses[size]} ${className}`;
+  const baseClasses = `inline-flex items-center text-muted transition-colors duration-200 ${sizeClasses[size]} ${className}`;
   
   // Determine if it's clickable
   const clickableClasses = onClick ? 'cursor-pointer hover:text-primary' : '';

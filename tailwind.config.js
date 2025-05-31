@@ -14,17 +14,40 @@ module.exports = {
         'input-bg': '#1E2026',
         'divider': '#2A2D33',
         
+        // Text color palette
+        'white': '#FFFFFF',
+        'secondary': '#b4b8c1',
+        'muted': '#8a919e',
+        'muted-hover': '#7a8090', // Slightly darker than muted for hover states
+        'subtle': '#c2c5cc',
+        'dim': '#666666',
+        'light-gray': '#d0d2d8',
+        'dark-grayish-blue': '#81919e',
+        
         // Primary brand colors
         'primary': '#FF6600',
+        'primary-hover': '#FF8833',
+        'primary-active': '#E65C00',
         
         // Status colors
         'success': '#27ad75',
+        'success-light': '#4eca92',
         'success-ghost': 'rgba(34, 197, 94, 0.15)',
         'error': '#f0616d',
+        'error-light': '#f58a93',
         'error-ghost': 'rgba(239, 68, 68, 0.15)',
+        'warning': '#f5a623',
+        'info': '#3b82f6',
         
         // Crypto-specific colors
         'btc': '#FF6600',
+        'btc-alt': '#FF9900',
+        
+        // UI element backgrounds
+        'dark-blue': '#001e3c',
+        'dark-navy': '#1c2232',
+        'dark-card': '#14151A',
+        'card-border': '#21232A',
       },
       fontFamily: {
         'fuji-bold': ['Fuji-Bold', 'sans-serif'],
@@ -32,6 +55,7 @@ module.exports = {
         'gotham-bold': ['GothamCondensed-Bold', 'sans-serif'],
         'gotham-medium': ['GothamCondensed-Medium', 'sans-serif'],
         'gotham-light': ['GothamCondensed-Light', 'sans-serif'],
+        'proxima-nova': ['Proxima Nova', 'sans-serif'],
       },
       keyframes: {
         fadeIn: {
@@ -69,7 +93,24 @@ module.exports = {
       },
       gridTemplateColumns: {
         '18': 'repeat(18, minmax(0, 1fr))',
-      }
+      },
+      transitionTimingFunction: {
+        'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
+        'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
+      },
+      transitionDuration: {
+        '400': '400ms',
+      },
+      borderRadius: {
+        'xl': '1rem',
+      },
+      spacing: {
+        '18': '4.5rem',
+      },
+      boxShadow: {
+        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      },
     },
   },
   plugins: [],

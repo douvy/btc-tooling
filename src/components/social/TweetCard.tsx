@@ -88,20 +88,20 @@ export default function TweetCard({
                 onClick={(e) => e.stopPropagation()}
               >
                 {tweet.username}
-                <span className={`text-[#c2c5cc] text-base ${fontFamilies.fujiRegular}`}> @{tweet.handle}</span>
+                <span className={`text-subtle text-base ${fontFamilies.fujiRegular}`}> @{tweet.handle}</span>
               </a>
             ) : (
               <>
                 {tweet.username}
-                <span className={`text-[#c2c5cc] text-base ${fontFamilies.fujiRegular}`}> @{tweet.handle}</span>
+                <span className={`text-subtle text-base ${fontFamilies.fujiRegular}`}> @{tweet.handle}</span>
               </>
             )}
           </p>
-          <p className="text-[#c2c5cc] text-sm mt-1">{tweet.time}</p>
+          <p className="text-subtle text-sm mt-1">{tweet.time}</p>
         </div>
       </div>
       
-      <div className="text-base mb-2 text-[#b4b8c1]">
+      <div className="text-base mb-2 text-secondary">
         <p className="whitespace-pre-line">
           {initialText}
           <span 
@@ -146,7 +146,7 @@ export default function TweetCard({
         </div>
       )}
       
-      <div className="flex items-center text-[#8a919e] text-sm font-proxima-nova">
+      <div className="flex items-center text-muted text-sm font-proxima-nova">
         <div className="flex space-x-4">
           <TweetAction type="comment" count={formatCompactNumber(tweet.comments)} />
           <TweetAction type="retweet" count={formatCompactNumber(tweet.retweets)} />
