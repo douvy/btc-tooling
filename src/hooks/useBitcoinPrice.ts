@@ -6,6 +6,10 @@ import { devLog, devWarn, logError } from '@/lib/api/logger';
 const ANIMATION_DURATION = 1500;
 const REFRESH_INTERVAL = 5000; // 5 seconds between refreshes - using Coinbase WebSocket API
 
+/**
+ * Type definitions for the return value of the useBitcoinPrice hook
+ * All properties are explicitly typed to ensure type safety
+ */
 interface UseBitcoinPriceResult {
   timeframe: TimeFrame;
   setTimeframe: (timeframe: TimeFrame) => void;
