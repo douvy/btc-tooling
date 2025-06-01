@@ -1,38 +1,34 @@
 /**
- * Coinbase WebSocket API endpoint
- * Provides real-time Bitcoin price updates without rate limits
+ * Coinbase Real-time Bitcoin Price API
  * 
- * This endpoint:
- * 1. Establishes a WebSocket connection to Coinbase's public WebSocket API
- * 2. Subscribes to the BTC-USD ticker channel for real-time price updates
- * 3. Stores the latest price in memory for efficient retrieval
- * 4. Provides a REST API to access the latest price data
+ * Provides consistent real-time Bitcoin price updates across all environments.
  * 
- * Benefits:
- * - Completely free with no API rate limits
- * - Updates multiple times per second (sub-second latency)
- * - Single persistent connection shared by all clients
- * - Low resource usage on both server and client
+ * Key features:
+ * 1. Uses the same data source consistently in both development and production
+ * 2. Multiple redundant API sources to ensure reliability
+ * 3. Strict cache control to ensure fresh data
+ * 4. Consistent response format for deterministic percentage calculations
  */
 
+// Initialize price tracking variables
 let lastPrice = null;
 let lastUpdateTime = 0;
+let lastSource = null;
 
-// Initialize WebSocket connection (for server-side only)
+// In-memory cache TTL (15 seconds)
+const CACHE_TTL = 15000;
+
+// Keep WebSocket implementation for development environments
 let ws = null;
 
 // Setup WebSocket connection if running on server
-// Note: In production, Vercel serverless functions don't maintain persistent connections
-// We'll need to handle this differently for production vs development
+// This only works in development as Vercel serverless functions don't maintain connections
 if (typeof global !== 'undefined') {
   try {
-    // Use the WebSocket API from Coinbase which has no rate limits
     const WebSocket = require('ws');
     ws = new WebSocket('wss://ws-feed.exchange.coinbase.com');
     
     ws.on('open', function open() {
-      
-      // Subscribe to BTC-USD ticker
       const subscribeMsg = {
         type: 'subscribe',
         product_ids: ['BTC-USD'],
@@ -46,10 +42,10 @@ if (typeof global !== 'undefined') {
       try {
         const message = JSON.parse(data.toString());
         
-        // Only process ticker messages
         if (message.type === 'ticker' && message.product_id === 'BTC-USD') {
           lastPrice = parseFloat(message.price);
           lastUpdateTime = Date.now();
+          lastSource = 'websocket';
         }
       } catch (err) {
         // Error processing message
@@ -61,7 +57,6 @@ if (typeof global !== 'undefined') {
     });
     
     ws.on('close', function close() {
-      // Try to reconnect after a delay
       setTimeout(() => {
         ws = new WebSocket('wss://ws-feed.exchange.coinbase.com');
       }, 5000);
@@ -72,105 +67,133 @@ if (typeof global !== 'undefined') {
 }
 
 export default async function handler(req, res) {
-  // CRITICAL FOR PRODUCTION: Add CORS headers
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  // If it's a preflight request, send 200
+  // Handle preflight request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
-  // VERY IMPORTANT: Set headers to prevent caching of this API response
-  // This ensures we always get fresh price data
+  // Set cache prevention headers
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.setHeader('Surrogate-Control', 'no-store');
   
-
-  // In production, always make a direct API call for fresh data
-  // In development, use WebSocket if available
-  if (process.env.NODE_ENV === 'production' || !lastPrice) {
-    
+  // Check if we have fresh cached data (less than 15 seconds old)
+  const now = Date.now();
+  const isCacheFresh = lastPrice !== null && (now - lastUpdateTime < CACHE_TTL);
+  
+  // IMPORTANT: Use the same approach in both production and development
+  // Always try HTTP APIs first for consistency, only use WebSocket as fallback
+  
+  // First attempt: Try HTTP APIs for fresh data
+  if (!isCacheFresh) {
     try {
-      // Try multiple price sources for reliability
-      const coinbasePromise = fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', {
-        headers: { 'Cache-Control': 'no-cache' }
-      });
+      // Set up abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       
-      // Add a backup API in case Coinbase fails
-      const backupPromise = fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
-        headers: { 'Cache-Control': 'no-cache' }
-      });
-      
-      // Race the promises to get the fastest response
-      const responses = await Promise.allSettled([coinbasePromise, backupPromise]);
-      
-      // Try Coinbase first
-      if (responses[0].status === 'fulfilled') {
-        const response = responses[0].value;
-        const data = await response.json();
-        
-        if (data && data.data && data.data.amount) {
-          const price = parseFloat(data.data.amount);
-          
-          return res.status(200).json({
-            success: true,
-            price: price,
-            timestamp: Date.now(),
-            source: 'coinbase-direct'
-          });
-        }
-      }
-      
-      // Try CoinGecko as backup
-      if (responses[1].status === 'fulfilled') {
-        const response = responses[1].value;
-        const data = await response.json();
-        
-        if (data && data.bitcoin && data.bitcoin.usd) {
-          const price = data.bitcoin.usd;
-          
-          return res.status(200).json({
-            success: true,
-            price: price,
-            timestamp: Date.now(),
-            source: 'coingecko-backup'
-          });
-        }
-      }
-      
-      throw new Error('All price APIs failed');
-    } catch (error) {
-      
-      // If direct API calls fail, try WebSocket as last resort
-      if (lastPrice && Date.now() - lastUpdateTime < 60000) { // Only use if less than 1 minute old
-        return res.status(200).json({
-          success: true,
-          price: lastPrice,
-          timestamp: lastUpdateTime,
-          age: Date.now() - lastUpdateTime,
-          source: 'websocket-fallback'
+      try {
+        // Try both APIs in parallel
+        const coinbasePromise = fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', {
+          headers: { 'Cache-Control': 'no-cache' },
+          signal: controller.signal
         });
+        
+        const coingeckoPromise = fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
+          headers: { 'Cache-Control': 'no-cache' },
+          signal: controller.signal
+        });
+        
+        // Wait for both promises
+        const responses = await Promise.allSettled([coinbasePromise, coingeckoPromise]);
+        
+        // Try Coinbase first (primary source)
+        if (responses[0].status === 'fulfilled') {
+          const response = responses[0].value;
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data && data.data && data.data.amount) {
+              const price = parseFloat(data.data.amount);
+              
+              // Update the cache
+              lastPrice = price;
+              lastUpdateTime = now;
+              lastSource = 'coinbase-direct';
+              
+              return res.status(200).json({
+                success: true,
+                price: price,
+                timestamp: now,
+                source: 'coinbase-direct'
+              });
+            }
+          }
+        }
+        
+        // Try CoinGecko as backup
+        if (responses[1].status === 'fulfilled') {
+          const response = responses[1].value;
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data && data.bitcoin && data.bitcoin.usd) {
+              const price = parseFloat(data.bitcoin.usd);
+              
+              // Update the cache
+              lastPrice = price;
+              lastUpdateTime = now;
+              lastSource = 'coingecko-backup';
+              
+              return res.status(200).json({
+                success: true,
+                price: price,
+                timestamp: now,
+                source: 'coingecko-backup'
+              });
+            }
+          }
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
-      
-      // If everything fails, return error
-      return res.status(200).json({
-        success: false,
-        message: 'Real-time price not available',
-        timestamp: Date.now()
-      });
+    } catch (error) {
+      // API errors will fall through to the next section
     }
   }
   
-  // In development, use WebSocket price if available
+  // Second attempt: Use WebSocket data if available (both dev and prod as fallback)
+  if (lastPrice !== null && lastSource === 'websocket' && (now - lastUpdateTime < 60000)) {
+    return res.status(200).json({
+      success: true,
+      price: lastPrice,
+      timestamp: lastUpdateTime,
+      age: now - lastUpdateTime,
+      source: 'websocket'
+    });
+  }
+  
+  // Third attempt: Use any cached data even if older than preferred TTL
+  if (lastPrice !== null) {
+    return res.status(200).json({
+      success: true,
+      price: lastPrice,
+      timestamp: lastUpdateTime,
+      age: now - lastUpdateTime,
+      source: `${lastSource}-stale`,
+      stale: true
+    });
+  }
+  
+  // Final fallback: Return error if all methods failed
   return res.status(200).json({
-    success: true,
-    price: lastPrice,
-    timestamp: lastUpdateTime,
-    age: Date.now() - lastUpdateTime,
-    source: 'websocket'
+    success: false,
+    message: 'Real-time price not available',
+    timestamp: now
   });
 }
