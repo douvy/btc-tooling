@@ -2,13 +2,27 @@ import { TimeFrame } from '@/types';
 import { useEffect, useState, useRef } from 'react';
 import FallbackChart from './FallbackChart';
 import TradingViewIframe from './TradingViewIframe';
+import { useAppContext } from '@/context/AppContext';
 
+/**
+ * Props for the PriceChart component
+ * All properties are optional since they can be provided via context
+ */
 interface PriceChartProps {
-  currentPrice: number;
-  timeframe: TimeFrame;
+  currentPrice?: number;
+  timeframe?: TimeFrame;
 }
 
-export default function PriceChart({ currentPrice, timeframe }: PriceChartProps) {
+export default function PriceChart({ 
+  currentPrice: propCurrentPrice, 
+  timeframe: propTimeframe 
+}: PriceChartProps = {}) {
+  // Get data from context if not provided via props
+  const { bitcoinData, timeframe: contextTimeframe } = useAppContext();
+  
+  // Use props if provided, otherwise use context values
+  const currentPrice = propCurrentPrice !== undefined ? propCurrentPrice : (bitcoinData?.price || 0);
+  const timeframe = propTimeframe || contextTimeframe;
   const [isLoading, setIsLoading] = useState(true);
   const [chartError, setChartError] = useState(false);
   const initialRenderRef = useRef(true);

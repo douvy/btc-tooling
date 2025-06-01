@@ -1,21 +1,49 @@
 import Image from 'next/image';
 import { useState } from 'react';
+import { AnalysisData } from '@/types';
 
-// Static component with hardcoded content for guaranteed deployment
-interface BTCAnalysisProps {
+/**
+ * Props for the BTCAnalysis component
+ */
+export interface BTCAnalysisProps {
+  /** 
+   * Optional date string override in format "MMM DD, YYYY"
+   * If not provided, uses date from analysisData or current date
+   */
   date?: string;
+  
+  /** Optional content override to replace default analysis text */
   content?: string;
+  
+  /** Optional structured analysis data */
+  analysisData?: AnalysisData;
 }
 
-export default function BTCAnalysis({ date }: BTCAnalysisProps) {
-  const displayDate = date || 'APR 18, 2025';
+/**
+ * Creates a formatted date string in "MMM DD, YYYY" format
+ */
+function getCurrentFormattedDate(): string {
+  return new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }).toUpperCase();
+}
+
+export default function BTCAnalysis({ date, content, analysisData }: BTCAnalysisProps) {
+  // Use dynamic date with fallback hierarchy: props date → analysisData date → current date
+  const displayDate = date || (analysisData?.date) || getCurrentFormattedDate();
   const [expanded, setExpanded] = useState(false);
   
-  // First half of assessment - shortened to move the Show More link 4 lines higher
-  const initialAssessment = "Bitcoin is likely in a mid-to-late stage bull market, but the cycle is being altered";
+  // Use data from analysisData if provided, otherwise use default content
+  const initialAssessment = analysisData?.strategicOutlook?.initial || 
+    "Bitcoin is likely in a mid-to-late stage bull market, but the cycle is being altered";
   
-  // Rest of assessment to show when expanded - includes the content that was removed from initial
-  const fullAssessment = " by institutional flows and macro factors. The confluence of high valuations, potential liquidity crunches, and policy uncertainties demands a strategic and risk-aware approach. If the Fed is forced into significant easing (Quantitative Support) as Howell predicts, this would likely ignite the next major leg up for Bitcoin.";
+  const fullAssessment = analysisData?.strategicOutlook?.full || 
+    " by institutional flows and macro factors. The confluence of high valuations, potential liquidity crunches, and policy uncertainties demands a strategic and risk-aware approach. If the Fed is forced into significant easing (Quantitative Support) as Howell predicts, this would likely ignite the next major leg up for Bitcoin.";
+    
+  // Optional attribution section if source or author is provided
+  const hasAttribution = analysisData?.source || analysisData?.author;
   
   return (
     <div>
@@ -31,7 +59,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-light-gray">Assessment:</span>
-            </span> The Bitcoin market in May 2025 stands at a pivotal juncture, characterized by a record-high price of approximately $109,522, yet exhibiting a complex interplay of bullish on-chain metrics, maturing market structures, significant institutional inflows, and a rapidly evolving macroeconomic and geopolitical landscape. While many indicators suggest continued strength and potential for further upside, underlying liquidity concerns, particularly related to U.S. Treasury debt refinancing, and the unpredictable nature of global policy shifts, introduce significant uncertainties.
+            </span> {analysisData?.assessment || "The Bitcoin market in May 2025 stands at a pivotal juncture, characterized by a record-high price of approximately $109,522, yet exhibiting a complex interplay of bullish on-chain metrics, maturing market structures, significant institutional inflows, and a rapidly evolving macroeconomic and geopolitical landscape. While many indicators suggest continued strength and potential for further upside, underlying liquidity concerns, particularly related to U.S. Treasury debt refinancing, and the unpredictable nature of global policy shifts, introduce significant uncertainties."}
           </p>
           
           <p className={`${expanded ? 'mb-3' : 'mb-0'}`}>
@@ -48,6 +76,7 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
               <button 
                 onClick={() => setExpanded(true)}
                 className="ml-1 text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
+                aria-expanded={expanded}
               >
                 Show More
               </button>
@@ -62,12 +91,21 @@ export default function BTCAnalysis({ date }: BTCAnalysisProps) {
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
                 <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-light-gray">Sentiment:</span>
-              </span> The Fear & Greed Index was at 66 ("Greed") as of May 18, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.
+              </span> {analysisData?.sentiment || `The Fear & Greed Index was at ${analysisData?.fearGreedIndex || 66} ("${analysisData?.fearGreedIndex && analysisData.fearGreedIndex > 50 ? 'Greed' : 'Fear'}") as of ${new Date(analysisData?.lastUpdated || '').toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) || 'May 18'}, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.`}
             </p>
+            
+            {hasAttribution && (
+              <p className="text-xs text-muted italic mt-2 mb-2">
+                {analysisData?.source && `Source: ${analysisData.source}`}
+                {analysisData?.source && analysisData?.author && ' | '}
+                {analysisData?.author && `Author: ${analysisData.author}`}
+              </p>
+            )}
             
             <button 
               onClick={() => setExpanded(false)}
               className="text-primary hover:text-primary/90 font-medium transition-colors duration-1000"
+              aria-expanded={expanded}
             >
               Show Less
             </button>

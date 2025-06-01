@@ -9,12 +9,13 @@ interface AmountControlProps {
   amount: string;
   onAmountChange: (amount: string) => void;
   isMobile: boolean;
+  ariaLabel?: string;
 }
 
 /**
  * Component for controlling BTC amount with increment/decrement buttons
  */
-export function AmountControl({ amount, onAmountChange, isMobile }: AmountControlProps) {
+export function AmountControl({ amount, onAmountChange, isMobile, ariaLabel }: AmountControlProps) {
   // Check if at min or max amount
   const isAtMinAmount = parseFloat(amount) <= MIN_AMOUNT;
   const isAtMaxAmount = parseFloat(amount) >= MAX_AMOUNT;
@@ -99,7 +100,7 @@ export function AmountControl({ amount, onAmountChange, isMobile }: AmountContro
             onChange={handleAmountChange}
             onBlur={handleBlur}
             className="w-full h-full bg-transparent text-sm text-white text-center outline-none px-8"
-            aria-label="Amount in BTC"
+            aria-label={ariaLabel || "Amount in BTC"}
           />
           <span className="absolute right-2 text-sm text-white">BTC</span>
         </div>

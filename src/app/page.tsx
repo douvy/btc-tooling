@@ -7,11 +7,10 @@ import BTCAnalysis from '@/components/social/BTCAnalysis';
 import TwitterFeed from '@/components/social/TwitterFeed';
 import AppHeader from '@/components/layout/AppHeader';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
-import { useBitcoinPrice } from '@/hooks/useBitcoinPrice';
-import { useHalvingData } from '@/hooks/useHalvingData';
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { featuredTweets } from '@/data/tweetData';
+import { useAppContext } from '@/context/AppContext';
 
 // Use dynamic import for OrderBook to ensure it only runs on client-side
 const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
@@ -35,7 +34,7 @@ const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
  * - Interactive price chart
  * - Order book visualization
  * - Halving countdown
- * - BTC analysis section
+ * - BTC analysis section with dynamic date
  * - Twitter/X Bitcoin insights
  * 
  * The layout adapts to different screen sizes with responsive design
@@ -44,64 +43,37 @@ const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
  * @returns The complete page with all Bitcoin tooling components
  */
 export default function Home() {
-  // Use our improved hook for Bitcoin price data with all timeframes
+  // Get all data from the centralized context
   const { 
-    timeframe, 
-    setTimeframe, 
     bitcoinData, 
-    isLoading, 
-    error, 
+    timeframe, 
+    setTimeframe,
+    isLoading,
+    error,
     isRefreshing,
     priceChangeDirection,
     latency,
-    connectionStatus
-  } = useBitcoinPrice('1D');
+    connectionStatus,
+    halvingData,
+    isHalvingLoading,
+    halvingError,
+    refreshHalvingData,
+    setGlobalError,
+    updateDocumentTitle
+  } = useAppContext();
   
-  // Use the halving data hook with refreshData function
-  const { 
-    halvingData, 
-    isLoading: isHalvingLoading, 
-    error: halvingError,
-    refreshData: refreshHalvingDataFromHook 
-  } = useHalvingData();
-
-  // Update document title with current BTC price
+  // Add explicit document title update on price change
   useEffect(() => {
+    // This is in addition to the context update, to ensure document title is updated
     if (bitcoinData && bitcoinData.price) {
-      // Format price with no decimal places for the title (to save space)
-      const formattedPrice = bitcoinData.price.toLocaleString('en-US', { 
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      });
-      
-      // Set document title with format: "$75,432 - BTC Tooling"
-      document.title = `$${formattedPrice} - BTC Tooling`;
+      updateDocumentTitle(bitcoinData.price);
     }
-  }, [bitcoinData]);
-
-  // Improved refresh function for manual refresh that doesn't reload the page
-  const refreshHalvingData = async () => {
-    try {
-      refreshHalvingDataFromHook();
-    } catch (err) {
-      // Silently handle refresh errors
-    }
-  };
+  }, [bitcoinData, updateDocumentTitle]);
 
   return (
     <div className="flex min-h-screen flex-col">
       <ErrorBoundary>
-        <AppHeader 
-          bitcoinData={bitcoinData}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-          isLoading={isLoading}
-          isRefreshing={isRefreshing}
-          error={error}
-          priceChangeDirection={priceChangeDirection}
-          latency={latency}
-          connectionStatus={connectionStatus}
-        />
+        <AppHeader />
       </ErrorBoundary>
 
       <main id="main-content" className="flex-1 flex flex-col" role="main">
@@ -118,8 +90,9 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
               <ErrorBoundary>
                 <OrderBook 
-                  currentPrice={bitcoinData?.price || 0} 
-                  priceChange={bitcoinData?.change || 0} 
+                  className="order-book-container"
+                  ariaLabel="Bitcoin order book from Bitfinex"
+                  onError={(error) => setGlobalError(error)}
                 />
               </ErrorBoundary>
               
@@ -127,12 +100,7 @@ export default function Home() {
                   Only visible on desktop/tablet (md and up) */}
               <div className="hidden md:block">
                 <ErrorBoundary>
-                  <HalvingCountdown 
-                    halvingInfo={halvingData} 
-                    isLoading={isHalvingLoading}
-                    error={halvingError}
-                    onRefresh={refreshHalvingData}
-                  />
+                  <HalvingCountdown />
                 </ErrorBoundary>
               </div>
             </div>
@@ -155,12 +123,7 @@ export default function Home() {
                 {/* Full-width divider to match other section dividers */}
                 <div className="mx-[-1.5rem] md:mx-[-2rem] border-t border-divider mb-8"></div>
                 <ErrorBoundary>
-                  <HalvingCountdown 
-                    halvingInfo={halvingData} 
-                    isLoading={isHalvingLoading}
-                    error={halvingError}
-                    onRefresh={refreshHalvingData}
-                  />
+                  <HalvingCountdown />
                 </ErrorBoundary>
               </div>
             </div>

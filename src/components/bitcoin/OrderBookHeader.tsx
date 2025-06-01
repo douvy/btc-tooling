@@ -3,6 +3,7 @@ import Image from 'next/image';
 interface OrderBookHeaderProps {
   isMobile: boolean;
   viewMode: 'sum' | 'total';
+  connectionStatus?: 'connected' | 'connecting' | 'disconnected' | 'error' | 'fallback_rest' | 'fallback_cache';
 }
 
 /**

@@ -1,19 +1,48 @@
 import { HalvingInfo } from '@/types';
 import { useState } from 'react';
+import { useAppContext } from '@/context/AppContext';
 
+/**
+ * Props for the HalvingCountdown component
+ * All props are optional as data can be fetched from context
+ */
 interface HalvingCountdownProps {
-  halvingInfo: HalvingInfo;
+  halvingInfo?: HalvingInfo;
   isLoading?: boolean;
   error?: Error | null;
   onRefresh?: () => void;
 }
 
 export default function HalvingCountdown({ 
-  halvingInfo, 
-  isLoading = false, 
-  error = null,
-  onRefresh 
+  halvingInfo: propHalvingInfo, 
+  isLoading: propIsLoading, 
+  error: propError,
+  onRefresh: propOnRefresh 
 }: HalvingCountdownProps) {
+  // Get data from context if not provided via props
+  const { 
+    halvingData: contextHalvingData,
+    isHalvingLoading: contextIsLoading,
+    halvingError: contextError,
+    refreshHalvingData: contextRefreshData
+  } = useAppContext();
+
+  // Use props if provided, otherwise use context values
+  const halvingInfo = propHalvingInfo || contextHalvingData;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : contextIsLoading;
+  const error = propError || contextError;
+  const onRefresh = propOnRefresh || contextRefreshData;
+
+  // Guard against missing data
+  if (!halvingInfo) {
+    return (
+      <div className="rounded-sm overflow-hidden p-4 bg-dark-card animate-pulse">
+        <div className="h-8 bg-gray-800 rounded w-1/3 mb-4"></div>
+        <div className="h-24 bg-gray-800 rounded mb-4"></div>
+        <div className="h-12 bg-gray-800 rounded"></div>
+      </div>
+    );
+  }
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -43,7 +72,7 @@ export default function HalvingCountdown({
         </h2>
         
         {/* Refresh button with proper loading state */}
-        {onRefresh && (
+        {!!onRefresh && (
           <button 
             onClick={handleRefresh} 
             disabled={isLoading || isRefreshing}

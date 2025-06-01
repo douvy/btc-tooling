@@ -46,3 +46,30 @@ export interface Tweet {
   likes: number;
   views: number;
 }
+
+/**
+ * Structured data for Bitcoin market analysis
+ */
+export interface AnalysisData {
+  /** Date of the analysis in "MMM DD, YYYY" format */
+  date: string;
+  /** Full assessment text */
+  assessment: string;
+  /** Strategic outlook analysis */
+  strategicOutlook: {
+    /** Initial part of the strategic outlook (shown before "Show More") */
+    initial: string;
+    /** Full strategic outlook text (shown after "Show More") */
+    full: string;
+  };
+  /** Sentiment analysis text */
+  sentiment: string;
+  /** Fear & Greed Index value (0-100) */
+  fearGreedIndex: number;
+  /** ISO date string of when the analysis was last updated */
+  lastUpdated: string;
+  /** Optional source attribution */
+  source?: string;
+  /** Optional author name */
+  author?: string;
+}

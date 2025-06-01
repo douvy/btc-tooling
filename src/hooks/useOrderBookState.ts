@@ -5,8 +5,11 @@ import { getMockOrderBook } from '@/lib/mockData';
 
 // Type definitions for the hook's return value
 interface UseOrderBookStateReturn {
+  /** The current state of the order book with processed data */
   localOrderBook: OrderBookType | null;
-  connectionStatus: string;
+  /** Current connection status to the WebSocket */
+  connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'error' | 'fallback_rest' | 'fallback_cache';
+  /** Record of which ask orders are currently animating due to updates */
   animatingAsks: Record<number, boolean>;
   animatingBids: Record<number, boolean>;
   lastUpdated: Date;
@@ -21,10 +24,16 @@ interface UseOrderBookStateReturn {
 /**
  * Custom hook to manage the order book state, including data loading,
  * real-time updates, animations, and performance metrics.
+ * 
+ * @param propOrderBook - Optional initial order book data
+ * @param currentPrice - Current Bitcoin price for calculations
+ * @param onError - Optional error handler callback
+ * @returns Processed order book data with animation states
  */
 export function useOrderBookState(
   propOrderBook?: OrderBookType,
-  currentPrice?: number
+  currentPrice?: number,
+  onError?: (error: Error) => void
 ): UseOrderBookStateReturn {
   // Fixed to 'bitfinex' exchange as per component requirements
   const selectedExchange = 'bitfinex';
@@ -129,9 +138,13 @@ export function useOrderBookState(
     // }
   }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
 
+  // Map connection status to our supported types
+  let mappedStatus: UseOrderBookStateReturn['connectionStatus'] = 
+    connectionStatus === 'reconnecting' ? 'connecting' : connectionStatus;
+  
   return {
     localOrderBook,
-    connectionStatus,
+    connectionStatus: mappedStatus,
     animatingAsks,
     animatingBids,
     lastUpdated,

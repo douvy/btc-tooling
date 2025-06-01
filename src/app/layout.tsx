@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "@/styles/fonts.css";
 import Script from "next/script";
+import { AppProvider } from '@/context/AppContext';
 
 export const metadata: Metadata = {
   title: "BTC Tooling",
@@ -22,6 +23,12 @@ export const metadata: Metadata = {
   },
 };
 
+// Client-side wrapper to provide context
+function Providers({ children }: { children: React.ReactNode }) {
+  'use client';
+  return <AppProvider>{children}</AppProvider>;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,7 +46,11 @@ export default function RootLayout({
         
         {/* Skip to main content link */}
         <a href="#main-content" className="skip-to-content">Skip to main content</a>
-        {children}
+        
+        {/* Global state provider - wrapped in client component */}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

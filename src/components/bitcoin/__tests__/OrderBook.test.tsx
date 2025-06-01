@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 
-// Import the OrderBook function component directly (not the default export which is a dynamic component)
-import { OrderBook } from '../OrderBook';
+// Import the OrderBook component
+import OrderBook from '../OrderBook';
 
 // Mock the useOrderBookWebSocket hook
 jest.mock('@/hooks/useOrderBookWebSocket', () => ({

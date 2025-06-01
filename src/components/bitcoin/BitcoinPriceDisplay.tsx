@@ -1,21 +1,28 @@
 import { TimeFrame, BitcoinPrice } from '@/types';
 import { useEffect, useRef, memo, useMemo } from 'react';
+import React from 'react';
 import classNames from 'classnames';
 import DesktopPriceDisplay from './DesktopPriceDisplay';
 import MediumPriceDisplay from './MediumPriceDisplay';
 import MobilePriceDisplay from './MobilePriceDisplay';
+import { useAppContext } from '@/context/AppContext';
 
-type PriceDisplayVariant = 'desktop' | 'medium' | 'mobile';
-type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
-type PriceChangeDirection = 'up' | 'down' | null;
+// Export these types for reuse in other components
+export type PriceDisplayVariant = 'desktop' | 'medium' | 'mobile';
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
+export type PriceChangeDirection = 'up' | 'down' | null;
 
-interface BitcoinPriceDisplayProps {
-  data: BitcoinPrice | null;
-  timeframe: TimeFrame;
-  onTimeframeChange: (timeframe: TimeFrame) => void;
-  isLoading: boolean;
-  isRefreshing: boolean;
-  error: Error | null;
+/**
+ * Props for the BitcoinPriceDisplay component
+ * All properties are optional since they can be provided via context
+ */
+export interface BitcoinPriceDisplayProps {
+  data?: BitcoinPrice | null;
+  timeframe?: TimeFrame;
+  onTimeframeChange?: (timeframe: TimeFrame) => void;
+  isLoading?: boolean;
+  isRefreshing?: boolean;
+  error?: Error | null;
   variant?: PriceDisplayVariant;
   priceChangeDirection?: PriceChangeDirection;
   latency?: number;
@@ -25,19 +32,43 @@ interface BitcoinPriceDisplayProps {
 /**
  * Component to display Bitcoin price with animations and responsive layouts
  * Delegates to variant-specific display components based on screen size
+ * Data can be supplied via props or retrieved from global context
  */
-function BitcoinPriceDisplay({
-  data,
-  timeframe,
-  onTimeframeChange,
-  isLoading,
-  isRefreshing,
-  error,
+const BitcoinPriceDisplay: React.FC<BitcoinPriceDisplayProps> = ({
+  data: propData,
+  timeframe: propTimeframe,
+  onTimeframeChange: propOnTimeframeChange,
+  isLoading: propIsLoading,
+  isRefreshing: propIsRefreshing,
+  error: propError,
   variant = 'desktop',
-  priceChangeDirection = null,
-  latency = 0,
-  connectionStatus = 'connected'
-}: BitcoinPriceDisplayProps) {
+  priceChangeDirection: propPriceChangeDirection = null,
+  latency: propLatency = 0,
+  connectionStatus: propConnectionStatus = 'connected'
+}) => {
+  // Get data from context if not provided via props
+  const {
+    bitcoinData: contextBitcoinData,
+    timeframe: contextTimeframe,
+    setTimeframe: contextSetTimeframe,
+    isLoading: contextIsLoading,
+    isRefreshing: contextIsRefreshing,
+    error: contextError,
+    priceChangeDirection: contextPriceChangeDirection,
+    latency: contextLatency,
+    connectionStatus: contextConnectionStatus
+  } = useAppContext();
+  
+  // Use props if provided, otherwise use context values
+  const data = propData || contextBitcoinData;
+  const timeframe = propTimeframe || contextTimeframe;
+  const onTimeframeChange = propOnTimeframeChange || contextSetTimeframe;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : contextIsLoading;
+  const isRefreshing = propIsRefreshing !== undefined ? propIsRefreshing : contextIsRefreshing;
+  const error = propError || contextError;
+  const priceChangeDirection = propPriceChangeDirection || contextPriceChangeDirection || null;
+  const latency = propLatency !== undefined ? propLatency : (contextLatency || 0);
+  const connectionStatus = propConnectionStatus || contextConnectionStatus || 'connected';
   // Track previous price for significant changes
   const prevPriceRef = useRef<number | null>(null);
   const prevTimeframeRef = useRef<TimeFrame>(timeframe);

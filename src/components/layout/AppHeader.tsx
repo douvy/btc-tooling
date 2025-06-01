@@ -1,41 +1,54 @@
 import Image from 'next/image';
 import { BitcoinPrice, TimeFrame } from '@/types';
-import BitcoinPriceDisplay from '@/components/bitcoin/BitcoinPriceDisplay';
+import BitcoinPriceDisplay, { BitcoinPriceDisplayProps } from '@/components/bitcoin/BitcoinPriceDisplay';
+import { useAppContext } from '@/context/AppContext';
 
 /**
  * Props interface for the AppHeader component
- * Matches the return type of the useBitcoinPrice hook
+ * All props are optional as data can be fetched from context
  */
 interface AppHeaderProps {
-  bitcoinData: BitcoinPrice | null;
-  timeframe: TimeFrame;
-  onTimeframeChange: (timeframe: TimeFrame) => void;
-  isLoading: boolean;
-  isRefreshing: boolean;
-  error: Error | null;
-  priceChangeDirection: 'up' | 'down' | null;
-  latency: number;
-  connectionStatus: 'connected' | 'connecting' | 'disconnected';
+  bitcoinData?: BitcoinPrice | null;
+  timeframe?: TimeFrame;
+  onTimeframeChange?: (timeframe: TimeFrame) => void;
+  isLoading?: boolean;
+  isRefreshing?: boolean;
+  error?: Error | null;
+  priceChangeDirection?: 'up' | 'down' | null;
+  latency?: number;
+  connectionStatus?: 'connected' | 'connecting' | 'disconnected';
 }
 
 /**
  * Main application header component that adapts to different screen sizes
  * Renders different header layouts based on viewport size and displays Bitcoin price data
  * 
- * @param props - Component props matching the useBitcoinPrice hook return type
  * @returns A responsive header with appropriate layout for current viewport
  */
-export default function AppHeader({
-  bitcoinData,
-  timeframe,
-  onTimeframeChange,
-  isLoading,
-  isRefreshing,
-  error,
-  priceChangeDirection,
-  latency,
-  connectionStatus,
-}: AppHeaderProps) {
+export default function AppHeader(props: AppHeaderProps = {}) {
+  // Get data from context
+  const {
+    bitcoinData: contextBitcoinData,
+    timeframe: contextTimeframe,
+    setTimeframe: contextSetTimeframe,
+    isLoading: contextIsLoading,
+    isRefreshing: contextIsRefreshing,
+    error: contextError,
+    priceChangeDirection: contextPriceChangeDirection,
+    latency: contextLatency,
+    connectionStatus: contextConnectionStatus
+  } = useAppContext();
+  
+  // Use props if provided, otherwise use context
+  const bitcoinData = props.bitcoinData || contextBitcoinData;
+  const timeframe = props.timeframe || contextTimeframe;
+  const onTimeframeChange = props.onTimeframeChange || contextSetTimeframe;
+  const isLoading = props.isLoading !== undefined ? props.isLoading : contextIsLoading;
+  const isRefreshing = props.isRefreshing !== undefined ? props.isRefreshing : contextIsRefreshing;
+  const error = props.error || contextError;
+  const priceChangeDirection = props.priceChangeDirection || contextPriceChangeDirection;
+  const latency = props.latency !== undefined ? props.latency : contextLatency;
+  const connectionStatus = props.connectionStatus || contextConnectionStatus;
   return (
     <header className="w-full border-b border-divider main-dark lg:sticky lg:top-0 z-20 backdrop-blur-md bg-main-dark bg-opacity-90" role="banner">
       {/* Desktop layout (lg and up) */}
@@ -69,7 +82,7 @@ export default function AppHeader({
 
       {/* Mobile price display - with increased padding and space */}
       <div className="md:hidden py-6 px-6">
-        <BitcoinPriceDisplay
+        <BitcoinPriceDisplay 
           data={bitcoinData}
           timeframe={timeframe}
           onTimeframeChange={onTimeframeChange}
@@ -79,7 +92,7 @@ export default function AppHeader({
           variant="mobile"
           priceChangeDirection={priceChangeDirection}
           latency={latency}
-          connectionStatus={connectionStatus}
+          connectionStatus={connectionStatus as any}
         />
       </div>
     </header>
@@ -109,7 +122,7 @@ function DesktopHeader({
       
       {/* Right side with price display - original API with latency monitor */}
       <div className="flex items-center">
-        <BitcoinPriceDisplay
+        <BitcoinPriceDisplay 
           data={bitcoinData}
           timeframe={timeframe}
           onTimeframeChange={onTimeframeChange}
@@ -119,7 +132,7 @@ function DesktopHeader({
           variant="desktop"
           priceChangeDirection={priceChangeDirection}
           latency={latency}
-          connectionStatus={connectionStatus}
+          connectionStatus={connectionStatus as any}
         />
       </div>
     </div>
@@ -149,7 +162,7 @@ function TabletHeader({
         </div>
         
         {/* Bitcoin price display - medium variant */}
-        <BitcoinPriceDisplay
+        <BitcoinPriceDisplay 
           data={bitcoinData}
           timeframe={timeframe}
           onTimeframeChange={onTimeframeChange}
@@ -159,7 +172,7 @@ function TabletHeader({
           variant="medium"
           priceChangeDirection={priceChangeDirection}
           latency={latency}
-          connectionStatus={connectionStatus}
+          connectionStatus={connectionStatus as any}
         />
       </div>
     </div>
