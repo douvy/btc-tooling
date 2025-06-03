@@ -6,12 +6,6 @@ import { AnalysisData } from '@/types';
  * Props for the BTCAnalysis component
  */
 export interface BTCAnalysisProps {
-  /** 
-   * Optional date string override in format "MMM DD, YYYY"
-   * If not provided, uses date from analysisData or current date
-   */
-  date?: string;
-  
   /** Optional content override to replace default analysis text */
   content?: string;
   
@@ -19,20 +13,7 @@ export interface BTCAnalysisProps {
   analysisData?: AnalysisData;
 }
 
-/**
- * Creates a formatted date string in "MMM DD, YYYY" format
- */
-function getCurrentFormattedDate(): string {
-  return new Date().toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  }).toUpperCase();
-}
-
-export default function BTCAnalysis({ date, content, analysisData }: BTCAnalysisProps) {
-  // Use dynamic date with fallback hierarchy: props date → analysisData date → current date
-  const displayDate = date || (analysisData?.date) || getCurrentFormattedDate();
+export default function BTCAnalysis({ content, analysisData }: BTCAnalysisProps) {
   const [expanded, setExpanded] = useState(false);
   
   // Use data from analysisData if provided, otherwise use default content
@@ -49,12 +30,6 @@ export default function BTCAnalysis({ date, content, analysisData }: BTCAnalysis
     <div>
       <h2 className="text-xl font-fuji-bold mb-2">BTC Analysis</h2>
       <div>
-        <div className="flex items-start mb-3">
-          <div>
-            <p className="text-muted text-sm">{displayDate}</p>
-          </div>
-        </div>
-        
         <div className="text-base text-secondary">
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
@@ -91,7 +66,7 @@ export default function BTCAnalysis({ date, content, analysisData }: BTCAnalysis
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
                 <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-light-gray">Sentiment:</span>
-              </span> {analysisData?.sentiment || `The Fear & Greed Index was at ${analysisData?.fearGreedIndex || 66} ("${analysisData?.fearGreedIndex && analysisData.fearGreedIndex > 50 ? 'Greed' : 'Fear'}") as of ${new Date(analysisData?.lastUpdated || '').toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) || 'May 18'}, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.`}
+              </span> {analysisData?.sentiment || `The Fear & Greed Index was at ${analysisData?.fearGreedIndex || 66} ("${analysisData?.fearGreedIndex && analysisData.fearGreedIndex > 50 ? 'Greed' : 'Fear'}") as of May 18, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.`}
             </p>
             
             {hasAttribution && (

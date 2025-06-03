@@ -109,7 +109,7 @@ export default function Home() {
           <aside className="md:w-[385px] block border-l border-divider" role="complementary"> 
             <div className="h-full overflow-y-auto px-6 pt-6 pb-[60px] md:px-8 md:pt-6 md:pb-8">
               <ErrorBoundary>
-                <BTCAnalysis date="MAY 21, 2025" />
+                <BTCAnalysis />
               </ErrorBoundary>
               
               <div className="mx-[-1.5rem] md:mx-[-2rem] border-b border-divider mb-12 mt-12 sm:mt-8 sm:mb-0"></div>
