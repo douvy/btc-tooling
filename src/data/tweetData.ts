@@ -3,6 +3,20 @@ import { Tweet } from '@/types';
 export const featuredTweets: Tweet[] = [
   {
     id: '1',
+    username: 'K A L E O',
+    handle: 'CryptoKaleo',
+    profileImage: 'kaleo.png',
+    text: '#Bitcoin / $BTC\n\nLOAD THE NEXT LEG HIGHER',
+    time: '11:23 PM · JUN 3, 2025',
+    image: 'kaleo-post.jpg',
+    link: 'https://x.com/CryptoKaleo/status/1929921950714822893',
+    comments: 34,
+    retweets: 36,
+    likes: 479,
+    views: 38500
+  },
+  {
+    id: '2',
     username: '🐧 Pentoshi',
     handle: 'Pentosh1',
     profileImage: 'pentoshi.jpg',
@@ -16,7 +30,7 @@ export const featuredTweets: Tweet[] = [
     views: 34400
   },
   {
-    id: '2',
+    id: '3',
     username: 'Jelle',
     handle: 'CryptoJelleNL',
     profileImage: 'jelle.jpg',
@@ -30,7 +44,7 @@ export const featuredTweets: Tweet[] = [
     views: 7380
   },
   {
-    id: '3',
+    id: '4',
     username: 'Bitcoin Archive',
     handle: 'BTC_Archive',
     profileImage: 'bitcoin-archive.jpg',
@@ -41,19 +55,5 @@ export const featuredTweets: Tweet[] = [
     retweets: 332,
     likes: 2500,
     views: 70600
-  },
-  {
-    id: '4',
-    username: 'K A L E O',
-    handle: 'CryptoKaleo',
-    profileImage: 'kaleo.png',
-    text: '#Bitcoin / $BTC\n\nBe more bullish.',
-    time: '1:33 PM · JUN 2, 2025',
-    image: 'kaleo-post.jpg',
-    link: 'https://x.com/CryptoKaleo/status/1929651269104554314',
-    comments: 137,
-    retweets: 265,
-    likes: 1700,
-    views: 95300
   },
 ];
