@@ -18,10 +18,10 @@ export default function BTCAnalysis({ content, analysisData }: BTCAnalysisProps)
   
   // Use data from analysisData if provided, otherwise use default content
   const initialAssessment = analysisData?.strategicOutlook?.initial || 
-    "Bitcoin is likely in a mid-to-late stage bull market, but the cycle is being altered";
+    "The Bitcoin market is in a unique phase, less driven by its own idiosyncratic cycles";
   
   const fullAssessment = analysisData?.strategicOutlook?.full || 
-    " by institutional flows and macro factors. The confluence of high valuations, potential liquidity crunches, and policy uncertainties demands a strategic and risk-aware approach. If the Fed is forced into significant easing (Quantitative Support) as Howell predicts, this would likely ignite the next major leg up for Bitcoin.";
+    " and more by the confluence of institutional adoption and macroeconomic, particularly fiscal, policy. Bitcoin is likely in a mid-to-late stage bull market, but the characteristics are different from past cycles due to institutional involvement and ETF flows. The institutionalization of Bitcoin via ETFs and treasury holdings provides a strong long-term demand base, though the path will be shaped by how governments and central banks manage inflation, debt, and economic growth. A scenario of high fiscal spending accommodated by central bank balance sheet expansion is the most bullish for Bitcoin.";
     
   // Optional attribution section if source or author is provided
   const hasAttribution = analysisData?.source || analysisData?.author;
@@ -34,7 +34,7 @@ export default function BTCAnalysis({ content, analysisData }: BTCAnalysisProps)
           <p className="mb-3">
             <span className="font-fuji-bold text-base">
               <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i> <span className="text-light-gray">Assessment:</span>
-            </span> {analysisData?.assessment || "The Bitcoin market in May 2025 stands at a pivotal juncture, characterized by a record-high price of approximately $109,522, yet exhibiting a complex interplay of bullish on-chain metrics, maturing market structures, significant institutional inflows, and a rapidly evolving macroeconomic and geopolitical landscape. While many indicators suggest continued strength and potential for further upside, underlying liquidity concerns, particularly related to U.S. Treasury debt refinancing, and the unpredictable nature of global policy shifts, introduce significant uncertainties."}
+            </span> {analysisData?.assessment || "The Bitcoin market in mid-2025 stands at a pivotal juncture at $104,772.94, characterized by unprecedented institutional adoption and evolving on-chain dynamics that suggest a maturing asset class. While Bitcoin has achieved new all-time highs above $100,000, driven significantly by spot ETF inflows and a narrative of fiscal dominance, on-chain metrics (CDD, VDD Multiple, MVRV Z-Score) remain moderate compared to previous cycle peaks, indicating strong long-term holder conviction without extreme euphoria. The market is no longer solely driven by crypto-native cycles, increasingly intertwined with traditional finance and macroeconomic policy shifts."}
           </p>
           
           <p className={`${expanded ? 'mb-3' : 'mb-0'}`}>
@@ -66,7 +66,7 @@ export default function BTCAnalysis({ content, analysisData }: BTCAnalysisProps)
             <p className="mb-3">
               <span className="font-fuji-bold text-base">
                 <i className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle" aria-hidden="true"></i>  <span className="text-light-gray">Sentiment:</span>
-              </span> {analysisData?.sentiment || `The Fear & Greed Index was at ${analysisData?.fearGreedIndex || 66} ("${analysisData?.fearGreedIndex && analysisData.fearGreedIndex > 50 ? 'Greed' : 'Fear'}") as of May 18, up from 32 ("Fear") last month and down from a recent high of 75. WatcherGuru and Trump Telegram feeds reflect overwhelmingly bullish sentiment driven by trade deal announcements, pro-crypto regulatory news, and Trump-era policy signals. QCP Broadcast described the environment as "cautiously constructive," noting that while the trend is up, tactical caution is warranted due to policy volatility and macro crosscurrents.`}
+              </span> {analysisData?.sentiment || `The CMC Fear & Greed Index currently sits at 55 (Neutral), recovering from "Extreme Fear" in March 2025. QCP Capital highlights "retail euphoria remains alive and well" and a "growing conviction behind a bullish breakout narrative," with fiscal dominance as a key sentiment driver. Markets seem "inured to negative developments," indicating a strong underlying bid heavily focused on macroeconomic narratives rather than crypto-specific factors. The focus on "fiscal dominance" by sophisticated investors indicates that macro narratives are heavily influencing crypto sentiment.`}
             </p>
             
             {hasAttribution && (
