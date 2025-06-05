@@ -96,21 +96,31 @@ export const boxShadows = {
 
 /**
  * Tweet card variants for different positions in the feed
+ * Each position has specific spacing requirements for visual hierarchy
  */
 export const tweetCardVariants = {
+  // First tweet - standard top padding, larger bottom padding
   first: {
     paddingTop: spacing.base,
     paddingBottom: spacing.xl,
     marginBottom: spacing.lg,
   },
+  // Second tweet - slight top padding, standard bottom
   middle: {
-    paddingTop: spacing.none,
+    paddingTop: spacing.sm,    // Increased from none to sm (8px)
     paddingBottom: spacing.xl,
     marginBottom: spacing.sm,
   },
+  // Third tweet - moderate top padding (less than before)
+  third: {
+    paddingTop: spacing.lg,    // Reduced from xl (32px) to lg (24px)
+    paddingBottom: spacing.xl,
+    marginBottom: spacing.sm,
+  },
+  // Last tweet - more top padding, minimal bottom padding
   last: {
-    paddingTop: spacing.md,
-    paddingBottom: spacing.none,
-    marginBottom: '-4px', // Adjust negative margin for better visual alignment
+    paddingTop: spacing.lg,    // Increased from md (12px) to lg (24px)
+    paddingBottom: spacing.none, // No bottom padding at all
+    marginBottom: spacing.none,
   },
 };

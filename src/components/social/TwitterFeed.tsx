@@ -106,9 +106,21 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
         </h2>
         <div className="space-y-0 -mt-4">
           {tweets.map((tweet, index) => {
-            // Determine position variant based on index
-            const variant = index === 0 ? 'first' : 
-                          index === tweets.length - 1 ? 'last' : 'middle';
+            // Define variant with proper type
+            let variant: 'first' | 'middle' | 'third' | 'last';
+            
+            // Special case for exactly 4 tweets
+            if (tweets.length === 4) {
+              // Apply specific styling for 3rd tweet in a 4-tweet list
+              if (index === 0) variant = 'first';
+              else if (index === 1) variant = 'middle';
+              else if (index === 2) variant = 'third';  // Special variant for 3rd tweet
+              else variant = 'last';
+            } else {
+              // Default behavior for other cases
+              variant = index === 0 ? 'first' : 
+                      index === tweets.length - 1 ? 'last' : 'middle';
+            }
             
             return (
               <TweetCard 

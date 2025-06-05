@@ -5,7 +5,7 @@ import { formatCompactNumber } from '@/lib/priceUtils';
 import TweetAction from './TweetAction';
 import { fontFamilies, tweetCardVariants, transitions } from '@/styles/tokens';
 
-type PositionVariant = 'first' | 'middle' | 'last';
+type PositionVariant = 'first' | 'middle' | 'third' | 'last';
 
 interface TweetCardProps {
   /**
@@ -38,12 +38,8 @@ export default function TweetCard({
   variant,
   onImageClick 
 }: TweetCardProps) {
-  // Determine the variant based on tweet ID or passed variant prop
-  const cardVariant = variant || (
-    tweet.id === '1' ? 'first' : 
-    tweet.id === '2' ? 'middle' : 
-    'last'
-  );
+  // Always use the variant provided by the parent component
+  const cardVariant = variant || 'middle';
   
   // Apply variant-specific spacing
   const variantStyle = tweetCardVariants[cardVariant];
