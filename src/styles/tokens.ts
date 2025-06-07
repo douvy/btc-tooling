@@ -101,25 +101,25 @@ export const boxShadows = {
 export const tweetCardVariants = {
   // First tweet - standard top padding, larger bottom padding
   first: {
-    paddingTop: spacing.base,
-    paddingBottom: spacing.xl,
-    marginBottom: spacing.lg,
+    paddingTop: spacing.md,    // Reduced from base (16px) to md (12px)
+    paddingBottom: spacing.lg, // Reduced from xl (32px) to lg (24px)
+    marginBottom: spacing.base, // Reduced from lg (24px) to base (16px)
   },
   // Second tweet - slight top padding, standard bottom
   middle: {
-    paddingTop: spacing.sm,    // Increased from none to sm (8px)
-    paddingBottom: spacing.xl,
-    marginBottom: spacing.sm,
+    paddingTop: spacing.xs,    // Reduced from sm (8px) to xs (4px)
+    paddingBottom: spacing.lg, // Reduced from xl (32px) to lg (24px)
+    marginBottom: spacing.xs,  // Reduced from sm (8px) to xs (4px)
   },
   // Third tweet - moderate top padding (less than before)
   third: {
-    paddingTop: spacing.lg,    // Reduced from xl (32px) to lg (24px)
-    paddingBottom: spacing.xl,
-    marginBottom: spacing.sm,
+    paddingTop: spacing.base,  // Reduced from lg (24px) to base (16px)
+    paddingBottom: spacing.lg, // Reduced from xl (32px) to lg (24px)
+    marginBottom: spacing.xs,  // Reduced from sm (8px) to xs (4px)
   },
   // Last tweet - more top padding, minimal bottom padding
   last: {
-    paddingTop: spacing.lg,    // Increased from md (12px) to lg (24px)
+    paddingTop: spacing.base,  // Reduced from lg (24px) to base (16px)
     paddingBottom: spacing.none, // No bottom padding at all
     marginBottom: spacing.none,
   },

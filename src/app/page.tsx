@@ -119,9 +119,9 @@ export default function Home() {
               </ErrorBoundary>
               
               {/* Mobile-only Halving Countdown - appears after tweets */}
-              <div className="md:hidden mt-8">
+              <div className="md:hidden mt-4">
                 {/* Full-width divider to match other section dividers */}
-                <div className="mx-[-1.5rem] md:mx-[-2rem] border-t border-divider mb-8"></div>
+                <div className="mx-[-1.5rem] md:mx-[-2rem] border-t border-divider mb-6"></div>
                 <ErrorBoundary>
                   <HalvingCountdown />
                 </ErrorBoundary>
