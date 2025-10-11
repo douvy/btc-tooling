@@ -3,6 +3,7 @@ import "./globals.css";
 import "@/styles/fonts.css";
 import Script from "next/script";
 import { AppProvider } from '@/context/AppContext';
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "BTC Tooling",
@@ -51,6 +52,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
