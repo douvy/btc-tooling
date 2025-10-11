@@ -22,11 +22,11 @@ export default function BTCAnalysis({
   // Use data from analysisData if provided, otherwise use default content
   const initialAssessment =
     analysisData?.strategicOutlook?.initial ||
-    "Bitcoin is in a mature but not climactic phase of its supercycle, with the Bitcoin-Gold ratio";
+    "The bull case is intact but don't chase here. Two major liquidity cycles are peaking (65-month";
 
   const fullAssessment =
     analysisData?.strategicOutlook?.full ||
-    " at multi-year highs (35.2) confirming its digital gold status. U.S. Strategic Bitcoin Reserve and regulatory clarity create unprecedented institutional tailwinds. Near-term outlook favors 75-90% BTC allocation, scaling to 25-65% over 12 months as topping risk increases from <5% currently to 70% by mid-2026. Price targets range $135K-275K depending on macro conditions. Primary risk: DXY reversal or the predicted September 2025 liquidity crisis could challenge the fiscal dominance narrative. Options markets show institutional hedging awareness despite overall bullish positioning.";
+    " global cycle and 200-day cycle both turned down late summer), setting up potential chop or pullback through year-end before any final push into early 2026. Trade the range: $108-120k is your box. Buy dips toward $108k or $102-100k when ETF flows stay strong, trim into $118-120k until we see a convincing breakout. Above $120k opens $131-135k+; below $108k tests the critical 50-week support near $99k. Geopolitical noise (US-China tariff war, potential government shutdown) can spike volatility. Don't obsess over price targets—watch the overheat bundle instead: exit when 2+ of these fire simultaneously: MVRV Z above 4, LTH multiple above 3.8x, VDD above 2.9, vol spiking over 60, Fear & Greed hitting 80-90, or ETF flows reversing while price stays pinned high.";
 
   // Optional attribution section if source or author is provided
   const hasAttribution = analysisData?.source || analysisData?.author;
@@ -45,7 +45,7 @@ export default function BTCAnalysis({
               <span className="text-light-gray">Assessment:</span>
             </span>{" "}
             {analysisData?.assessment ||
-              "Bitcoin at $118,077.86 has entered an Institutional Supercycle driven by ETF demand, pro-crypto U.S. policy, and fiscal dominance rather than traditional crypto narratives. On-chain metrics show healthy growth without euphoria: MVRV Z-Score (3.5) and Puell Multiple (1.32) remain well below peak levels, while 85-90% of supply is held by long-term holders - the highest concentration ever at an ATH. Combined with low implied volatility (39), this suggests a mature institutional grind rather than speculative mania. The market now operates under fiscal dominance where Treasury actions create liquidity despite elevated Fed rates. The 10% YTD DXY decline and Reverse Repo facility drop from $2.5T to ~$200B provide powerful tailwinds for Bitcoin as a hedge against currency debasement."}
+              "Bitcoin at $112,360 is in a healthy mid-cycle grind, not a speculative blowoff. The recent $125.7k ATH followed by a $19B liquidation and dip under $110k got absorbed without breaking anything—institutional buyers showed up. On-chain metrics confirm we're nowhere near cooked: MVRV Z-Score sits at 2.0-2.5 (tops happen above 4-6), long-term holders aren't selling (VDD under 1.0), and the LTH price multiple of 3.07x has room before the 3.8-4.5x danger zone. ETFs are the story: 621k BTC accumulated since launch, with the last five days adding $3.4B as GBTC outflows finally flipped positive. Global liquidity is supportive—M2 growing ~5% YoY, stablecoins at record $252B, gold/silver hitting ATHs, and the dollar weak. The Fed is cutting gradually while keeping things less restrictive, not loose, which is the goldilocks zone for risk assets."}
           </p>
 
           <p className={`${expanded ? "mb-3" : "mb-0"}`}>
@@ -88,8 +88,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Sentiment:</span>
               </span>{" "}
               {analysisData?.sentiment ||
-                `The Crypto Fear & Greed Index at "Greed" (70) reflects institutional confidence rather than retail euphoria. Institutional FOMO rates 85/100 - this cycle's defining feature - while retail participation remains measured at 65/100.
-                Sentiment shows "controlled optimism" with sophisticated derivatives hedging, contrasting sharply with previous speculative peaks. The prevailing "Great Rotation" narrative from traditional stores of value into Bitcoin is driven by monetary policy shifts and regulatory clarity rather than speculation, creating a more durable foundation despite vulnerability to macro shocks.`}
+                `Fear & Greed at 57 shows post-shakeout recovery, not mania. Institutional FOMO (70/100) is strong through ETF accumulation but measured. Retail FOMO (55/100) is nervous despite ATH headlines. On-chain euphoria scores just 35/100—this is mid-cycle, not late-stage delirium. Overall 72/100 captures the mood: professional accumulation, not degen pileup. Implied vol at 38 looks cheap. Asia/offshore is driving marginal flows while US institutions grind through ETFs—slower burn, more durable.`}
             </p>
 
             {hasAttribution && (
