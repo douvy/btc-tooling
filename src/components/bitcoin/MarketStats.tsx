@@ -35,7 +35,7 @@ export default function MarketStats() {
   };
 
   return (
-    <section className="pt-6 pb-4 border-b border-divider" aria-label="Bitcoin market statistics">
+    <section className="pt-6 pb-6 border-b border-divider" aria-label="Bitcoin market statistics">
       <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto px-6 snap-x snap-mandatory scroll-px-6">
         <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Sats per Dollar</h3>
