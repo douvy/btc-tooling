@@ -6,19 +6,19 @@ import { AppProvider } from '@/context/AppContext';
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: "BTC Tooling",
-  description: "A Bitcoin dashboard providing real-time price data, chart, market summary, orderbook, X insights and halving countdown data",
-  keywords: "bitcoin, BTC, cryptocurrency, crypto market, bitcoin price, halving",
+  title: "Free Bitcoin Dashboard - Live BTC Price, Analysis & Market Insights",
+  description: "Free Bitcoin dashboard with live BTC price tracking, market analysis, trading insights, and real-time data. Clean, ad-free interface for monitoring Bitcoin markets.",
+  keywords: "bitcoin dashboard, btc dashboard, free bitcoin dashboard, bitcoin market analysis, bitcoin price tracker, live btc price, bitcoin trading insights",
   openGraph: {
-    title: "BTC Tooling - Bitcoin Market Tools",
-    description: "A Bitcoin dashboard providing real-time price data, chart, market summary, orderbook, X insights and halving countdown data",
+    title: "Free Bitcoin Dashboard - Live BTC Price & Market Analysis",
+    description: "Free Bitcoin dashboard with live BTC price tracking, market analysis, trading insights, and real-time data. Clean, ad-free interface for monitoring Bitcoin markets.",
     type: "website",
     images: [
       {
         url: "/images/bg.jpg",
         width: 1344,
         height: 896,
-        alt: "BTC Tooling Dashboard",
+        alt: "Free Bitcoin Dashboard - BTC Price and Market Analysis",
       },
     ],
   },
