@@ -32,6 +32,13 @@ export interface HalvingInfo {
   progress: number;
 }
 
+export interface MarketStats {
+  satsPerDollar: number;
+  marketCap: number;
+  athPrice: number;
+  athPercentChange: number;
+}
+
 export interface Tweet {
   id: string;
   username: string;

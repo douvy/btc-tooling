@@ -7,6 +7,7 @@ import BTCAnalysis from '@/components/social/BTCAnalysis';
 import TwitterFeed from '@/components/social/TwitterFeed';
 import AppHeader from '@/components/layout/AppHeader';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
+import MarketStats from '@/components/bitcoin/MarketStats';
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { featuredTweets } from '@/data/tweetData';
@@ -80,9 +81,13 @@ export default function Home() {
         <div className="flex flex-col lg:flex-row overflow-auto">
           <div className="flex-1 overflow-y-auto">
             <ErrorBoundary>
-              <PriceChart 
-                currentPrice={bitcoinData?.price || 0} 
-                timeframe={timeframe} 
+              <MarketStats />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+              <PriceChart
+                currentPrice={bitcoinData?.price || 0}
+                timeframe={timeframe}
               />
             </ErrorBoundary>
             

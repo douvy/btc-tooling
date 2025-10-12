@@ -46,7 +46,7 @@ module.exports = {
         // UI element backgrounds
         'dark-blue': '#001e3c',
         'dark-navy': '#1c2232',
-        'dark-card': '#14151A',
+        'dark-card': '#141519',
         'card-border': '#21232A',
       },
       fontFamily: {

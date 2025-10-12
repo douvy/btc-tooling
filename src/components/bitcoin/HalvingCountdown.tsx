@@ -106,7 +106,7 @@ export default function HalvingCountdown({
         {/* Blockchain-style Countdown Block - Refined */}
         <div className="relative w-[180px] h-[180px] mb-6 sm:mb-0 flex-shrink-0" aria-label="Halving countdown timer">
           {/* Main container with refined styling */}
-          <div className="absolute inset-0 rounded-sm overflow-hidden bg-dark-card shadow-inner">
+          <div className="absolute inset-0 rounded-lg overflow-hidden shadow-inner" style={{ backgroundColor: '#141519' }}>
             {/* Progress indicators - clean lines */}
             <div className="absolute inset-0">
               {/* Top progress bar */}
@@ -195,19 +195,19 @@ export default function HalvingCountdown({
       <div className="mt-4 pt-4">
         <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
         <div className="grid grid-cols-4 gap-2 text-xs">
-          <div className="bg-card-bg rounded p-2 text-center">
+          <div className="bg-card-bg rounded-lg p-2 text-center">
             <div className="text-secondary font-fuji-bold text-base">2012</div>
             <div className="font-medium mt-1">50 → 25</div>
           </div>
-          <div className="bg-card-bg rounded p-2 text-center ">
+          <div className="bg-card-bg rounded-lg p-2 text-center ">
             <div className="text-secondary font-fuji-bold text-base">2016</div>
             <div className="font-medium mt-1">25 → 12.5</div>
           </div>
-          <div className="bg-card-bg rounded p-2 text-center">
+          <div className="bg-card-bg rounded-lg p-2 text-center">
             <div className="text-secondary font-fuji-bold text-base">2020</div>
             <div className="font-medium mt-1">12.5 → 6.25</div>
           </div>
-          <div className="bg-card-bg rounded p-2 text-center">
+          <div className="bg-card-bg rounded-lg p-2 text-center">
             <div className="text-secondary font-fuji-bold text-base">2024</div>
             <div className="font-medium mt-1">6.25 → 3.125</div>
           </div>
