@@ -4,18 +4,18 @@
 require('./util-deprecation-fix');
 
 const nextConfig = {
+  turbopack: {},
   // Standard Next.js configuration for Vercel deployment
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
   },
   // Ensure trailing slashes and better compatibility
   trailingSlash: true,
-  
-  // Handle ESLint during builds more gracefully for deployment
-  eslint: {
-    // Don't fail the build if there are ESLint warnings - critical for deployment
-    ignoreDuringBuilds: true,
-  },
   
   // Also ignore TypeScript errors during build - critical for deployment
   typescript: {
