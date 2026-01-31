@@ -11,11 +11,7 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you when using `next/jest`)
-    '^@/components/(.*)$': '<rootDir>/src/components/$1',
-    '^@/pages/(.*)$': '<rootDir>/src/pages/$1',
-    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
-    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
-    '^@/types/(.*)$': '<rootDir>/src/types/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
 

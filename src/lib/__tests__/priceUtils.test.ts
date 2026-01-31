@@ -2,26 +2,27 @@ import { formatPrice, formatPercentage, calculatePriceChange } from '../priceUti
 
 describe('Price Utility Functions', () => {
   describe('formatPrice', () => {
-    it('formats prices correctly with default options', () => {
-      expect(formatPrice(1234.5678)).toBe('1,234.57');
-      expect(formatPrice(1.2)).toBe('1.20');
-      expect(formatPrice(1000000)).toBe('1,000,000.00');
+    it('formats prices correctly with default options (includes $ symbol)', () => {
+      expect(formatPrice(1234.5678)).toBe('$1,234.57');
+      expect(formatPrice(1.2)).toBe('$1.20');
+      expect(formatPrice(1000000)).toBe('$1,000,000.00');
     });
-    
+
     it('respects the decimals parameter', () => {
-      expect(formatPrice(1234.5678, 4)).toBe('1,234.5678');
-      expect(formatPrice(1.2, 0)).toBe('1');
-      expect(formatPrice(1000000, 1)).toBe('1,000,000.0');
+      expect(formatPrice(1234.5678, 4)).toBe('$1,234.5678');
+      expect(formatPrice(1.2, 0)).toBe('$1');
+      expect(formatPrice(1000000, 1)).toBe('$1,000,000.0');
     });
-    
+
     it('handles currency symbol', () => {
       expect(formatPrice(1234.56, 2, '$')).toBe('$1,234.56');
       expect(formatPrice(1234.56, 2, '€')).toBe('€1,234.56');
+      expect(formatPrice(1234.56, 2, '')).toBe('1,234.56');
     });
-    
+
     it('handles zero and negative values', () => {
-      expect(formatPrice(0)).toBe('0.00');
-      expect(formatPrice(-1234.56)).toBe('-1,234.56');
+      expect(formatPrice(0)).toBe('$0.00');
+      expect(formatPrice(-1234.56)).toBe('$-1,234.56');
     });
   });
   

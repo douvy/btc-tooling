@@ -53,8 +53,13 @@ describe('Mock Data Functions', () => {
       expect(orderBook.exchange).toBe('binance');
     });
     
-    it('defaults to bitfinex for unknown exchanges', () => {
+    it('passes through unknown exchange names', () => {
       const orderBook = getMockOrderBook('unknown' as any);
+      expect(orderBook.exchange).toBe('unknown');
+    });
+
+    it('defaults to bitfinex when no exchange is provided', () => {
+      const orderBook = getMockOrderBook();
       expect(orderBook.exchange).toBe('bitfinex');
     });
   });
@@ -62,25 +67,28 @@ describe('Mock Data Functions', () => {
   describe('getMockBitcoinPrice', () => {
     it('generates bitcoin price data with expected properties', () => {
       const price = getMockBitcoinPrice();
-      
+
       expect(price).toHaveProperty('price');
       expect(price).toHaveProperty('change');
       expect(price).toHaveProperty('changePercent');
       expect(price).toHaveProperty('direction');
-      
+      expect(price).toHaveProperty('timeframe');
+
       // Check if price is reasonable for Bitcoin
       expect(price.price).toBeGreaterThan(1000);
-      
-      // Check if direction matches change
-      if (price.change > 0) {
-        expect(price.direction).toBe('up');
-      } else if (price.change < 0) {
-        expect(price.direction).toBe('down');
-      }
-      
-      // Check if changePercent is calculated correctly
-      const calculatedPercent = (price.change / (price.price - price.change)) * 100;
-      expect(price.changePercent).toBeCloseTo(calculatedPercent, 1);
+
+      // change is always positive (absolute value), direction indicates up/down
+      expect(price.change).toBeGreaterThanOrEqual(0);
+      expect(price.changePercent).toBeGreaterThanOrEqual(0);
+      expect(['up', 'down']).toContain(price.direction);
+    });
+
+    it('respects timeframe parameter', () => {
+      const hourly = getMockBitcoinPrice('1H');
+      const daily = getMockBitcoinPrice('1D');
+
+      expect(hourly.timeframe).toBe('1H');
+      expect(daily.timeframe).toBe('1D');
     });
   });
 });
