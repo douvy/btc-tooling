@@ -18,9 +18,6 @@ export default async function handler(req, res) {
     ids: 'bitcoin',
     vs_currencies: 'usd',
     include_last_updated_at: 'true',
-    // Try the format they show in their docs
-    'x_cg_api_key': apiKey || '',
-    // Also add in snake_case for good measure
     'x_cg_api_key': apiKey || '',
     _t: timestamp.toString()
   });
