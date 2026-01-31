@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const { path } = req.query;
   const apiPath = Array.isArray(path) ? path.join('/') : path;
-  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  const apiKey = process.env.COINGECKO_API_KEY;
   const debug = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
   const logPrefix = '[CoinGecko Proxy]';
   
@@ -52,9 +52,7 @@ export default async function handler(req, res) {
   
   // IMPORTANT: API key goes in both header and URL for CoinGecko Demo API
   if (apiKey) {
-    // Add the API key to the query string with the correct parameter name
     queryParams.append('x_cg_demo_api_key', apiKey);
-    console.log(`${logPrefix} Using CoinGecko Demo API key: ${apiKey.substring(0, 5)}...`);
   }
   
   // Add cache busting parameter
@@ -62,9 +60,6 @@ export default async function handler(req, res) {
   
   // Create the full URL with API key
   const fullUrl = `${targetUrl}?${queryParams.toString()}`;
-  
-  // DEBUGGING: Log the full URL to confirm API key is being included
-  console.log(`${logPrefix} Full URL (with API key): ${fullUrl}`);
   
   // Set standard headers
   const headers = {
@@ -105,13 +100,7 @@ export default async function handler(req, res) {
       const rateLimitReset = response.headers.get('x-ratelimit-reset');
       
       if (rateLimitRemaining && rateLimitTotal) {
-        console.log(`${logPrefix} Rate Limit: ${rateLimitRemaining}/${rateLimitTotal} remaining, reset in ${rateLimitReset || 'unknown'} seconds`);
-        
-        if (parseInt(rateLimitRemaining) < 5) {
-        }
-      } else {
-        // Log all headers for debugging
-        console.log(`${logPrefix} Response headers:`, Object.fromEntries([...response.headers.entries()]));
+        console.log(`${logPrefix} Rate Limit: ${rateLimitRemaining}/${rateLimitTotal} remaining`);
       }
       
       // Response parsing removed

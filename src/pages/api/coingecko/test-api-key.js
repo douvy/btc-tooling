@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Content-Type', 'application/json');
   
-  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  const apiKey = process.env.COINGECKO_API_KEY;
   const keyPrefix = apiKey ? apiKey.substring(0, 5) : 'None';
   
   // DIRECT CONNECTION TEST - bypass our proxy

@@ -9,7 +9,7 @@ const RATE_LIMIT_MAX = 10; // Higher limit for more frequent updates
 const RATE_LIMIT_WINDOW = 60000; // 1 minute window
 
 // API key from environment variable
-const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
 
 // Track active connection count for scaling
 let connections = 0;

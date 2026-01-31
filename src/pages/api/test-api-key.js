@@ -5,7 +5,7 @@
 
 export default async function handler(req, res) {
   try {
-    const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+    const apiKey = process.env.COINGECKO_API_KEY;
     
     if (!apiKey) {
       return res.status(400).json({ error: 'No API key configured' });

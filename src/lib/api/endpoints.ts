@@ -23,11 +23,7 @@ export async function fetchFromCoinGecko(endpoint: string, params: Record<string
     'Cache-Control': 'no-cache, no-store, must-revalidate',
   };
   
-  // Add a note that the API key will be handled by the proxy
-  const apiKey = process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
-  if (apiKey) {
-    // The API key is now included in the URL by the proxy as x_cg_api_key
-  }
+  // API key is handled by the server-side proxy
   
   try {
     // Make the request with retry logic

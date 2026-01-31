@@ -62,19 +62,28 @@ export function createRateLimiter(name, maxRequests = 15, windowMs = 60000) {
   return rateLimiters[name];
 }
 
+const MAX_TRACKED_CLIENTS = 1000; // Prevent memory leak from too many unique IPs
+
 export function checkRateLimit(limiter, req, res) {
   const now = Date.now();
   if (now > limiter.resetTime) {
     limiter.requestCounts = {};
     limiter.resetTime = now + limiter.WINDOW_MS;
   }
-  
+
+  // Prevent memory leak: limit tracked clients
+  const clientCount = Object.keys(limiter.requestCounts).length;
+  if (clientCount >= MAX_TRACKED_CLIENTS) {
+    // Clear oldest entries by resetting (simple but effective)
+    limiter.requestCounts = {};
+  }
+
   const clientId = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   limiter.requestCounts[clientId] = (limiter.requestCounts[clientId] || 0) + 1;
-  
+
   res.setHeader('X-RateLimit-Limit', limiter.MAX_REQUESTS);
   res.setHeader('X-RateLimit-Remaining', Math.max(0, limiter.MAX_REQUESTS - limiter.requestCounts[clientId]));
   res.setHeader('X-RateLimit-Reset', Math.ceil(limiter.resetTime / 1000));
-  
+
   return limiter.requestCounts[clientId] <= limiter.MAX_REQUESTS;
 }

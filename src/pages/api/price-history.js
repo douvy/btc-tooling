@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     }
     
     // Get API key
-    const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+    const apiKey = process.env.COINGECKO_API_KEY;
     if (!apiKey) {
       // Continue anyway, will use public endpoints with stricter rate limits
     }

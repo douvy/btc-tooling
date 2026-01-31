@@ -210,13 +210,7 @@ async function fetchFromCoinGecko(endpoint: string, params: Record<string, strin
     'Cache-Control': 'no-cache, no-store, must-revalidate',
   };
   
-  // Add API key (will be handled by the proxy)
-  const apiKey = process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
-  if (apiKey) {
-    // Use the correct parameter name for the demo API key
-    headers['x-cg-demo-api-key'] = apiKey;
-    logWithTime('debug', 'Using CoinGecko Demo API key');
-  }
+  // API key is handled by the server-side proxy
   
   // Log this API call for debugging
   try {
@@ -483,20 +477,12 @@ async function handleDataFetchError(requestedTimeframe: TimeFrame, originalError
     logWithTime('fetch', 'Trying blockchain.info API as fallback');
     
     // Get API key to include in request
-    const apiKey = process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
-    const headers: HeadersInit = {
-      'Accept': 'application/json',
-      'Pragma': 'no-cache',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    };
-    
-    // Add API key using the correct parameter
-    if (apiKey) {
-      headers['x-cg-demo-api-key'] = apiKey;
-    }
-    
+    // API key is handled by the server-side proxy
     const response = await fetch('/api/blockchain/ticker', {
-      headers,
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
       cache: 'no-store'
     });
     

@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   const timeframe = req.query.timeframe;
   
   // Get API key if available
-  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  const apiKey = process.env.COINGECKO_API_KEY;
   
   const headers = {
     'Accept': 'application/json',

@@ -2,7 +2,7 @@
  * Direct test to verify CoinGecko API key
  */
 export default async function handler(req, res) {
-  const apiKey = process.env.COINGECKO_API_KEY || process.env.NEXT_PUBLIC_COINGECKO_API_KEY;
+  const apiKey = process.env.COINGECKO_API_KEY;
   
   // Get current Bitcoin price directly from CoinGecko
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&x_cg_api_key=${apiKey}`;
