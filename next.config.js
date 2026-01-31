@@ -1,48 +1,20 @@
 /** @type {import('next').NextConfig} */
-
-// Load deprecation fix at the very start before anything else
-require('./util-deprecation-fix');
-
 const nextConfig = {
   // Standard Next.js configuration for Vercel deployment
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
   },
   // Ensure trailing slashes and better compatibility
   trailingSlash: true,
-  
-  // Handle ESLint during builds more gracefully for deployment
-  eslint: {
-    // Don't fail the build if there are ESLint warnings - critical for deployment
-    ignoreDuringBuilds: true,
-  },
-  
+
   // Also ignore TypeScript errors during build - critical for deployment
   typescript: {
-    // But ignore non-critical TypeScript errors during build
     ignoreBuildErrors: true,
-  },
-  
-  // Suppress specific Node.js deprecation warnings in production
-  // This won't show in dev mode, but will apply in Vercel deployment
-  webpack: (config, { isServer, dev }) => {
-    if (!dev && isServer) {
-      // Suppress deprecation warnings in production
-      process.noDeprecation = true;
-    }
-    
-    // Polyfill for Node.js core modules (needed for xml2js)
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      string_decoder: require.resolve('string_decoder/'),
-      stream: require.resolve('stream-browserify'),
-      timers: require.resolve('timers-browserify'),
-      buffer: require.resolve('buffer/'),
-      util: require.resolve('util/'),
-      events: require.resolve('events/'),
-    };
-    
-    return config;
   },
 
   // Optimization for serverless environments (important for Vercel)
