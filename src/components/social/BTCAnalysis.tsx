@@ -22,11 +22,11 @@ export default function BTCAnalysis({
   // Use data from analysisData if provided, otherwise use default content
   const initialAssessment =
     analysisData?.strategicOutlook?.initial ||
-    "The bull case is intact but don't chase here. Two major liquidity cycles are peaking (65-month";
+    "February is a real stress window. TGA is elevated and rising (~$923B, +$54B w/w)";
 
   const fullAssessment =
     analysisData?.strategicOutlook?.full ||
-    " global cycle and 200-day cycle both turned down late summer), setting up potential chop or pullback through year-end before any final push into early 2026. Trade the range: $108-120k is your box. Buy dips toward $108k or $102-100k when ETF flows stay strong, trim into $118-120k until we see a convincing breakout. Above $120k opens $131-135k+; below $108k tests the critical 50-week support near $99k. Geopolitical noise (US-China tariff war, potential government shutdown) can spike volatility. Don't obsess over price targets—watch the overheat bundle instead: exit when 2+ of these fire simultaneously: MVRV Z above 4, LTH multiple above 3.8x, VDD above 2.9, vol spiking over 60, Fear & Greed hitting 80-90, or ETF flows reversing while price stays pinned high.";
+    " —with ON RRP exhausted (low single-digit billions), TGA is now the key short-horizon liquidity driver, and rising TGA is a drain. Net liquidity sits around $5.6-5.7T. $2.30T in Treasury maturities roll in February, elevating probability of auction indigestion (yields/term premium up, risk assets down) or policy response (risk assets rebound). Japan remains a live transmission channel—JGB yields at multi-decade highs (10Y ~2.3%) tighten global risk conditions. Real yields at ~1.95% near the 2% threshold are an opportunity-cost headwind. Curve un-inversion (10Y-2Y positive) historically precedes economic weakness/risk-off episodes. Derivatives show a coiled spring market: persistent negative skew (puts priced richer than calls), compressed basis (mid-single digits annualized), CME OI slipping, and heavy strike gravity around $90k. Thin float + short-gamma pockets + rich puts = discontinuous moves more likely than orderly trends.";
 
   // Optional attribution section if source or author is provided
   const hasAttribution = analysisData?.source || analysisData?.author;
@@ -45,7 +45,7 @@ export default function BTCAnalysis({
               <span className="text-light-gray">Assessment:</span>
             </span>{" "}
             {analysisData?.assessment ||
-              "Bitcoin at $112,360 is in a healthy mid-cycle grind, not a speculative blowoff. The recent $125.7k ATH followed by a $19B liquidation and dip under $110k got absorbed without breaking anything—institutional buyers showed up. On-chain metrics confirm we're nowhere near cooked: MVRV Z-Score sits at 2.0-2.5 (tops happen above 4-6), long-term holders aren't selling (VDD under 1.0), and the LTH price multiple of 3.07x has room before the 3.8-4.5x danger zone. ETFs are the story: 621k BTC accumulated since launch, with the last five days adding $3.4B as GBTC outflows finally flipped positive. Global liquidity is supportive—M2 growing ~5% YoY, stablecoins at record $252B, gold/silver hitting ATHs, and the dollar weak. The Fed is cutting gradually while keeping things less restrictive, not loose, which is the goldilocks zone for risk assets."}
+              "Bitcoin at $83,942 is in a structural bull market with tactical macro/liquidity drawdown risk—mid-cycle consolidation with high gap-risk. On-chain metrics remain constructive: MVRV Z-Score at 2.5-3.0 is neutral-to-elevated, far below historic blowoff conditions. The core thin float setup is intact—HODL Waves show ~70-75% of supply held >1 year, with short-term bands materially smaller than prior cycle peaks. Less tradable inventory means higher convexity in both directions. But the near-term market is fighting overhead supply: STH Cost Basis at $98.4k is the key break-even wall — recent buyers are underwater, and rallies toward $98k meet defensive selling. Active Investor Mean ($87.8k) was recently lost, flipping it to near-term resistance. True Market Mean at $81.1k is the first major market-structure support. LTH Realized Price at $38.35k anchors the deep structural floor."}
           </p>
 
           <p className={`${expanded ? "mb-3" : "mb-0"}`}>
@@ -85,10 +85,34 @@ export default function BTCAnalysis({
                   className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"
                   aria-hidden="true"
                 ></i>{" "}
-                <span className="text-light-gray">Sentiment:</span>
+                <span className="text-light-gray">Key Levels:</span>
               </span>{" "}
-              {analysisData?.sentiment ||
-                `Fear & Greed at 57 shows post-shakeout recovery, not mania. Institutional FOMO (70/100) is strong through ETF accumulation but measured. Retail FOMO (55/100) is nervous despite ATH headlines. On-chain euphoria scores just 35/100—this is mid-cycle, not late-stage delirium. Overall 72/100 captures the mood: professional accumulation, not degen pileup. Implied vol at 38 looks cheap. Asia/offshore is driving marginal flows while US institutions grind through ETFs—slower burn, more durable.`}
+              {analysisData?.keyLevels ||
+                `$90k: psychological + options gravity zone; reclaim stabilizes tape. $87.8k: Active Investor Mean pivot; failure keeps rallies weak. $81.1k: True Market Mean; first serious support. $98.4k: STH cost-basis ceiling; reclaim/hold is "trend back on" confirmation.`}
+            </p>
+
+            <p className="mb-3">
+              <span className="font-fuji-bold text-base">
+                <i
+                  className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"
+                  aria-hidden="true"
+                ></i>{" "}
+                <span className="text-light-gray">Bullish triggers:</span>
+              </span>{" "}
+              {analysisData?.bullishTriggers ||
+                `TGA stops rising and begins spending down; spot-led reclaim of $90k→$98k with supply absorption; basis stabilizes or spot demand overwhelms.`}
+            </p>
+
+            <p className="mb-3">
+              <span className="font-fuji-bold text-base">
+                <i
+                  className="fa-solid fa-circle text-[0.4rem] mr-1 align-middle"
+                  aria-hidden="true"
+                ></i>{" "}
+                <span className="text-light-gray">Bearish triggers:</span>
+              </span>{" "}
+              {analysisData?.bearishTriggers ||
+                `Failed auctions / term premium jump into Feb rollover; sustained real-yield break above ~2% + risk-off correlation; Japan/FX volatility escalation pushing BTC into "ATM mode."`}
             </p>
 
             {hasAttribution && (
