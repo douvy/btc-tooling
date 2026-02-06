@@ -259,9 +259,9 @@ function OrderBook(props: OrderBookProps) {
       >
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Order Book</h2>
-          <div className="w-48 h-8 bg-gray-800 rounded"></div>
+          <div className="w-48 h-8 bg-dark-card rounded"></div>
         </div>
-        <div className="h-64 bg-gray-800 rounded mt-4"></div>
+        <div className="h-64 bg-dark-card rounded mt-4"></div>
       </div>
     );
   }

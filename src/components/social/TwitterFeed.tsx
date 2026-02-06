@@ -233,26 +233,26 @@ function TwitterFeedFallback() {
             <div className="flex items-start mb-3">
               <div className="w-10 h-10 rounded-full bg-gray-800 mr-3"></div>
               <div>
-                <div className="h-5 bg-gray-800 rounded w-40 mb-2"></div>
-                <div className="h-3 bg-gray-800 rounded w-24"></div>
+                <div className="h-5 bg-dark-card rounded w-40 mb-2"></div>
+                <div className="h-3 bg-dark-card rounded w-24"></div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <div className="h-4 bg-gray-800 rounded w-full"></div>
-              <div className="h-4 bg-gray-800 rounded w-5/6"></div>
-              <div className="h-4 bg-gray-800 rounded w-4/6"></div>
+              <div className="h-4 bg-dark-card rounded w-full"></div>
+              <div className="h-4 bg-dark-card rounded w-5/6"></div>
+              <div className="h-4 bg-dark-card rounded w-4/6"></div>
             </div>
             
             {i === 3 && (
-              <div className="h-40 bg-gray-800 rounded w-full mt-3"></div>
+              <div className="h-40 bg-dark-card rounded w-full mt-3"></div>
             )}
             
             <div className="flex space-x-4 mt-3">
-              <div className="h-4 bg-gray-800 rounded w-12"></div>
-              <div className="h-4 bg-gray-800 rounded w-12"></div>
-              <div className="h-4 bg-gray-800 rounded w-12"></div>
-              <div className="h-4 bg-gray-800 rounded w-12"></div>
+              <div className="h-4 bg-dark-card rounded w-12"></div>
+              <div className="h-4 bg-dark-card rounded w-12"></div>
+              <div className="h-4 bg-dark-card rounded w-12"></div>
+              <div className="h-4 bg-dark-card rounded w-12"></div>
             </div>
           </div>
         ))}

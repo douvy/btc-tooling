@@ -25,9 +25,9 @@ module.exports = {
         'dark-grayish-blue': '#81919e',
         
         // Primary brand colors
-        'primary': '#FF6600',
-        'primary-hover': '#FF8833',
-        'primary-active': '#E65C00',
+        'primary': '#D9952B',
+        'primary-hover': '#E5A73F',
+        'primary-active': '#C4861F',
         
         // Status colors
         'success': '#27ad75',
@@ -40,8 +40,8 @@ module.exports = {
         'info': '#3b82f6',
         
         // Crypto-specific colors
-        'btc': '#FF6600',
-        'btc-alt': '#FF9900',
+        'btc': '#D9952B',
+        'btc-alt': '#E5A73F',
         
         // UI element backgrounds
         'dark-blue': '#001e3c',

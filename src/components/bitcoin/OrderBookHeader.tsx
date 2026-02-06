@@ -28,7 +28,7 @@ export function OrderBookHeader({ isMobile, viewMode }: OrderBookHeaderProps) {
               className="w-full h-full object-cover"
             />
           </div>
-          <span className="font-fuji-bold text-lg -ml-2">Bitfinex</span>
+          <span className="font-semibold text-lg -ml-2">Bitfinex</span>
         </div>
       </div>
 

@@ -25,7 +25,7 @@ const fallbackHalvingData: HalvingInfo = {
  * @returns Object containing the halving data and loading state
  */
 export function useHalvingData() {
-  const [halvingData, setHalvingData] = useState<HalvingInfo>(fallbackHalvingData);
+  const [halvingData, setHalvingData] = useState<HalvingInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   // Add state to track refresh requests
@@ -66,7 +66,7 @@ export function useHalvingData() {
         if (isMounted) {
           setError(err instanceof Error ? err : new Error(String(err)));
           setIsLoading(false);
-          
+
           // Try to use cached data from localStorage if available
           const cachedData = localStorage.getItem('halvingData');
           if (cachedData) {
@@ -74,8 +74,12 @@ export function useHalvingData() {
               const { data } = JSON.parse(cachedData);
               setHalvingData(data);
             } catch (parseErr) {
-              // Silently handle parse errors
+              // Cache parse failed, use fallback
+              setHalvingData(fallbackHalvingData);
             }
+          } else {
+            // No cache, use fallback
+            setHalvingData(fallbackHalvingData);
           }
         }
       }

@@ -11,8 +11,8 @@ export default function MarketStats() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i}>
-              <div className="h-4 bg-gray-800 rounded w-2/3 mb-2"></div>
-              <div className="h-8 bg-gray-800 rounded w-full"></div>
+              <div className="h-4 bg-dark-card rounded w-2/3 mb-2"></div>
+              <div className="h-8 bg-dark-card rounded w-full"></div>
             </div>
           ))}
         </div>
