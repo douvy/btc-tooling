@@ -42,7 +42,7 @@ export default function DesktopPriceDisplay({
         
         <span 
           className={classNames(
-            "text-2xl lg:text-5xl font-fuji-bold flex items-center",
+            "text-2xl lg:text-4xl font-fuji-bold flex items-center",
             { 
               "animate-pulse-green": priceChangeDirection === 'up',
               "animate-pulse-red": priceChangeDirection === 'down'
@@ -53,7 +53,7 @@ export default function DesktopPriceDisplay({
           {formattedPrice}
         </span>
         <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-          <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2`} aria-hidden="true"></i>
+          <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2 text-lg`} aria-hidden="true"></i>
           <span className="mr-1.5 font-fuji-bold" aria-label={`Price change ${formattedChange} dollars`}>
             {formattedChange}
           </span>

@@ -114,7 +114,7 @@ function DesktopHeader({
     <div className="hidden lg:flex items-center px-6 h-[80px]">
       {/* Left side with logo */}
       <div className="flex items-center flex-shrink-0">
-        <LogoImage size={12} />
+        <LogoImage size={10} />
       </div>
       
       {/* Spacer */}
@@ -185,7 +185,7 @@ function TabletHeader({
  */
 function MobileHeader() {
   return (
-    <div className="md:hidden px-6">
+    <div className="md:hidden px-6 border-b border-divider">
       {/* Top row with logo only */}
       <div className="flex items-center h-[60px]">
         <div className="flex items-center">

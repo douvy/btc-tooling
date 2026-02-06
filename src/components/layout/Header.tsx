@@ -40,11 +40,11 @@ export default function Header({
         <div className="flex items-center space-x-6">
           {/* Bitcoin Price Display */}
           <div className="flex items-center" aria-live="polite">
-            <span className="text-2xl lg:text-5xl font-fuji-bold text-white flex items-center">
+            <span className="text-2xl lg:text-4xl font-fuji-bold text-white flex items-center">
               <span aria-label="Bitcoin price">{price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </span>
             <span className={`ml-3 text-xl ${isPositiveChange ? 'text-success' : 'text-error'} flex items-center self-center`}>
-              <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2`} aria-hidden="true"></i>
+              <i className={`fa-regular fa-arrow-${isPositiveChange ? 'up-right' : 'down-right'} mr-2 text-lg`} aria-hidden="true"></i>
               <span className="mr-1.5 font-fuji-bold" aria-label="Price change">${Math.abs(change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               <span className="font-fuji-bold" aria-label="Percentage change">({Math.abs(changePercent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)</span>
             </span>

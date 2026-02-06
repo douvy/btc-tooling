@@ -41,7 +41,7 @@ export default function MobilePriceDisplay({
           {/* Price on top row */}
           <span 
             className={classNames(
-              "text-5xl font-fuji-bold",
+              "text-4xl font-fuji-bold",
               { 
                 "animate-pulse-green": priceChangeDirection === 'up',
                 "animate-pulse-red": priceChangeDirection === 'down',
