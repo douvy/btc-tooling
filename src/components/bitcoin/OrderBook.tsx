@@ -258,7 +258,7 @@ function OrderBook(props: OrderBookProps) {
         aria-busy="true"
       >
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-fuji-bold">Order Book</h2>
+          <h2 className="text-xl font-semibold">Order Book</h2>
           <div className="w-48 h-8 bg-gray-800 rounded"></div>
         </div>
         <div className="h-64 bg-gray-800 rounded mt-4"></div>
@@ -271,7 +271,7 @@ function OrderBook(props: OrderBookProps) {
     return (
       <div className={`text-white w-full font-sans p-4 border border-red-800 rounded ${className}`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-fuji-bold">Order Book</h2>
+          <h2 className="text-xl font-semibold">Order Book</h2>
           <button 
             onClick={() => setOrderBookStatus(prev => ({
               ...prev,

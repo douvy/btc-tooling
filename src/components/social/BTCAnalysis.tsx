@@ -33,7 +33,7 @@ export default function BTCAnalysis({
 
   return (
     <div>
-      <h2 className="text-xl font-fuji-bold mb-2">BTC Analysis</h2>
+      <h2 className="text-xl font-semibold mb-2">BTC Analysis</h2>
       <div>
         <div className="text-base text-secondary">
           <p className="mb-3">

@@ -93,7 +93,7 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
   return (
     <ErrorBoundary>
       <div>
-        <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6 flex items-center">
+        <h2 className="text-xl font-semibold mb-6 sm:mt-6 flex items-center">
           BTC 
           <span className="mx-1 flex items-center">
             <TwitterIcon 
@@ -219,7 +219,7 @@ export default function TwitterFeed({ tweets, isLoading = false, error = null }:
 function TwitterFeedFallback() {
   return (
     <div className="animate-pulse">
-      <h2 className="text-xl font-fuji-bold mb-6 sm:mt-6 flex items-center">
+      <h2 className="text-xl font-semibold mb-6 sm:mt-6 flex items-center">
         BTC 
         <span className="mx-1 flex items-center opacity-50">
           <div className="w-[22px] h-[22px] rounded-full bg-gray-800"></div>

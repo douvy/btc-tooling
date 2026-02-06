@@ -13,7 +13,7 @@ export function OrderBookHeader({ isMobile, viewMode }: OrderBookHeaderProps) {
   return (
     <>
       <div className="flex justify-between items-center w-full mt-6 sm:mt-4">
-        <h2 id="halving-title" className="text-xl font-fuji-bold">
+        <h2 id="halving-title" className="text-xl font-semibold">
           Order Book
         </h2>
         

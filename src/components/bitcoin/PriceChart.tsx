@@ -65,7 +65,7 @@ export default function PriceChart({
   
   return (
     <section className="rounded-xl overflow-hidden mb-6 h-[420px] md:h-[530px] p-6 md:pl-8 md:pr-8 pt-3 sm:pt-2 bg-transparent" aria-labelledby="chart-title">
-      <h2 id="chart-title" className="text-xl font-fuji-bold mb-2 px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
+      <h2 id="chart-title" className="text-xl font-semibold mb-2 px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
       <div className="w-full h-[calc(100%-50px)] relative bg-transparent">
         {isLoading && !chartLoadedOnceRef.current && (
           <div className="absolute inset-0 flex items-center justify-center z-10">

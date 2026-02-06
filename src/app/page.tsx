@@ -19,7 +19,7 @@ const OrderBook = dynamic(() => import('@/components/bitcoin/OrderBook'), {
   loading: () => (
     <div className="text-white w-full font-sans animate-pulse p-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-fuji-bold">Order Book</h2>
+        <h2 className="text-xl font-semibold">Order Book</h2>
         <div className="w-48 h-8 bg-gray-800 rounded"></div>
       </div>
       <div className="h-64 bg-gray-800 rounded mt-4"></div>
