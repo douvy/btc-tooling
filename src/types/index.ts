@@ -37,6 +37,8 @@ export interface MarketStats {
   marketCap: number;
   athPrice: number;
   athPercentChange: number;
+  daysSinceAth: number;
+  supplyPercentIssued: number;
 }
 
 export interface Tweet {

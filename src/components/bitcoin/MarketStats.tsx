@@ -8,8 +8,8 @@ export default function MarketStats() {
   if (isLoading || !data) {
     return (
       <div className="px-6 pt-6 pb-4 bg-dark-card animate-pulse">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i}>
               <div className="h-4 bg-dark-card rounded w-2/3 mb-2"></div>
               <div className="h-8 bg-dark-card rounded w-full"></div>
@@ -36,7 +36,7 @@ export default function MarketStats() {
 
   return (
     <section className="pt-6 pb-6 border-b border-divider" aria-label="Bitcoin market statistics">
-      <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto px-6 snap-x snap-mandatory scroll-px-6">
+      <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto px-6 snap-x snap-mandatory scroll-px-6">
         <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Sats per Dollar</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Value of $1 USD in Satoshis</p>
@@ -47,6 +47,12 @@ export default function MarketStats() {
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Market Capitalization</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Price times circulating supply</p>
           <p className="text-2xl font-fuji-bold text-white">{formatMarketCap(data.marketCap)}</p>
+        </div>
+
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
+          <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Supply Issued</h3>
+          <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Percentage of 21M mined</p>
+          <p className="text-2xl font-fuji-bold text-white">{data.supplyPercentIssued.toFixed(2)}%</p>
         </div>
 
         <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
@@ -61,6 +67,12 @@ export default function MarketStats() {
           <p className="text-2xl font-fuji-bold text-white">
             {formatPercentChange(data.athPercentChange)}
           </p>
+        </div>
+
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
+          <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Days Since ATH</h3>
+          <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Time since all-time high</p>
+          <p className="text-2xl font-fuji-bold text-white">{data.daysSinceAth}</p>
         </div>
       </div>
 
