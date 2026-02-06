@@ -37,25 +37,25 @@ export default function MarketStats() {
   return (
     <section className="pt-6 pb-6 border-b border-divider" aria-label="Bitcoin market statistics">
       <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto px-6 snap-x snap-mandatory scroll-px-6">
-        <div className="rounded-lg p-4 bg-dark-card border border-white/[0.03] flex-shrink-0 w-[180px] md:w-auto snap-start">
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Sats per Dollar</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Value of $1 USD in Satoshis</p>
           <p className="text-2xl font-fuji-bold text-white">{data.satsPerDollar.toLocaleString()}</p>
         </div>
 
-        <div className="rounded-lg p-4 bg-dark-card border border-white/[0.03] flex-shrink-0 w-[180px] md:w-auto snap-start">
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">Market Capitalization</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Price times circulating supply</p>
           <p className="text-2xl font-fuji-bold text-white">{formatMarketCap(data.marketCap)}</p>
         </div>
 
-        <div className="rounded-lg p-4 bg-dark-card border border-white/[0.03] flex-shrink-0 w-[180px] md:w-auto snap-start">
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">All-Time High</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Highest Bitcoin price in history</p>
           <p className="text-2xl font-fuji-bold text-white">{formatPrice(data.athPrice)}</p>
         </div>
 
-        <div className="rounded-lg p-4 bg-dark-card border border-white/[0.03] flex-shrink-0 w-[180px] md:w-auto snap-start">
+        <div className="rounded-lg p-4 bg-dark-card flex-shrink-0 w-[180px] md:w-auto snap-start">
           <h3 className="text-white text-sm md:text-base font-proxima-nova mb-1">From ATH</h3>
           <p className="text-xs md:text-sm text-muted mb-2 font-proxima-nova">Change relative to all-time high</p>
           <p className="text-2xl font-fuji-bold text-white">

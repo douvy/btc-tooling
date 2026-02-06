@@ -132,7 +132,7 @@ export default function HalvingCountdown({
             
             {/* Inner content with improved typography */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm text-secondary mb-2 font-fuji-bold uppercase tracking-wider">ETR</span>
+              <span className="text-sm text-secondary mb-2 font-semibold uppercase tracking-wider">ETR</span>
               <div className="flex flex-col items-center">
                 <span className="text-5xl font-fuji-bold text-white leading-none">{halvingInfo.daysRemaining}</span>
                 <span className="text-sm text-secondary mt-2">Days</span>
@@ -149,7 +149,7 @@ export default function HalvingCountdown({
         {/* Enhanced Stats with Icons */}
         <div className="space-y-5 sm:ml-8">
           <div>
-            <h3 className="text-secondary text-sm mb-1 flex items-center font-fuji-bold">
+            <h3 className="text-secondary text-sm mb-1 flex items-center font-semibold">
               Blocks Remaining
             </h3>
             <div className="flex items-baseline">
@@ -163,18 +163,18 @@ export default function HalvingCountdown({
           </div>
           
           <div>
-            <h3 className="text-secondary text-sm mb-1 flex items-center font-fuji-bold">
+            <h3 className="text-secondary text-sm mb-1 flex items-center font-semibold">
               Current Reward
             </h3>
             <div className="flex items-baseline">
               <p className="text-2xl font-fuji-bold text-primary">{halvingInfo.currentReward}</p>
-              <span className="ml-2 text-xl font-gotham-bold">BTC</span>
+              <span className="ml-2 text-xl font-semibold">BTC</span>
             </div>
-            <p className="text-xs text-secondary mt-1 font-fuji-bold">Next reward: <span className="text-white">{halvingInfo.nextReward} BTC</span></p>
+            <p className="text-xs text-secondary mt-1 font-semibold">Next reward: <span className="text-white">{halvingInfo.nextReward} BTC</span></p>
           </div>
           
           <div>
-            <h3 className="text-secondary text-sm mb-1 flex items-center font-fuji-bold">
+            <h3 className="text-secondary text-sm mb-1 flex items-center font-semibold">
               Target Block
             </h3>
             <div className="flex items-baseline">
@@ -193,22 +193,22 @@ export default function HalvingCountdown({
       
       {/* Historical data table */}
       <div className="mt-4 pt-4">
-        <h3 className="text-base mb-2 font-fuji-bold">Previous Halvings</h3>
+        <h3 className="text-base mb-2 font-semibold">Previous Halvings</h3>
         <div className="grid grid-cols-4 gap-2 text-xs">
           <div className="bg-card-bg rounded-lg p-2 text-center">
-            <div className="text-secondary font-fuji-bold text-base">2012</div>
+            <div className="text-secondary font-semibold text-base">2012</div>
             <div className="font-medium mt-1">50 → 25</div>
           </div>
           <div className="bg-card-bg rounded-lg p-2 text-center ">
-            <div className="text-secondary font-fuji-bold text-base">2016</div>
+            <div className="text-secondary font-semibold text-base">2016</div>
             <div className="font-medium mt-1">25 → 12.5</div>
           </div>
           <div className="bg-card-bg rounded-lg p-2 text-center">
-            <div className="text-secondary font-fuji-bold text-base">2020</div>
+            <div className="text-secondary font-semibold text-base">2020</div>
             <div className="font-medium mt-1">12.5 → 6.25</div>
           </div>
           <div className="bg-card-bg rounded-lg p-2 text-center">
-            <div className="text-secondary font-fuji-bold text-base">2024</div>
+            <div className="text-secondary font-semibold text-base">2024</div>
             <div className="font-medium mt-1">6.25 → 3.125</div>
           </div>
         </div>
