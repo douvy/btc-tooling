@@ -7,7 +7,7 @@ import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Bitcoin Dashboard - Live BTC Price & Market Stats",
-  description: "Bitcoin dashboard with live BTC price, market cap, all-time high, and real-time stats. Clean interface for monitoring Bitcoin data.",
+  description: "Bitcoin dashboard with real-time price data, TradingView chart, order book, market analysis, Twitter/X insights, and halving countdown. Clean, ad-free, responsive design.",
   keywords: "bitcoin dashboard, btc dashboard, bitcoin tools, btc tools, live btc price, btc stats",
   metadataBase: new URL('https://btctooling.com'),
   alternates: {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Bitcoin Dashboard - Live BTC Price & Stats",
-    description: "Bitcoin dashboard with live BTC price, market cap, all-time high, and real-time stats. Clean interface for monitoring Bitcoin data.",
+    description: "Bitcoin dashboard with real-time price data, TradingView chart, order book, market analysis, Twitter/X insights, and halving countdown. Clean, ad-free, responsive design.",
     type: "website",
     url: 'https://btctooling.com',
     images: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Bitcoin Dashboard - Live BTC Price & Stats",
-    description: "Bitcoin dashboard with live BTC price, market cap, all-time high, and real-time stats. Clean interface for monitoring Bitcoin data.",
+    description: "Bitcoin dashboard with real-time price data, TradingView chart, order book, market analysis, Twitter/X insights, and halving countdown. Clean, ad-free, responsive design.",
     images: ['/images/bg.jpg'],
   },
 };
@@ -54,7 +54,7 @@ export default function RootLayout({
         '@id': 'https://btctooling.com/#website',
         url: 'https://btctooling.com/',
         name: 'BTC Tooling',
-        description: 'Bitcoin dashboard with live BTC price, market cap, all-time high, and real-time stats.',
+        description: 'Bitcoin dashboard with real-time price data, TradingView chart, order book, market analysis, and halving countdown.',
         inLanguage: 'en-US',
       },
       {
@@ -67,7 +67,7 @@ export default function RootLayout({
           price: '0',
           priceCurrency: 'USD',
         },
-        description: 'Bitcoin dashboard with live BTC price, market cap, all-time high, and real-time stats. Clean interface for monitoring Bitcoin data.',
+        description: 'Bitcoin dashboard with real-time price data, TradingView chart, order book, market analysis, Twitter/X insights, and halving countdown. Clean, ad-free, responsive design.',
         url: 'https://btctooling.com',
       },
     ],
