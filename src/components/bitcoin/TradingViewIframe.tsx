@@ -51,15 +51,18 @@ export default function TradingViewIframe({ timeframe, onLoaded }: TradingViewIf
   }, [timeframe]);
   
   return (
-    <div className="w-full h-full main-dark">
+    <div className="w-full h-full main-dark overflow-hidden rounded-lg">
       {/* Keep a static src to prevent refreshing */}
       <iframe
         ref={iframeRef}
         src={initialSrc}
-        style={{ 
-          width: '100%', 
-          height: '100%',
+        style={{
+          width: 'calc(100% + 2px)',
+          height: 'calc(100% + 2px)',
+          marginLeft: '-1px',
+          marginTop: '-1px',
           backgroundColor: '#0a0b0d',
+          border: 'none',
         }}
         frameBorder="0"
         scrolling="no"
