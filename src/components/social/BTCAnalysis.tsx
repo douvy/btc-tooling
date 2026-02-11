@@ -22,11 +22,11 @@ export default function BTCAnalysis({
   // Use data from analysisData if provided, otherwise use default content
   const initialAssessment =
     analysisData?.strategicOutlook?.initial ||
-    "February is a real stress window. TGA is elevated and rising (~$923B, +$54B w/w)";
+    "Macro plumbing is the dominant driver. ON RRP is exhausted — TGA swings now hit reserves directly.";
 
   const fullAssessment =
     analysisData?.strategicOutlook?.full ||
-    " —with ON RRP exhausted (low single-digit billions), TGA is now the key short-horizon liquidity driver, and rising TGA is a drain. Net liquidity sits around $5.6-5.7T. $2.30T in Treasury maturities roll in February, elevating probability of auction indigestion (yields/term premium up, risk assets down) or policy response (risk assets rebound). Japan remains a live transmission channel—JGB yields at multi-decade highs (10Y ~2.3%) tighten global risk conditions. Real yields at ~1.95% near the 2% threshold are an opportunity-cost headwind. Curve un-inversion (10Y-2Y positive) historically precedes economic weakness/risk-off episodes. Derivatives show a coiled spring market: persistent negative skew (puts priced richer than calls), compressed basis (mid-single digits annualized), CME OI slipping, and heavy strike gravity around $90k. Thin float + short-gamma pockets + rich puts = discontinuous moves more likely than orderly trends.";
+    " TGA at ~$909B is an active drain; bank reserves at ~$2.94T are adequate but thinning. ~$1.82T in Treasuries roll in Feb, ~$2.09T in March — if term premium spikes on weak demand, long-duration assets de-rate together. Japan remains the highest-conviction risk-off channel: JGB 10Y at ~2.29% with long-end yields at extremes threatens carry unwind → global deleveraging → BTC sold as liquidity source. Derivatives show fear hedging with squeeze potential: negative funding, deeply negative skew, OI clustered around $60k–$65k puts and $100k calls. Direction will be decided by macro liquidity, not crypto narratives. Key tell: bond vol (MOVE) — re-acceleration toward 130–140+ likely precedes a policy backstop and violent reversal.";
 
   // Optional attribution section if source or author is provided
   const hasAttribution = analysisData?.source || analysisData?.author;
@@ -45,7 +45,7 @@ export default function BTCAnalysis({
               <span className="text-light-gray">Assessment:</span>
             </span>{" "}
             {analysisData?.assessment ||
-              "Bitcoin at $83,942 is in a structural bull market with tactical macro/liquidity drawdown risk—mid-cycle consolidation with high gap-risk. On-chain metrics remain constructive: MVRV Z-Score at 2.5-3.0 is neutral-to-elevated, far below historic blowoff conditions. The core thin float setup is intact—HODL Waves show ~70-75% of supply held >1 year, with short-term bands materially smaller than prior cycle peaks. Less tradable inventory means higher convexity in both directions. But the near-term market is fighting overhead supply: STH Cost Basis at $98.4k is the key break-even wall — recent buyers are underwater, and rallies toward $98k meet defensive selling. Active Investor Mean ($87.8k) was recently lost, flipping it to near-term resistance. True Market Mean at $81.1k is the first major market-structure support. LTH Realized Price at $38.35k anchors the deep structural floor."}
+              "Bitcoin at ~$68.8k is in a mid-cycle correction driven by mechanical deleveraging — a liquidity air-pocket, not a trend-following selloff. MVRV Z-Score at ~0.70 signals the profit overhang is wrung out; ~9.3M BTC sits underwater (highest since Jan 2023), meaning remaining selling pressure is increasingly forced (liquidations, risk limits, ETF redemptions, miner cash needs). STH Cost Basis at ~$98.4k is the overhead ceiling — any rally into ~$80k–$98k meets dense supply from underwater buyers. LTH Realized Price at ~$40.45k anchors the deep cycle floor. Downside is increasingly asymmetric: forced selling ends abruptly if liquidity improves or a credible sovereign bid materializes."}
           </p>
 
           <p className={`${expanded ? "mb-3" : "mb-0"}`}>
@@ -88,7 +88,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Key Levels:</span>
               </span>{" "}
               {analysisData?.keyLevels ||
-                `$90k: psychological + options gravity zone; reclaim stabilizes tape. $87.8k: Active Investor Mean pivot; failure keeps rallies weak. $81.1k: True Market Mean; first serious support. $98.4k: STH cost-basis ceiling; reclaim/hold is "trend back on" confirmation.`}
+                `$60k–$65k: tactical decision zone (sovereign narrative + put gravity). $80k–$98k: overhead supply band. $98.4k: STH cost-basis ceiling — reclaim = trend confirmation. $40.45k: LTH realized price / deep structural floor.`}
             </p>
 
             <p className="mb-3">
@@ -100,7 +100,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Bullish triggers:</span>
               </span>{" "}
               {analysisData?.bullishTriggers ||
-                `TGA stops rising and begins spending down; spot-led reclaim of $90k→$98k with supply absorption; basis stabilizes or spot demand overwhelms.`}
+                `TGA drawdown; short squeeze on negative funding; BOJ stabilization; spot-led reclaim of $90k+ with visible accumulation.`}
             </p>
 
             <p className="mb-3">
@@ -112,7 +112,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Bearish triggers:</span>
               </span>{" "}
               {analysisData?.bearishTriggers ||
-                `Failed auctions / term premium jump into Feb rollover; sustained real-yield break above ~2% + risk-off correlation; Japan/FX volatility escalation pushing BTC into "ATM mode."`}
+                `JGB carry unwind escalation; Feb–Mar rollover duration shock; sub-$60k gamma cascade; miner capitulation near production cost.`}
             </p>
 
             {hasAttribution && (
