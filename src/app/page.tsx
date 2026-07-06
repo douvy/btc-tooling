@@ -79,20 +79,25 @@ export default function Home() {
 
       <main id="main-content" className="flex-1 flex flex-col" role="main">
         <div className="flex flex-col lg:flex-row overflow-auto">
-          <div className="flex-1 overflow-y-auto">
-            <ErrorBoundary>
-              <MarketStats />
-            </ErrorBoundary>
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            {/* Chart leads on mobile (hero); stats lead on desktop */}
+            <div className="order-2 lg:order-1">
+              <ErrorBoundary>
+                <MarketStats />
+              </ErrorBoundary>
+            </div>
 
-            <ErrorBoundary>
-              <PriceChart
-                currentPrice={bitcoinData?.price || 0}
-                timeframe={timeframe}
-              />
-            </ErrorBoundary>
-            
+            <div className="order-1 lg:order-2">
+              <ErrorBoundary>
+                <PriceChart
+                  currentPrice={bitcoinData?.price || 0}
+                  timeframe={timeframe}
+                />
+              </ErrorBoundary>
+            </div>
+
             {/* Order book and halving countdown section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
+            <div className="order-3 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 mb-6 pl-6 pr-6 md:p-8 pt-0 md:pt-1">
               <ErrorBoundary>
                 <OrderBook 
                   className="order-book-container"
@@ -111,7 +116,7 @@ export default function Home() {
             </div>
           </div>
           
-          <aside className="md:w-[520px] block border-l border-divider" role="complementary"> 
+          <aside className="lg:w-[520px] block lg:border-l border-divider" role="complementary">
             <div className="h-full overflow-y-auto px-6 pt-6 pb-[60px] md:px-8 md:pt-6 md:pb-8">
               <ErrorBoundary>
                 <BTCAnalysis />
