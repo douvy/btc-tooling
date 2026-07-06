@@ -85,8 +85,6 @@
   },
   "regions": ["iad1", "sfo1", "lhr1"],
   "env": {
-    "NEXT_PUBLIC_DEBUG_MODE": "false",
-    "NEXT_PUBLIC_USE_FALLBACKS": "true",
     "NEXT_TELEMETRY_DISABLED": "1"
   }
 }
