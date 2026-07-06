@@ -28,9 +28,9 @@ export default function HalvingCountdown({
   if (!halvingInfo) {
     return (
       <div className="rounded-sm overflow-hidden p-4 bg-dark-card animate-pulse">
-        <div className="h-8 bg-dark-card rounded w-1/3 mb-4"></div>
-        <div className="h-24 bg-dark-card rounded mb-4"></div>
-        <div className="h-12 bg-dark-card rounded"></div>
+        <div className="h-8 bg-divider rounded w-1/3 mb-4"></div>
+        <div className="h-24 bg-divider rounded mb-4"></div>
+        <div className="h-12 bg-divider rounded"></div>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export default function HalvingCountdown({
           <span>{halvingInfo.progress}%</span>
         </div>
         <div className="w-full bg-divider rounded-full h-1.5" role="progressbar" aria-valuenow={halvingInfo.progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-1.5 rounded-full" style={{ width: `${halvingInfo.progress}%`, backgroundColor: '#F7931A' }} aria-hidden="true"></div>
+          <div className="h-1.5 rounded-full bg-primary" style={{ width: `${halvingInfo.progress}%` }} aria-hidden="true"></div>
         </div>
       </div>
 
@@ -69,11 +69,11 @@ export default function HalvingCountdown({
         </div>
         <div>
           <p className="text-sm text-muted mb-1">Next</p>
-          <p className="text-lg font-fuji-bold">{halvingInfo.nextReward} <span className="text-sm font-semibold text-secondary">BTC</span></p>
+          <p className="text-lg font-fuji-bold text-white">{halvingInfo.nextReward} <span className="text-sm font-semibold text-secondary">BTC</span></p>
         </div>
         <div>
           <p className="text-sm text-muted mb-1">Target</p>
-          <p className="text-lg font-medium">{halvingInfo.targetBlock.toLocaleString()}</p>
+          <p className="text-lg font-fuji-bold text-white">{halvingInfo.targetBlock.toLocaleString()}</p>
         </div>
       </div>
 
@@ -89,7 +89,9 @@ export default function HalvingCountdown({
       </div>
 
       {error && (
-        <p className="mt-4 text-error text-xs">Using cached data</p>
+        <div className="mt-4 rounded-lg bg-error-ghost px-3 py-2 text-xs text-error-light font-proxima-nova">
+          Live update failed — showing last known data
+        </div>
       )}
     </section>
   );

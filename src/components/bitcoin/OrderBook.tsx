@@ -269,7 +269,7 @@ function OrderBook(props: OrderBookProps) {
   // Handle error state with recovery option
   if (orderBookStatus.error && !localOrderBook) {
     return (
-      <div className={`text-white w-full font-sans p-4 border border-red-800 rounded ${className}`}>
+      <div className={`text-white w-full font-sans p-4 border border-error/30 rounded ${className}`}>
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Order Book</h2>
           <button 
@@ -285,7 +285,7 @@ function OrderBook(props: OrderBookProps) {
             Retry
           </button>
         </div>
-        <p className="text-red-400 mt-2">{orderBookStatus.error.message}</p>
+        <p className="text-error-light mt-2">{orderBookStatus.error.message}</p>
       </div>
     );
   }

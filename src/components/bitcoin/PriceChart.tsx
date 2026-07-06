@@ -65,24 +65,24 @@ export default function PriceChart({
   
   return (
     <section className="rounded-xl overflow-hidden mb-6 h-[420px] md:h-[530px] p-6 md:pl-8 md:pr-8 pt-3 sm:pt-2 bg-transparent" aria-labelledby="chart-title">
-      <h2 id="chart-title" className="text-xl font-semibold mb-2 px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
+      <h2 id="chart-title" className="text-xl font-semibold px-4 pt-4 pl-0 mb-6">BTC/USD Bitfinex</h2>
       <div className="w-full h-[calc(100%-50px)] relative bg-transparent">
         {isLoading && !chartLoadedOnceRef.current && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="w-10 h-10 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
         
         {chartError && (
           <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 z-10">
-            <div className="text-[#F44336] text-center p-4">
+            <div className="text-error text-center p-4">
               <p>Unable to load TradingView chart</p>
-              <button 
+              <button
                 onClick={() => {
                   setChartError(false);
                   setIsLoading(true);
-                }} 
-                className="mt-2 px-4 py-2 bg-[#4CAF50] text-white rounded-md text-sm hover:bg-opacity-90"
+                }}
+                className="mt-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md text-sm"
               >
                 Retry
               </button>
