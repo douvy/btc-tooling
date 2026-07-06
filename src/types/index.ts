@@ -71,6 +71,12 @@ export interface AnalysisData {
     /** Full strategic outlook text (shown after "Show More") */
     full: string;
   };
+  /** Key price levels summary */
+  keyLevels?: string;
+  /** Bullish trigger scenarios */
+  bullishTriggers?: string;
+  /** Bearish trigger scenarios */
+  bearishTriggers?: string;
   /** Sentiment analysis text */
   sentiment: string;
   /** Fear & Greed Index value (0-100) */
