@@ -22,11 +22,11 @@ export default function BTCAnalysis({
   // Use data from analysisData if provided, otherwise use default content
   const initialAssessment =
     analysisData?.strategicOutlook?.initial ||
-    "Macro plumbing is the dominant driver. ON RRP is exhausted — TGA swings now hit reserves directly.";
+    "Price is set at the margin by active flows, and flows currently favor defense — structural cheapness is sidelined until the ETF wrapper channel confirms absorption.";
 
   const fullAssessment =
     analysisData?.strategicOutlook?.full ||
-    " TGA at ~$909B is an active drain; bank reserves at ~$2.94T are adequate but thinning. ~$1.82T in Treasuries roll in Feb, ~$2.09T in March — if term premium spikes on weak demand, long-duration assets de-rate together. Japan remains the highest-conviction risk-off channel: JGB 10Y at ~2.29% with long-end yields at extremes threatens carry unwind → global deleveraging → BTC sold as liquidity source. Derivatives show fear hedging with squeeze potential: negative funding, deeply negative skew, OI clustered around $60k–$65k puts and $100k calls. Direction will be decided by macro liquidity, not crypto narratives. Key tell: bond vol (MOVE) — re-acceleration toward 130–140+ likely precedes a policy backstop and violent reversal.";
+    " Strategy is now a board-authorized conditional seller: 847k BTC at ~$75.6k average (~$13–14B underwater), its preferred stack priced as distressed credit, mNAV below 1.0 for the first sustained period since 2020. Macro is hawkish rates, dovish plumbing: the Warsh Fed holds 3.50–3.75% while reserves sit only ~$80B above the floor, RRP is exhausted, and a ~$5.6T Q3 rollover wall looms. Yen carry is the tail risk — USD/JPY at 161.3 multi-decade highs against a cycle-low 1.71% US–JP spread is the textbook unwind precursor, with BTC the liquidity vent. The June jobs miss (+57k) sparked the bounce off $57.8k; July 14 CPI is the binary gate into the July 29 FOMC. Key tell: crypto leverage is clean (neutral funding, flat basis) yet options skew stays deeply negative — allocators are paying a 7–13 vol premium for downside protection through Q3.";
 
   // Optional attribution section if source or author is provided
   const hasAttribution = analysisData?.source || analysisData?.author;
@@ -45,7 +45,7 @@ export default function BTCAnalysis({
               <span className="text-light-gray">Assessment:</span>
             </span>{" "}
             {analysisData?.assessment ||
-              "Bitcoin at ~$68.8k is in a mid-cycle correction driven by mechanical deleveraging — a liquidity air-pocket, not a trend-following selloff. MVRV Z-Score at ~0.70 signals the profit overhang is wrung out; ~9.3M BTC sits underwater (highest since Jan 2023), meaning remaining selling pressure is increasingly forced (liquidations, risk limits, ETF redemptions, miner cash needs). STH Cost Basis at ~$98.4k is the overhead ceiling — any rally into ~$80k–$98k meets dense supply from underwater buyers. LTH Realized Price at ~$40.45k anchors the deep cycle floor. Downside is increasingly asymmetric: forced selling ends abruptly if liquidity improves or a credible sovereign bid materializes."}
+              "Bitcoin at ~$62.9k is in a flow-dominated markdown approaching structural value. June was the worst month in spot ETF history (~$4.1–4.5B redeemed, ~39.4k BTC shed) — the wrappers are now the marginal seller, with IBIT negative ten straight sessions before the first pause signals on July 2–3. On-chain says base-building: record 16.3M BTC held by long-term holders, STH supply flushed to prior-trough levels, exchange reserves at 7-year lows, and a majority of supply underwater — the zone where prior cycle bases formed. Still missing: a capitulation-scale SOPR flush and flow confirmation. Until both arrive, any rally is a squeeze, not a regime change."}
           </p>
 
           <p className={`${expanded ? "mb-3" : "mb-0"}`}>
@@ -88,7 +88,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Key Levels:</span>
               </span>{" "}
               {analysisData?.keyLevels ||
-                `$60k–$65k: tactical decision zone (sovereign narrative + put gravity). $80k–$98k: overhead supply band. $98.4k: STH cost-basis ceiling — reclaim = trend confirmation. $40.45k: LTH realized price / deep structural floor.`}
+                `$53k: aggregate realized price — the untested structural floor. $49.7–49.9k: LTH cost basis / deep value band. $57.7k: cycle low — daily close below accelerates toward $53k. $62.65k: weekly 50 MA pivot. $68k–$73k: overhead resistance; $75.6k: MSTR cost basis where wrapper pressure re-emerges.`}
             </p>
 
             <p className="mb-3">
@@ -100,7 +100,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Bullish triggers:</span>
               </span>{" "}
               {analysisData?.bullishTriggers ||
-                `TGA drawdown; short squeeze on negative funding; BOJ stabilization; spot-led reclaim of $90k+ with visible accumulation.`}
+                `≥3 consecutive ETF net-inflow days >$200M with IBIT positive; July 14 CPI ≤0.20% MoM; STRC preferred back near par (treasury rails reopen); 30d skew flipping positive.`}
             </p>
 
             <p className="mb-3">
@@ -112,7 +112,7 @@ export default function BTCAnalysis({
                 <span className="text-light-gray">Bearish triggers:</span>
               </span>{" "}
               {analysisData?.bearishTriggers ||
-                `JGB carry unwind escalation; Feb–Mar rollover duration shock; sub-$60k gamma cascade; miner capitulation near production cost.`}
+                `Daily close below $57.7k; ETF outflows ≥$500M/week for 2+ weeks; USD/JPY close below ~155–156 (carry unwind); MSTR monetizing >$500M BTC in a week; reserves <$2.98T with repo stress.`}
             </p>
 
             {hasAttribution && (
