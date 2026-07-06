@@ -139,7 +139,7 @@ export function useOrderBookState(
   }, [propOrderBook, wsOrderBook, selectedExchange, localOrderBook]);
 
   // Map connection status to our supported types
-  let mappedStatus: UseOrderBookStateReturn['connectionStatus'] = 
+  const mappedStatus: UseOrderBookStateReturn['connectionStatus'] =
     connectionStatus === 'reconnecting' ? 'connecting' : connectionStatus;
   
   return {

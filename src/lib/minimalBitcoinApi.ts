@@ -52,7 +52,8 @@ function saveToCache(data: any): void {
     };
     
     localStorage.setItem('btc-price-data', JSON.stringify(cacheData));
-  } catch (err) {
+  } catch {
+    // Ignore storage errors - caching is best-effort
   }
 }
 
@@ -128,8 +129,7 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
     try {
       result = await response.json();
     } catch (error) {
-      const text = await response.text();
-      throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to parse API response: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
     
     // Check for non-OK response
@@ -173,7 +173,8 @@ export async function getBitcoinPrice(timeframe: TimeFrame): Promise<BitcoinPric
       const url = '/api/price-check';
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Fallback API error: ${response.status}`);
+        // Attach the original historical-fetch failure as cause for debugging
+        throw new Error(`Fallback API error: ${response.status}`, { cause: error });
       }
       
       const result = await response.json();

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { TimeFrame, BitcoinPrice } from '@/types';
 import { getBitcoinPrice } from '@/lib/minimalBitcoinApi';
-import { devLog, devWarn, logError } from '@/lib/api/logger';
 
 const ANIMATION_DURATION = 1500;
 const REFRESH_INTERVAL = 5000; // 5 seconds between refreshes - using Coinbase WebSocket API
@@ -180,7 +179,7 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
         localStorage.setItem(key, JSON.stringify(historicalDataRef.current[targetTimeframe]));
       } catch (err) {
         // Ignore storage errors - not critical
-        devWarn('Failed to save historical data to localStorage:', err);
+        console.warn('Failed to save historical data to localStorage:', err);
       }
       
       // Only update the UI if this is for the currently selected timeframe
@@ -210,7 +209,7 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
     } catch (err) {
       // Only show errors if this is the current request
       if (currentFetchState.current.requestId === requestId) {
-        logError(`Error fetching Bitcoin data for ${targetTimeframe}:`, err);
+        console.error(`Error fetching Bitcoin data for ${targetTimeframe}:`, err);
         
         // Only update UI error state if this is for the current timeframe
         if (targetTimeframe === timeframe) {
@@ -383,8 +382,8 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
               const price = Math.round(basePrice * (0.9 + (Math.random() * 0.2)));
               
               // Generate appropriate change percentage based on timeframe
-              let changePercent = 0;
-              let direction: 'up' | 'down' = 'up';
+              let changePercent: number;
+              let direction: 'up' | 'down';
               
               switch (targetTimeframe) {
                 case '1H':
@@ -493,7 +492,7 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
       
       // Still refresh in the background to ensure data is current
       fetchBitcoinData(newTimeframe, forceRefresh).catch(err => {
-        logError(`Background refresh error for ${newTimeframe}:`, err);
+        console.error(`Background refresh error for ${newTimeframe}:`, err);
         setIsRefreshing(false);
       });
     } else {
@@ -502,7 +501,7 @@ export function useBitcoinPrice(initialTimeframe: TimeFrame = '1D'): UseBitcoinP
       
       // Fetch new data for this timeframe with higher priority
       fetchBitcoinData(newTimeframe, forceRefresh).catch(err => {
-        logError(`Error fetching data for ${newTimeframe}:`, err);
+        console.error(`Error fetching data for ${newTimeframe}:`, err);
         setError(err instanceof Error ? err : new Error(String(err)));
         setIsLoading(false);
       });
