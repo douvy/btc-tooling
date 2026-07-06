@@ -35,10 +35,16 @@ export interface HalvingInfo {
 export interface MarketStats {
   satsPerDollar: number;
   marketCap: number;
+  supplyPercentIssued: number;
   athPrice: number;
   athPercentChange: number;
   daysSinceAth: number;
-  supplyPercentIssued: number;
+  /** Network hash rate in EH/s */
+  hashRateEhs: number;
+  /** Next-block fee estimate in sat/vB */
+  fastestFee: number;
+  /** Current blockchain tip height */
+  blockHeight: number;
 }
 
 export interface Tweet {

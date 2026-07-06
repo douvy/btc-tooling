@@ -1,66 +1,50 @@
 import { NextResponse } from 'next/server';
-import { MarketStats } from '@/types';
+import { buildMarketStats, CoinGeckoMarketData } from '@/lib/marketStats';
 
 export const revalidate = 60; // Cache for 60 seconds
 
 interface CoinGeckoResponse {
-  market_data: {
-    current_price: {
-      usd: number;
-    };
-    market_cap: {
-      usd: number;
-    };
-    ath: {
-      usd: number;
-    };
-    ath_change_percentage: {
-      usd: number;
-    };
-    ath_date: {
-      usd: string;
-    };
-    circulating_supply: number;
-  };
+  market_data: CoinGeckoMarketData;
 }
 
-export async function GET(): Promise<NextResponse<MarketStats>> {
+interface MempoolHashrateResponse {
+  currentHashrate: number; // H/s
+}
+
+interface MempoolFeesResponse {
+  fastestFee: number; // sat/vB
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, { next: { revalidate: 60 } });
+  if (!response.ok) {
+    throw new Error(`Upstream API error: ${response.status} (${url})`);
+  }
+  return response.json();
+}
+
+export async function GET(): Promise<NextResponse> {
   try {
-    const response = await fetch(
-      'https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false',
-      { next: { revalidate: 60 } }
+    const [coinGecko, hashrate, fees, blockHeight] = await Promise.all([
+      fetchJson<CoinGeckoResponse>(
+        'https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false'
+      ),
+      fetchJson<MempoolHashrateResponse>('https://mempool.space/api/v1/mining/hashrate/3d'),
+      fetchJson<MempoolFeesResponse>('https://mempool.space/api/v1/fees/recommended'),
+      fetchJson<number>('https://mempool.space/api/blocks/tip/height'),
+    ]);
+
+    const marketStats = buildMarketStats(
+      coinGecko.market_data,
+      hashrate.currentHashrate,
+      fees.fastestFee,
+      blockHeight
     );
-
-    if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`);
-    }
-
-    const data: CoinGeckoResponse = await response.json();
-    const marketData = data.market_data;
-
-    const athDate = new Date(marketData.ath_date.usd);
-    const daysSinceAth = Math.floor((Date.now() - athDate.getTime()) / (1000 * 60 * 60 * 24));
-    const supplyPercentIssued = (marketData.circulating_supply / 21_000_000) * 100;
-
-    const marketStats: MarketStats = {
-      satsPerDollar: Math.round(100_000_000 / marketData.current_price.usd),
-      marketCap: marketData.market_cap.usd,
-      athPrice: marketData.ath.usd,
-      athPercentChange: marketData.ath_change_percentage.usd,
-      daysSinceAth,
-      supplyPercentIssued,
-    };
 
     return NextResponse.json(marketStats);
   } catch (error) {
-    // Fallback data based on approximate values
-    return NextResponse.json({
-      satsPerDollar: 878,
-      marketCap: 2_270_000_000_000,
-      athPrice: 126_080,
-      athPercentChange: -9.6,
-      daysSinceAth: 122,
-      supplyPercentIssued: 95.16,
-    });
+    // Surface the failure so the client keeps its last good data and shows the error state
+    console.error('market-stats fetch failed:', error);
+    return NextResponse.json({ error: 'Failed to fetch market stats' }, { status: 503 });
   }
 }
