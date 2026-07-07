@@ -3,103 +3,134 @@
  * Uses CoinGecko's market_chart endpoint for actual historical data
  * IMPORTANT: No hardcoded data - all values come directly from the API
  */
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-let cachedData = null;
+type PricePoint = [timestamp: number, price: number];
+
+interface TimeframeChange {
+  previous: number;
+  change: number;
+  percentChange: number;
+  direction: 'up' | 'down';
+}
+
+interface PriceHistoryResult {
+  success: boolean;
+  price: number;
+  timestamp: number;
+  timeframes: Record<string, TimeframeChange>;
+  dataPoints: number;
+  apiKeyUsed: string;
+  fromExpiredCache?: boolean;
+  isFallback?: boolean;
+  error?: string;
+}
+
+interface CoinGeckoMarketChart {
+  prices?: PricePoint[];
+}
+
+interface CoinGeckoMarketsEntry {
+  price_change_percentage_1h_in_currency?: number;
+  price_change_percentage_24h?: number;
+  price_change_percentage_7d_in_currency?: number;
+  price_change_percentage_30d_in_currency?: number;
+  price_change_percentage_1y_in_currency?: number;
+}
+
+let cachedData: PriceHistoryResult | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for historical data
 
-export default async function handler(req, res) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<PriceHistoryResult>
+) {
   // CRITICAL FOR PRODUCTION: Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   // If it's a preflight request, send 200
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
+
   // Set cache headers for the browser - allow for more frequent updates
   // We use WebSockets for real-time data, so this is just for the historical data
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
-  
-  
+
   try {
     // Try to use cache if available and not expired
     const now = Date.now();
     if (cachedData && (now - cacheTimestamp < CACHE_TTL)) {
       return res.status(200).json(cachedData);
     }
-    
-    // Get API key
+
+    // Get API key (optional - public endpoints work with stricter rate limits)
     const apiKey = process.env.COINGECKO_API_KEY;
-    if (!apiKey) {
-      // Continue anyway, will use public endpoints with stricter rate limits
-    }
-    
+
     // Get market chart data for 1 year (which covers most of our timeframes)
     // This is just ONE API call, which is efficient with our credits
     const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily`;
-    
+
     // Get more accurate data from the markets endpoint
     // This includes multiple timeframes: 1h, 24h, 7d, 30d, 1y
     const marketsUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin&price_change_percentage=1h,24h,7d,30d,1y`;
-    
+
     // Prepare headers based on whether we have an API key
-    const headers = apiKey ? { 'x-cg-demo-api-key': apiKey } : {};
-    
+    const headers: Record<string, string> = apiKey ? { 'x-cg-demo-api-key': apiKey } : {};
+
     // Make both requests in parallel
     const [response, marketsResponse] = await Promise.all([
       fetch(url, { headers }),
       fetch(marketsUrl, { headers })
     ]);
-    
+
     if (!response.ok) {
       throw new Error(`Chart API error: ${response.status}`);
     }
-    
+
     // Parse the responses
-    const chartData = await response.json();
-    
+    const chartData: CoinGeckoMarketChart = await response.json();
+
     // Try to get the markets data which has the most accurate change percentages for all timeframes
-    let marketsData = null;
+    let marketsData: CoinGeckoMarketsEntry | null = null;
     try {
       if (marketsResponse.ok) {
-        const marketsResult = await marketsResponse.json();
+        const marketsResult: CoinGeckoMarketsEntry[] = await marketsResponse.json();
         if (marketsResult && marketsResult.length > 0) {
           marketsData = marketsResult[0];
         }
       }
-    } catch (err) {
+    } catch {
       // Error parsing markets data
     }
-    
+
     // Process the data to extract all timeframes
     const prices = chartData.prices || [];
     if (!prices.length) {
       throw new Error('No price data received');
     }
-    
+
     // Get the current price and timestamp (most recent data point)
     const currentData = prices[prices.length - 1];
     const currentPrice = currentData[1];
     const currentTimestamp = currentData[0];
-    
+
     // For hourly data we need a separate API call with higher granularity
-    let hourlyPrice = null;
-    
+    let hourlyPrice: number | null = null;
+
     try {
       // Get hourly data from the past 24 hours
       const hourlyUrl = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1&interval=hourly`;
-      // Prepare headers based on whether we have an API key
-      const hourlyHeaders = apiKey ? { 'x-cg-demo-api-key': apiKey } : {};
-      
-      const hourlyResponse = await fetch(hourlyUrl, { headers: hourlyHeaders });
-      
+
+      const hourlyResponse = await fetch(hourlyUrl, { headers });
+
       if (hourlyResponse.ok) {
-        const hourlyData = await hourlyResponse.json();
+        const hourlyData: CoinGeckoMarketChart = await hourlyResponse.json();
         const hourlyPrices = hourlyData.prices || [];
-        
+
         if (hourlyPrices.length >= 2) {
           // For reliable 1-hour data, we need at least the current price and one hour ago
           // Get the price from exactly 1 hour ago (usually the second-to-last entry)
@@ -108,22 +139,22 @@ export default async function handler(req, res) {
           hourlyPrice = hourlyPrices[oneHourAgoIndex][1];
         }
       }
-    } catch (hourlyError) {
+    } catch {
       // Error fetching hourly data
     }
-    
+
     // If we couldn't get hourly data from API, use a reasonable fallback
     if (!hourlyPrice) {
       // Use a price that's slightly different from current (99.5% of current price)
-      // This provides a small but realistic hourly change 
+      // This provides a small but realistic hourly change
       hourlyPrice = currentPrice * 0.995;
     }
-    
+
     // For "ALL" timeframe, use $100 as the starting price
     const bitcoinStartPrice = 100; // Historical starting price reference for ALL timeframe
-    
+
     // Extract timeframe data points using real data for all timeframes
-    const timeframes = {
+    const timeframes: Record<string, number> = {
       '1H': hourlyPrice || getClosestPrice(prices, currentTimestamp - (60 * 60 * 1000)), // 1 hour ago
       '1D': getClosestPrice(prices, currentTimestamp - (24 * 60 * 60 * 1000)), // 1 day ago
       '1W': getClosestPrice(prices, currentTimestamp - (7 * 24 * 60 * 60 * 1000)), // 1 week ago
@@ -131,37 +162,36 @@ export default async function handler(req, res) {
       '1Y': getClosestPrice(prices, currentTimestamp - (365 * 24 * 60 * 60 * 1000)), // 1 year ago
       'ALL': bitcoinStartPrice // Bitcoin's reference starting price
     };
-    
+
     // Calculate changes for each timeframe
-    const changes = {};
-    
+    const changes: Record<string, TimeframeChange> = {};
+
     for (const [timeframe, previousPrice] of Object.entries(timeframes)) {
       // Calculate the price change
       const priceChange = currentPrice - previousPrice;
-      
+
       // Calculate the percentage change
       const percentChange = (priceChange / previousPrice) * 100;
-      
+
       // For ALL timeframe, make sure we're using nice round numbers
       // This makes the display cleaner and more consistent
       if (timeframe === 'ALL') {
         // Re-calculate ALL timeframe with exactly $100 starting price
-        // Bitcoin ALL-time price change is usually shown as growth from $100 
+        // Bitcoin ALL-time price change is usually shown as growth from $100
         const allTimeChange = currentPrice - 100;
         const allTimePercent = ((currentPrice - 100) / 100) * 100;
-        
+
         changes[timeframe] = {
           previous: 100,
           change: allTimeChange,
           percentChange: allTimePercent,
           direction: 'up' // Bitcoin is always up from its starting price
         };
-        
-      } 
+      }
       // Special handling for timeframes with markets data available
       else if (marketsData) {
-        let actualPercentChange = null;
-        
+        let actualPercentChange: number | null = null;
+
         // Map our timeframe to the CoinGecko API field names
         if (timeframe === '1H' && marketsData.price_change_percentage_1h_in_currency !== undefined) {
           actualPercentChange = marketsData.price_change_percentage_1h_in_currency;
@@ -178,29 +208,26 @@ export default async function handler(req, res) {
         else if (timeframe === '1Y' && marketsData.price_change_percentage_1y_in_currency !== undefined) {
           actualPercentChange = marketsData.price_change_percentage_1y_in_currency;
         }
-        
+
         // If we have accurate percentage data for this timeframe, use it
         if (actualPercentChange !== null) {
-          const direction = actualPercentChange >= 0 ? 'up' : 'down';
-          
+          const direction: 'up' | 'down' = actualPercentChange >= 0 ? 'up' : 'down';
+
           // Calculate the implied previous price based on the percentage
           // current_price / (1 + (percent_change/100)) = previous_price
-          const impliedPrevious = currentPrice / (1 + (actualPercentChange/100));
+          const impliedPrevious = currentPrice / (1 + (actualPercentChange / 100));
           const impliedChange = Math.abs(currentPrice - impliedPrevious);
-          
-          
+
           changes[timeframe] = {
             previous: impliedPrevious,
             change: impliedChange,
             percentChange: Math.abs(actualPercentChange),
             direction
           };
-          
+
           // Also update the timeframes object with the accurate previous price
           // This helps the client-side calculations be consistent
           timeframes[timeframe] = impliedPrevious;
-          
-          continue; // Skip the default calculation
         }
       } else {
         // For all other timeframes, use the standard calculation
@@ -212,9 +239,9 @@ export default async function handler(req, res) {
         };
       }
     }
-    
+
     // Format result
-    const result = {
+    const result: PriceHistoryResult = {
       success: true,
       price: currentPrice,
       timestamp: currentTimestamp,
@@ -222,15 +249,14 @@ export default async function handler(req, res) {
       dataPoints: prices.length,
       apiKeyUsed: apiKey ? apiKey.substring(0, 5) + '...' : 'none'
     };
-    
+
     // Cache the result
     cachedData = result;
     cacheTimestamp = now;
-    
+
     // Return the data
     res.status(200).json(result);
   } catch (error) {
-    
     // If cache is available but expired, still use it as fallback
     if (cachedData) {
       return res.status(200).json({
@@ -238,11 +264,11 @@ export default async function handler(req, res) {
         fromExpiredCache: true
       });
     }
-    
+
     // Last resort fallback with default values
     // This is better than returning an error that breaks the UI
     const fallbackPrice = 106500;
-    const fallbackResult = {
+    const fallbackResult: PriceHistoryResult = {
       success: true,
       price: fallbackPrice,
       timestamp: Date.now(),
@@ -287,9 +313,9 @@ export default async function handler(req, res) {
       dataPoints: 0,
       apiKeyUsed: 'none',
       isFallback: true,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
-    
+
     res.status(200).json(fallbackResult);
   }
 }
@@ -297,12 +323,12 @@ export default async function handler(req, res) {
 /**
  * Find the price closest to the target timestamp
  */
-function getClosestPrice(prices, targetTimestamp) {
+function getClosestPrice(prices: PricePoint[], targetTimestamp: number): number {
   // For very recent timestamps (e.g., 1 hour), we might not have the exact data point
   // Find the closest available timestamp
   let closest = prices[0];
   let closestDiff = Math.abs(targetTimestamp - closest[0]);
-  
+
   for (let i = 1; i < prices.length; i++) {
     const diff = Math.abs(targetTimestamp - prices[i][0]);
     if (diff < closestDiff) {
@@ -310,6 +336,6 @@ function getClosestPrice(prices, targetTimestamp) {
       closestDiff = diff;
     }
   }
-  
+
   return closest[1]; // Return the price
 }
