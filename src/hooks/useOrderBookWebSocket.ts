@@ -647,7 +647,6 @@ export function useOrderBookWebSocket(
           options.maxReconnectDelayMs
         );
         
-        console.log(`[OrderBook] Scheduling reconnection attempt ${reconnectAttemptsRef.current + 1} in ${delay}ms`);
         setConnectionStatus('reconnecting');
         
         // Clear any existing reconnection timeout
@@ -661,14 +660,13 @@ export function useOrderBookWebSocket(
           
           // Check if we've exceeded max reconnection attempts
           if (reconnectAttemptsRef.current > options.maxReconnectAttempts) {
-            console.log(`[OrderBook] Max reconnection attempts (${options.maxReconnectAttempts}) exceeded`);
+            console.warn(`[OrderBook] Max reconnection attempts (${options.maxReconnectAttempts}) exceeded`);
             setConnectionStatus('error');
             setError(new Error(`Failed to reconnect after ${options.maxReconnectAttempts} attempts`));
             return;
           }
           
           // Attempt to reconnect
-          console.log(`[OrderBook] Attempting reconnection #${reconnectAttemptsRef.current}`);
           if (connectWebSocketRef.current) {
             connectWebSocketRef.current();
           }
@@ -677,40 +675,22 @@ export function useOrderBookWebSocket(
       
       // Handle WebSocket errors
       socketRef.current.onerror = (event) => {
-        console.log(`[OrderBook] WebSocket error detected:`, event);
+        console.warn(`[OrderBook] WebSocket error detected:`, event);
         // Don't immediately fall back to mock data - let the onclose handler handle reconnection
         // This avoids duplicate reconnection attempts since an error is usually followed by a close
       };
       
       // Handle WebSocket close events
       socketRef.current.onclose = (event) => {
-        console.log(`[OrderBook] WebSocket closed with code ${event.code}, reason: ${event.reason}`);
-        
         // If this is an abnormal closure (not intentional), attempt to reconnect
         if (event.code !== 1000) { // 1000 = normal closure
-          // Don't use mock data while reconnecting unless absolutely necessary
-          // Just maintain loading state until we get real data
-          
-          // Then attempt to reconnect
+          console.warn(`[OrderBook] WebSocket closed abnormally (code ${event.code}${event.reason ? `, reason: ${event.reason}` : ''})`);
           attemptReconnect();
         } else {
-          // This was a normal closure (e.g., component unmounting)
-          console.log(`[OrderBook] WebSocket closed normally - no reconnection needed`);
+          // Normal closure (e.g., component unmounting)
           setConnectionStatus('disconnected');
         }
       };
-      // Only set up simulated updates if we're in simulation mode
-      const useSimulation = false;
-      if (useSimulation) {
-        // Set up interval for simulated updates (every 1-2 seconds)
-        const updateInterval = setInterval(() => {
-        if (internalOrderBookRef.current) {
-          updateInternalOrderBook();
-        }
-      }, 1000 + Math.random() * 1000);
-      }
-      // No interval to cleanup if we're not using simulation
-      
     } catch (err) {
       // Handle connection errors
       setError(err instanceof Error ? err : new Error('Failed to initialize order book data'));
