@@ -10,64 +10,63 @@ Bitcoin market analytics dashboard with real-time data visualization, comprehens
 
 - **Live Bitcoin Price Tracking**: Multi-timeframe price data with change indicators
 - **Advanced Charting**: TradingView-powered interactive price chart
-- **Order Book Visualization**: Real-time depth chart with Bitfinex exchange support and dynamic amount controls
-- **Halving Countdown**: Timer showing blocks remaining, rewards, and historical context
-- **Bitcoin X/Twitter Integration**: Curated feed with 3 recent, relevant Bitcoin posts
-- **Market Analysis Panel**: Concise BTC analysis with assessment, strategic outlook, and sentiment
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Order Book Visualization**: Real-time depth via exchange WebSockets (Bitfinex, Coinbase, Binance) with dynamic amount controls
+- **Market Stats**: Sats per dollar, market cap, supply, ATH metrics, hash rate, fee rate, and block height
+- **Halving Countdown**: Blocks remaining, rewards, and historical context
+- **BTC Analysis**: Curated market assessment with key levels and trigger scenarios
+- **X Insights**: Curated feed of relevant Bitcoin posts
+- **Responsive Design**: Optimized for desktop, tablet, and mobile
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
-- **Styling**: Tailwind CSS, Custom Design System
-- **Data**: Blockchain.info API, WebSockets for real-time updates
-- **Performance**: Dynamic imports, client-side rendering for interactive components
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript (strict)
+- **Styling**: Tailwind CSS with a custom design system
+- **Data**: CoinGecko, mempool.space, exchange WebSockets (Bitfinex/Coinbase/Binance), TradingView embed
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (pnpm required)
+pnpm install
 
 # Start development server
-npm run dev
+pnpm dev
 ```
 
 Access the dashboard at [http://localhost:3000](http://localhost:3000)
 
+### Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `COINGECKO_API_KEY` | Server-side CoinGecko API key (price data) |
+
 ## Development
 
 ```bash
-# Run linting
-npm run lint
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
+pnpm lint             # ESLint (zero warnings expected)
+pnpm exec tsc --noEmit # Type check
+pnpm test             # Jest unit tests
+pnpm build            # Production build
+pnpm start            # Serve production build
 ```
+
+CI runs all of the above on every push and pull request.
 
 ## Deployment
 
-The application is optimized for Vercel deployment with:
-
-- Custom API proxies for CoinGecko and Coinbase with proper caching
-- Serverless function optimization (memory: 512MB, timeout: 10s)
-- Deprecation warning fixes for Node.js compatibility
-- Comprehensive environment variable configuration
+Deployed on Vercel. See [SETUP-VERCEL.md](SETUP-VERCEL.md) for environment configuration and function settings.
 
 ## Architecture
 
-The application follows a modular component architecture with clear separation of concerns:
-
 ```
 src/
-├── app/         # Next.js App Router and API routes
+├── app/         # Next.js App Router, pages, and API routes
+├── pages/api/   # Legacy pages-router API routes (price feed)
 ├── components/  # React components (bitcoin, layout, social)
+├── context/     # App-wide state (price, order book, halving)
 ├── hooks/       # Custom React hooks for data fetching
 ├── lib/         # Utility functions and API clients
-├── styles/      # Global styles and typography
 └── types/       # TypeScript type definitions
 ```
 
